@@ -14,24 +14,23 @@
 
   // Set up Backbone appropriately for the environment. Start with AMD.
   if (typeof define === 'function' && define.amd) {
-    define(['underscore', 'jquery', 'exports'], function(_, $, exports) {
+    define(['underscore', 'exports'], function(_, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
-      root.Backbone = factory(root, exports, _, $);
+      root.Backbone = factory(root, exports, _);
     });
 
-  // Next for Node.js or CommonJS. jQuery may not be needed as a module.
+  // Next for Node.js or CommonJS.
   } else if (typeof exports !== 'undefined') {
-    var _ = require('underscore'), $;
-    try { $ = require('jquery'); } catch (e) {}
-    factory(root, exports, _, $);
+    var _ = require('underscore');
+    factory(root, exports, _);
 
   // Finally, as a browser global.
   } else {
-    root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
+    root.Backbone = factory(root, {}, root._);
   }
 
-})(function(root, Backbone, _, $) {
+})(function(root, Backbone, _) {
 
   // Initial Setup
   // -------------
@@ -45,10 +44,6 @@
 
   // Current version of the library. Keep in sync with `package.json`.
   Backbone.VERSION = '1.3.3';
-
-  // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
-  // the `$` variable.
-  Backbone.$ = $;
 
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
   // to its previous owner. Returns a reference to this Backbone object.
@@ -1425,10 +1420,10 @@
     'read': 'GET'
   };
 
-  // Set the default implementation of `Backbone.ajax` to proxy through to `$`.
-  // Override this if you'd like to use a different library.
+  // Abstract method `Backbone.ajax`
+  // Override this to enable ajax functionality.
   Backbone.ajax = function() {
-    return Backbone.$.ajax.apply(Backbone.$, arguments);
+
   };
 
   // Backbone.Router
