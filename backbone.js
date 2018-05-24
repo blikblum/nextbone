@@ -1802,7 +1802,7 @@
       if (History.started) throw new Error('Backbone.history has already been started');
       History.started = true;
 
-      // Figure out the initial configuration. Do we need an iframe?
+      // Figure out the initial configuration.
       // Is pushState desired ... is it available?
       this.options          = _.extend({root: '/'}, this.options, options);
       this.root             = this.options.root;
@@ -1837,21 +1837,7 @@
 
       }
 
-      // Proxy an iframe to handle location events if the browser doesn't
-      // support the `hashchange` event, HTML5 history, or the user wants
-      // `hashChange` but not `pushState`.
-      if (!this._hasHashChange && this._wantsHashChange && !this._usePushState) {
-        this.iframe = document.createElement('iframe');
-        this.iframe.src = 'javascript:0';
-        this.iframe.style.display = 'none';
-        this.iframe.tabIndex = -1;
-        var body = document.body;
-        // Using `appendChild` will throw on IE < 9 if the document is not ready.
-        var iWindow = body.insertBefore(this.iframe, body.firstChild).contentWindow;
-        iWindow.document.open();
-        iWindow.document.close();
-        iWindow.location.hash = '#' + this.fragment;
-      }
+
 
       // Add a cross-platform `addEventListener` shim for older browsers.
       var addEventListener = window.addEventListener || function(eventName, listener) {
@@ -1862,7 +1848,7 @@
       // 'onhashchange' is supported, determine how we check the URL state.
       if (this._usePushState) {
         addEventListener('popstate', this.checkUrl, false);
-      } else if (this._useHashChange && !this.iframe) {
+      } else if (this._useHashChange) {
         addEventListener('hashchange', this.checkUrl, false);
       } else if (this._wantsHashChange) {
         this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
@@ -1882,15 +1868,10 @@
       // Remove window listeners.
       if (this._usePushState) {
         removeEventListener('popstate', this.checkUrl, false);
-      } else if (this._useHashChange && !this.iframe) {
+      } else if (this._useHashChange) {
         removeEventListener('hashchange', this.checkUrl, false);
       }
 
-      // Clean up the iframe if necessary.
-      if (this.iframe) {
-        document.body.removeChild(this.iframe);
-        this.iframe = null;
-      }
 
       // Some environments will throw when clearing an undefined interval.
       if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
@@ -1904,18 +1885,11 @@
     },
 
     // Checks the current URL to see if it has changed, and if it has,
-    // calls `loadUrl`, normalizing across the hidden iframe.
+    // calls `loadUrl`.
     checkUrl: function(e) {
       var current = this.getFragment();
 
-      // If the user pressed the back button, the iframe's hash will have
-      // changed and we should use that for comparison.
-      if (current === this.fragment && this.iframe) {
-        current = this.getHash(this.iframe.contentWindow);
-      }
-
       if (current === this.fragment) return false;
-      if (this.iframe) this.navigate(current);
       this.loadUrl();
     },
 
@@ -1972,19 +1946,6 @@
       // fragment to store history.
       } else if (this._wantsHashChange) {
         this._updateHash(this.location, fragment, options.replace);
-        if (this.iframe && fragment !== this.getHash(this.iframe.contentWindow)) {
-          var iWindow = this.iframe.contentWindow;
-
-          // Opening and closing the iframe tricks IE7 and earlier to push a
-          // history entry on hash-tag change.  When replace is true, we don't
-          // want this.
-          if (!options.replace) {
-            iWindow.document.open();
-            iWindow.document.close();
-          }
-
-          this._updateHash(iWindow.location, fragment, options.replace);
-        }
 
       // If you've told us that you explicitly don't want fallback hashchange-
       // based history, then `navigate` becomes a page refresh.
