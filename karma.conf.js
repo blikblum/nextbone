@@ -10,12 +10,12 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-        'test/vendor/jquery.js',
-        'test/vendor/json2.js',
-        'test/vendor/underscore.js',
-        'backbone.js',
-        'test/setup/*.js',
-        'test/*.js'
+      'test/vendor/jquery.js',
+      'test/vendor/json2.js',
+      'test/vendor/underscore.js',
+      'backbone.js',
+      'test/setup/*.js',
+      'test/*.js'
     ],
 
     preprocessors: {
@@ -39,7 +39,7 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: false,
+    autoWatch: true,
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
@@ -48,8 +48,8 @@ module.exports = function(config) {
     customLaunchers: {
       ChromeDebugging: {
         base: 'Chrome',
-        flags: [ '--remote-debugging-port=9333' ]
-      } 
+        flags: ['--remote-debugging-port=9333']
+      }
     },
 
     // Continuous Integration mode
