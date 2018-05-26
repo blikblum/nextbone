@@ -73,7 +73,7 @@
   var Router = class extends Backbone.Router {
     count = 0;
 
-    routes = {
+    static routes = {
       'noCallback': 'noCallback',
       'counter': 'counter',
       'search/:query': 'search',
@@ -366,7 +366,7 @@
     assert.expect(1);
     var MyRouter = class extends Backbone.Router {
 
-      routes = {
+      static routes = {
         foo: function() {
           assert.ok(true);
         }
@@ -650,7 +650,7 @@
   QUnit.test('#1746 - Router allows empty route.', function(assert) {
     assert.expect(1);
     var MyRouter = class extends Backbone.Router {
-      routes = {'': 'empty'}
+      static routes = {'': 'empty'}
       empty() {}
       route(route) {
         assert.strictEqual(route, '');
@@ -694,7 +694,7 @@
   QUnit.test('#2255 - Extend routes by making routes a function.', function(assert) {
     assert.expect(1);
     var RouterBase = class extends Backbone.Router {
-      routes() {
+      routes () {
         return {
           home: 'root',
           index: 'index.html'
@@ -703,9 +703,8 @@
     };
 
     var RouterExtended = class extends RouterBase {
-      routes = function() {
-        var _super = RouterExtended.__super__.routes;
-        return _.extend(_super(), {show: 'show', search: 'search'});
+      routes () {        
+        return _.extend(super.routes(), {show: 'show', search: 'search'});
       }
     };
 
@@ -743,7 +742,7 @@
     });
 
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         hash: function() { assert.ok(false); }
       }
     };
@@ -819,7 +818,7 @@
     });
 
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         path: function() { assert.ok(true); }
       }
     };
@@ -833,7 +832,7 @@
   QUnit.test('Do not decode the search params.', function(assert) {
     assert.expect(1);
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         path: function(params) {
           assert.strictEqual(params, 'x=y%3Fz');
         }
@@ -849,7 +848,7 @@
     Backbone.history = _.extend(new Backbone.History, {location: location});
     Backbone.history.start({pushState: true});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         path: function(params) {
           assert.strictEqual(params, 'x=y');
         }
@@ -866,7 +865,7 @@
     Backbone.history = _.extend(new Backbone.History, {location: location});
     Backbone.history.start({pushState: true});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         path: function(params) {
           assert.strictEqual(params, 'x=y');
         }
@@ -882,7 +881,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         myyjä: function() {
           assert.ok(true);
         }
@@ -899,7 +898,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         'myyjä/:query': function(query) {
           assert.strictEqual(query, 'foo %?/@% bar');
         }
@@ -915,7 +914,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         'stuff\nnonsense': function() {
           assert.ok(true);
         }
@@ -931,7 +930,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {'foo/:id/bar': 'foo'}
+      static routes = {'foo/:id/bar': 'foo'}
       foo() {}
       execute(callback, args, name) {
         assert.strictEqual(callback, this.foo);
@@ -1008,7 +1007,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         foo: function() {
           assert.ok(false, 'should not match unless root matches');
         }
@@ -1024,7 +1023,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {
+      static routes = {
         foo: function() {
           assert.ok(false, 'should not match unless root matches');
         }
@@ -1040,7 +1039,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {foo: function() { assert.ok(true); }}
+      static routes = {foo: function() { assert.ok(true); }}
     };
     var myRouter = new MyRouter;
     Backbone.history.start({root: 'x+y.z', pushState: true});
@@ -1052,7 +1051,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {foo: function() { assert.ok(true); }}
+      static routes = {foo: function() { assert.ok(true); }}
     };
     var myRouter = new MyRouter;
     Backbone.history.start({root: '®ooτ', pushState: true});
@@ -1064,7 +1063,7 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     var MyRouter = class extends Backbone.Router {
-      routes = {'': function() { assert.ok(true); }}
+      static routes = {'': function() { assert.ok(true); }}
     };
     var myRouter = new MyRouter;
     Backbone.history.start({root: '®ooτ', pushState: true});

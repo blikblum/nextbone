@@ -42,6 +42,12 @@
   // Create a local reference to a common array method we'll want to use later.
   var slice = Array.prototype.slice;
 
+  // try to get a prop from instance, with fallback to constructor (class property)
+  var getClassProp = function (obj, prop) {
+    var value = obj[prop];
+    return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop]
+  }
+
   // Current version of the library. Keep in sync with `package.json`.
   Backbone.VERSION = '1.3.3';
 
@@ -51,6 +57,8 @@
     root.Backbone = previousBackbone;
     return this;
   };
+
+
 
   // Backbone.Events
   // ---------------
@@ -1493,11 +1501,12 @@
     // order of the routes here to support behavior where the most general
     // routes can be defined at the bottom of the route map.
     _bindRoutes() {
-      if (!this.routes) return;
-      this.routes = _.result(this, 'routes');
-      var route, routes = _.keys(this.routes);
-      while ((route = routes.pop()) != null) {
-        this.route(route, this.routes[route]);
+      var routes = getClassProp(this, 'routes')
+      if (!routes) return;
+      this.routes = routes;
+      var routeKey, routeKeys = _.keys(this.routes);
+      while ((routeKey = routeKeys.pop()) != null) {
+        this.route(routeKey, this.routes[routeKey]);
       }
     }
 
