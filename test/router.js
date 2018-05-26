@@ -694,7 +694,7 @@
   QUnit.test('#2255 - Extend routes by making routes a function.', function(assert) {
     assert.expect(1);
     var RouterBase = class extends Backbone.Router {
-      routes () {
+      routes() {
         return {
           home: 'root',
           index: 'index.html'
@@ -703,7 +703,7 @@
     };
 
     var RouterExtended = class extends RouterBase {
-      routes () {        
+      routes() {
         return _.extend(super.routes(), {show: 'show', search: 'search'});
       }
     };
