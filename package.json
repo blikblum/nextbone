@@ -36,6 +36,7 @@
   },
   "scripts": {
     "test": "karma start && npm run lint",
+    "test:debug": "karma start --browsers Chrome --no-single-run",
     "build": "uglifyjs backbone.js --mangle --source-map backbone-min.map -o backbone-min.js",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint backbone.js test/*.js"
