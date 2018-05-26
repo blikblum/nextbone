@@ -104,6 +104,52 @@
     return events;
   };
 
+  // Bind an event to a `callback` function. Passing `"all"` will bind
+  // the callback to all events fired.
+  Events.on = function(name, callback, context) {
+    this._events = eventsApi(onApi, this._events || {}, name, callback, {
+      context: context,
+      ctx: this,
+      listening: _listening
+    });
+
+    if (_listening) {
+      var listeners = this._listeners || (this._listeners = {});
+      listeners[_listening.id] = _listening;
+      // Allow the listening to use a counter, instead of tracking
+      // callbacks for library interop
+      _listening.interop = false;
+    }
+
+    return this;
+  };
+
+  // Inversion-of-control versions of `on`. Tell *this* object to listen to
+  // an event in another object... keeping track of what it's listening to
+  // for easier unbinding later.
+  Events.listenTo = function(obj, name, callback) {
+    if (!obj) return this;
+    var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
+    var listeningTo = this._listeningTo || (this._listeningTo = {});
+    var listening = _listening = listeningTo[id];
+
+    // This object is not listening to any other events on `obj` yet.
+    // Setup the necessary references to track the listening callbacks.
+    if (!listening) {
+      this._listenId || (this._listenId = _.uniqueId('l'));
+      listening = _listening = listeningTo[id] = new Listening(this, obj);
+    }
+
+    // Bind callbacks on obj.
+    var error = tryCatchOn(obj, name, callback, this);
+    _listening = void 0;
+
+    if (error) throw error;
+    // If the target obj is not Backbone.Events, track events manually.
+    if (listening.interop) listening.on(name, callback);
+
+    return this;
+  };
 
   // The reducing API that adds a callback to the `events` object.
   var onApi = function(events, name, callback, options) {
@@ -127,6 +173,41 @@
     }
   };
 
+  // Remove one or many callbacks. If `context` is null, removes all
+  // callbacks with that function. If `callback` is null, removes all
+  // callbacks for the event. If `name` is null, removes all bound
+  // callbacks for all events.
+  Events.off = function(name, callback, context) {
+    if (!this._events) return this;
+    this._events = eventsApi(offApi, this._events, name, callback, {
+      context: context,
+      listeners: this._listeners
+    });
+
+    return this;
+  };
+
+  // Tell this object to stop listening to either specific events ... or
+  // to every object it's currently listening to.
+  Events.stopListening = function(obj, name, callback) {
+    var listeningTo = this._listeningTo;
+    if (!listeningTo) return this;
+
+    var ids = obj ? [obj._listenId] : _.keys(listeningTo);
+    for (var i = 0; i < ids.length; i++) {
+      var listening = listeningTo[ids[i]];
+
+      // If listening doesn't exist, this object is not currently
+      // listening to obj. Break out early.
+      if (!listening) break;
+
+      listening.obj.off(name, callback, this);
+      if (listening.interop) listening.off(name, callback);
+    }
+    if (_.isEmpty(listeningTo)) this._listeningTo = void 0;
+
+    return this;
+  };
 
   // The reducing API that removes a callback from the `events` object.
   var offApi = function(events, name, callback, options) {
@@ -178,6 +259,24 @@
     return events;
   };
 
+  // Bind an event to only be triggered a single time. After the first time
+  // the callback is invoked, its listener will be removed. If multiple events
+  // are passed in using the space-separated syntax, the handler will fire
+  // once for each event, not once for a combination of all events.
+  Events.once = function(name, callback, context) {
+    // Map the event into a `{event: once}` object.
+    var events = eventsApi(onceMap, {}, name, callback, this.off.bind(this));
+    if (typeof name === 'string' && context == null) callback = void 0;
+    return this.on(events, callback, context);
+  };
+
+  // Inversion-of-control versions of `once`.
+  Events.listenToOnce = function(obj, name, callback) {
+    // Map the event into a `{event: once}` object.
+    var events = eventsApi(onceMap, {}, name, callback, this.stopListening.bind(this, obj));
+    return this.listenTo(obj, events);
+  };
+
   // Reduces the event callbacks into a map of `{event: onceWrapper}`.
   // `offer` unbinds the `onceWrapper` after it has been called.
   var onceMap = function(map, name, callback, offer) {
@@ -189,6 +288,21 @@
       once._callback = callback;
     }
     return map;
+  };
+
+  // Trigger one or many events, firing all bound callbacks. Callbacks are
+  // passed the same arguments as `trigger` is, apart from the event name
+  // (unless you're listening on `"all"`, which will cause your callback to
+  // receive the true name of the event as the first argument).
+  Events.trigger = function(name) {
+    if (!this._events) return this;
+
+    var length = Math.max(0, arguments.length - 1);
+    var args = Array(length);
+    for (var i = 0; i < length; i++) args[i] = arguments[i + 1];
+
+    eventsApi(triggerApi, this._events, name, void 0, args);
+    return this;
   };
 
   // Handles triggering the appropriate event callbacks.
@@ -217,123 +331,11 @@
     }
   };
 
-  var withEvents = (Base) => class extends Base {
-    // Bind an event to a `callback` function. Passing `"all"` will bind
-    // the callback to all events fired.
-    on(name, callback, context) {
-      this._events = eventsApi(onApi, this._events || {}, name, callback, {
-        context: context,
-        ctx: this,
-        listening: _listening
-      });
-
-      if (_listening) {
-        var listeners = this._listeners || (this._listeners = {});
-        listeners[_listening.id] = _listening;
-        // Allow the listening to use a counter, instead of tracking
-        // callbacks for library interop
-        _listening.interop = false;
-      }
-
-      return this;
-    }
-
-    // Inversion-of-control versions of `on`. Tell *this* object to listen to
-    // an event in another object... keeping track of what it's listening to
-    // for easier unbinding later.
-    listenTo(obj, name, callback) {
-      if (!obj) return this;
-      var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
-      var listeningTo = this._listeningTo || (this._listeningTo = {});
-      var listening = _listening = listeningTo[id];
-
-      // This object is not listening to any other events on `obj` yet.
-      // Setup the necessary references to track the listening callbacks.
-      if (!listening) {
-        this._listenId || (this._listenId = _.uniqueId('l'));
-        listening = _listening = listeningTo[id] = new Listening(this, obj);
-      }
-
-      // Bind callbacks on obj.
-      var error = tryCatchOn(obj, name, callback, this);
-      _listening = void 0;
-
-      if (error) throw error;
-      // If the target obj is not Backbone.Events, track events manually.
-      if (listening.interop) listening.on(name, callback);
-
-      return this;
-    }
-
-    // Remove one or many callbacks. If `context` is null, removes all
-    // callbacks with that function. If `callback` is null, removes all
-    // callbacks for the event. If `name` is null, removes all bound
-    // callbacks for all events.
-    off(name, callback, context) {
-      if (!this._events) return this;
-      this._events = eventsApi(offApi, this._events, name, callback, {
-        context: context,
-        listeners: this._listeners
-      });
-
-      return this;
-    }
-
-    // Tell this object to stop listening to either specific events ... or
-    // to every object it's currently listening to.
-    stopListening(obj, name, callback) {
-      var listeningTo = this._listeningTo;
-      if (!listeningTo) return this;
-
-      var ids = obj ? [obj._listenId] : _.keys(listeningTo);
-      for (var i = 0; i < ids.length; i++) {
-        var listening = listeningTo[ids[i]];
-
-        // If listening doesn't exist, this object is not currently
-        // listening to obj. Break out early.
-        if (!listening) break;
-
-        listening.obj.off(name, callback, this);
-        if (listening.interop) listening.off(name, callback);
-      }
-      if (_.isEmpty(listeningTo)) this._listeningTo = void 0;
-
-      return this;
-    }
-
-    // Bind an event to only be triggered a single time. After the first time
-    // the callback is invoked, its listener will be removed. If multiple events
-    // are passed in using the space-separated syntax, the handler will fire
-    // once for each event, not once for a combination of all events.
-    once(name, callback, context) {
-      // Map the event into a `{event: once}` object.
-      var events = eventsApi(onceMap, {}, name, callback, this.off.bind(this));
-      if (typeof name === 'string' && context == null) callback = void 0;
-      return this.on(events, callback, context);
-    }
-
-    // Inversion-of-control versions of `once`.
-    listenToOnce(obj, name, callback) {
-      // Map the event into a `{event: once}` object.
-      var events = eventsApi(onceMap, {}, name, callback, this.stopListening.bind(this, obj));
-      return this.listenTo(obj, events);
-    }
-
-    // Trigger one or many events, firing all bound callbacks. Callbacks are
-    // passed the same arguments as `trigger` is, apart from the event name
-    // (unless you're listening on `"all"`, which will cause your callback to
-    // receive the true name of the event as the first argument).
-
-    trigger(name) {
-      if (!this._events) return this;
-
-      var length = Math.max(0, arguments.length - 1);
-      var args = Array(length);
-      for (var i = 0; i < length; i++) args[i] = arguments[i + 1];
-
-      eventsApi(triggerApi, this._events, name, void 0, args);
-      return this;
-    }
+  // ES class Events mixin
+  var withEvents = (Base) => {
+    var EventsClass = class extends Base {};
+    _.extend(EventsClass.prototype, Events);
+    return EventsClass;
   };
 
   // A listening class that tracks and cleans up memory bindings
@@ -374,6 +376,9 @@
     if (!this.interop) delete this.obj._listeners[this.id];
   };
 
+  // Allow the `Backbone` object to serve as a global event bus, for folks who
+  // want global "pubsub" in a convenient place.
+  _.extend(Backbone, Events);
 
   // Backbone.Model
   // --------------
