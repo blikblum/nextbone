@@ -391,7 +391,7 @@
   // Create a new model with the specified attributes. A client id (`cid`)
   // is automatically generated and assigned for you.
 
-  class ModelBase {
+  class Model {
 
     // A hash of attributes whose current and previous value differ.
     changed = null;
@@ -748,8 +748,9 @@
     }
   }
 
+  _.extend(Model.prototype, Events);
 
-  var Model = Backbone.Model = withEvents(ModelBase);
+  Backbone.Model = Model;
 
 
   // Backbone.Collection
@@ -766,7 +767,7 @@
   // If a `comparator` is specified, the Collection will maintain
   // its models in sort order, as they're added and removed.
 
-  class CollectionBase {
+  class Collection {
     // The default model for a collection is just a **Backbone.Model**.
     // This should be overridden in most cases.
     static model = Model;
@@ -1129,7 +1130,7 @@
       options = options ? _.clone(options) : {};
       options.collection = this;
       var modelClass = this.model || this.constructor.model;
-      var model = modelClass.prototype instanceof ModelBase ? new modelClass(attrs, options) : modelClass(attrs, options);
+      var model = modelClass.prototype instanceof Model || modelClass === Model ? new modelClass(attrs, options) : modelClass(attrs, options);
       if (!model.validationError) return model;
       this.trigger('invalid', this, model.validationError, options);
       return false;
@@ -1207,7 +1208,9 @@
     }
   }
 
-  var Collection = Backbone.Collection = withEvents(CollectionBase);
+  _.extend(Collection.prototype, Events);
+
+  Backbone.Collection = Collection;
 
   // Default options for `Collection#set`.
   var setOptions = {add: true, remove: true, merge: true};
@@ -1451,7 +1454,7 @@
   // Routers map faux-URLs to actions, and fire events when routes are
   // matched. Creating a new one sets its `routes` hash, if not set statically.
 
-  class RouterBase {
+  class Router {
     constructor(options) {
       options || (options = {});
       this.preinitialize.apply(this, arguments);
@@ -1543,7 +1546,9 @@
     }
   }
 
-  var Router = Backbone.Router = withEvents(RouterBase);
+  _.extend(Router.prototype, Events);
+
+  Backbone.Router = Router;
 
   // Cached regular expressions for matching named param parts and splatted
   // parts of route strings.
@@ -1561,7 +1566,7 @@
   // and URL fragments. If the browser supports neither (old IE, natch),
   // falls back to polling.
 
-  class HistoryBase {
+  class History {
 
     // The default interval to poll for hash changes, if necessary, is
     // twenty times a second.
@@ -1797,8 +1802,9 @@
     }
   }
 
+  _.extend(History.prototype, Events);
 
-  var History = Backbone.History = withEvents(HistoryBase);
+  Backbone.History = History;
 
   // Cached regex for stripping a leading hash/slash and trailing space.
   var routeStripper = /^[#\/]|\s+$/g;
