@@ -28,7 +28,7 @@
     "keyword-spacing": [2, { "after": true }],
     "max-depth": [1, 4],
     "max-params": [1, 5],
-    "new-cap": [2, {"newIsCapExceptions": ["model"]}],
+    "new-cap": [2, {"newIsCapExceptions": ["model", "modelClass"]}],
     "no-alert": 2,
     "no-caller": 2,
     "no-catch-shadow": 2,
