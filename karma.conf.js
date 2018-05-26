@@ -6,6 +6,7 @@ module.exports = function(config) {
   config.set({
     basePath: '',
     frameworks: ['qunit'],
+    plugins: ['karma-qunit', 'karma-babel-preprocessor', 'karma-chrome-launcher'],
 
     // list of files / patterns to load in the browser
     files: [

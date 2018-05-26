@@ -24,18 +24,18 @@
     "coffee-script": "1.7.1",
     "docco": "0.7.0",
     "eslint": "^4.19.1",
-    "karma": "^0.13.13",
+    "karma": "^2.0.2",
     "karma-babel-preprocessor": "^7.0.0",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-qunit": "^1.0.0",
+    "karma-qunit": "^2.1.0",
     "karma-rollup-preprocessor": "^6.0.0",
-    "qunitjs": "^2.0.0",
+    "qunit": "^2.6.1",
     "rollup": "^0.59.3",
     "rollup-plugin-babel": "^3.0.4",
     "uglify-js": "^2.4.17"
   },
   "scripts": {
-    "test": "karma start && coffee test/model.coffee && npm run lint",
+    "test": "karma start && npm run lint",
     "build": "uglifyjs backbone.js --mangle --source-map backbone-min.map -o backbone-min.js",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint backbone.js test/*.js"
