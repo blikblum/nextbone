@@ -1,9 +1,8 @@
 (function(QUnit) {
-
-  var ProxyModel = Backbone.Model.extend();
-  var Klass = Backbone.Collection.extend({
-    url: function() { return '/collection'; }
-  });
+  var ProxyModel = class extends Backbone.Model {};
+  var Klass = class extends Backbone.Collection {
+    url() { return '/collection'; }
+  };
   var doc, collection;
 
   QUnit.module('Backbone.Model', {
@@ -23,12 +22,12 @@
 
   QUnit.test('initialize', function(assert) {
     assert.expect(3);
-    var Model = Backbone.Model.extend({
-      initialize: function() {
+    var Model = class extends Backbone.Model {
+      initialize() {
         this.one = 1;
         assert.equal(this.collection, collection);
       }
-    });
+    };
     var model = new Model({}, {collection: collection});
     assert.equal(model.one, 1);
     assert.equal(model.collection, collection);
@@ -42,23 +41,23 @@
 
   QUnit.test('initialize with attributes and options', function(assert) {
     assert.expect(1);
-    var Model = Backbone.Model.extend({
-      initialize: function(attributes, options) {
+    var Model = class extends Backbone.Model {
+      initialize(attributes, options) {
         this.one = options.one;
       }
-    });
+    };
     var model = new Model({}, {one: 1});
     assert.equal(model.one, 1);
   });
 
   QUnit.test('initialize with parsed attributes', function(assert) {
     assert.expect(1);
-    var Model = Backbone.Model.extend({
-      parse: function(attrs) {
+    var Model = class extends Backbone.Model {
+      parse(attrs) {
         attrs.value += 1;
         return attrs;
       }
-    });
+    };
     var model = new Model({value: 1}, {parse: true});
     assert.equal(model.get('value'), 2);
   });
@@ -66,12 +65,12 @@
 
   QUnit.test('preinitialize', function(assert) {
     assert.expect(2);
-    var Model = Backbone.Model.extend({
+    var Model = class extends Backbone.Model {
 
-      preinitialize: function() {
+      preinitialize() {
         this.one = 1;
       }
-    });
+    };
     var model = new Model({}, {collection: collection});
     assert.equal(model.one, 1);
     assert.equal(model.collection, collection);
@@ -79,14 +78,14 @@
 
   QUnit.test('preinitialize occurs before the model is set up', function(assert) {
     assert.expect(6);
-    var Model = Backbone.Model.extend({
+    var Model = class extends Backbone.Model {
 
-      preinitialize: function() {
+      preinitialize() {
         assert.equal(this.collection, undefined);
         assert.equal(this.cid, undefined);
         assert.equal(this.id, undefined);
       }
-    });
+    };
     var model = new Model({id: 'foo'}, {collection: collection});
     assert.equal(model.collection, collection);
     assert.equal(model.id, 'foo');
@@ -95,12 +94,12 @@
 
   QUnit.test('parse can return null', function(assert) {
     assert.expect(1);
-    var Model = Backbone.Model.extend({
-      parse: function(attrs) {
+    var Model = class extends Backbone.Model {
+      parse(attrs) {
         attrs.value += 1;
         return null;
       }
-    });
+    };
     var model = new Model({value: 1}, {parse: true});
     assert.equal(JSON.stringify(model.toJSON()), '{}');
   });
@@ -118,9 +117,9 @@
 
   QUnit.test('url when using urlRoot, and uri encoding', function(assert) {
     assert.expect(2);
-    var Model = Backbone.Model.extend({
-      urlRoot: '/collection'
-    });
+    var Model = class extends Backbone.Model {
+      urlRoot = '/collection'
+    };
     var model = new Model();
     assert.equal(model.url(), '/collection');
     model.set({id: '+1+'});
@@ -129,11 +128,11 @@
 
   QUnit.test('url when using urlRoot as a function to determine urlRoot at runtime', function(assert) {
     assert.expect(2);
-    var Model = Backbone.Model.extend({
-      urlRoot: function() {
+    var Model = class extends Backbone.Model {
+      urlRoot() {
         return '/nested/' + this.get('parentId') + '/collection';
       }
-    });
+    };
 
     var model = new Model({parentId: 1});
     assert.equal(model.url(), '/nested/1/collection');
@@ -217,14 +216,14 @@
     assert.strictEqual(model.has('name'), false);
 
     model.set({
-      '0': 0,
-      '1': 1,
-      'true': true,
-      'false': false,
-      'empty': '',
-      'name': 'name',
-      'null': null,
-      'undefined': undefined
+      0: 0,
+      1: 1,
+      true: true,
+      false: false,
+      empty: '',
+      name: 'name',
+      null: null,
+      undefined: undefined
     });
 
     assert.strictEqual(model.has('0'), true);
@@ -320,14 +319,14 @@
 
   QUnit.test('#2030 - set with failed validate, followed by another set triggers change', function(assert) {
     var attr = 0, main = 0, error = 0;
-    var Model = Backbone.Model.extend({
-      validate: function(attrs) {
+    var Model = class extends Backbone.Model {
+      validate(attrs) {
         if (attrs.x > 1) {
           error++;
           return 'this is an error';
         }
       }
-    });
+    };
     var model = new Model({x: 0});
     model.on('change:x', function() { attr++; });
     model.on('change', function() { main++; });
@@ -402,7 +401,7 @@
 
   QUnit.test('using a non-default id attribute.', function(assert) {
     assert.expect(5);
-    var MongoModel = Backbone.Model.extend({idAttribute: '_id'});
+    var MongoModel = class extends Backbone.Model {idAttribute = '_id'};
     var model = new MongoModel({id: 'eye-dee', _id: 25, title: 'Model'});
     assert.equal(model.get('id'), 'eye-dee');
     assert.equal(model.id, 25);
@@ -414,9 +413,9 @@
 
   QUnit.test('setting an alternative cid prefix', function(assert) {
     assert.expect(4);
-    var Model = Backbone.Model.extend({
-      cidPrefix: 'm'
-    });
+    var Model = class extends Backbone.Model {
+      static cidPrefix = 'm'
+    };
     var model = new Model();
 
     assert.equal(model.cid.charAt(0), 'm');
@@ -477,32 +476,34 @@
 
   QUnit.test('defaults', function(assert) {
     assert.expect(9);
-    var Defaulted = Backbone.Model.extend({
-      defaults: {
-        one: 1,
-        two: 2
+    var Defaulted = class extends Backbone.Model {
+      defaults() {
+        return {
+          one: 1,
+          two: 2
+        };
       }
-    });
+    };
     var model = new Defaulted({two: undefined});
     assert.equal(model.get('one'), 1);
     assert.equal(model.get('two'), 2);
     model = new Defaulted({two: 3});
     assert.equal(model.get('one'), 1);
     assert.equal(model.get('two'), 3);
-    Defaulted = Backbone.Model.extend({
-      defaults: function() {
+    Defaulted = class extends Backbone.Model {
+      defaults() {
         return {
           one: 3,
           two: 4
         };
       }
-    });
+    };
     model = new Defaulted({two: undefined});
     assert.equal(model.get('one'), 3);
     assert.equal(model.get('two'), 4);
-    Defaulted = Backbone.Model.extend({
-      defaults: {hasOwnProperty: true}
-    });
+    Defaulted = class extends Backbone.Model {
+      defaults() { return {hasOwnProperty: true}; }
+    };
     model = new Defaulted();
     assert.equal(model.get('hasOwnProperty'), true);
     model = new Defaulted({hasOwnProperty: undefined});
@@ -709,9 +710,9 @@
   });
 
   QUnit.test('save with wait and supplied id', function(assert) {
-    var Model = Backbone.Model.extend({
-      urlRoot: '/collection'
-    });
+    var Model = class extends Backbone.Model {
+      urlRoot = '/collection'
+    };
     var model = new Model();
     model.save({id: 42}, {wait: true});
     assert.equal(this.ajaxSettings.url, '/collection/42');
@@ -719,13 +720,13 @@
 
   QUnit.test('save will pass extra options to success callback', function(assert) {
     assert.expect(1);
-    var SpecialSyncModel = Backbone.Model.extend({
-      sync: function(method, m, options) {
+    var SpecialSyncModel = class extends Backbone.Model {
+      sync(method, m, options) {
         _.extend(options, {specialSync: true});
         return Backbone.Model.prototype.sync.call(this, method, m, options);
-      },
-      urlRoot: '/test'
-    });
+      }
+      urlRoot = '/test'
+    };
 
     var model = new SpecialSyncModel();
 
@@ -746,13 +747,13 @@
 
   QUnit.test('fetch will pass extra options to success callback', function(assert) {
     assert.expect(1);
-    var SpecialSyncModel = Backbone.Model.extend({
-      sync: function(method, m, options) {
+    var SpecialSyncModel = class extends Backbone.Model {
+      sync(method, m, options) {
         _.extend(options, {specialSync: true});
         return Backbone.Model.prototype.sync.call(this, method, m, options);
-      },
-      urlRoot: '/test'
-    });
+      }
+      urlRoot = '/test'
+    };
 
     var model = new SpecialSyncModel();
 
@@ -776,13 +777,13 @@
 
   QUnit.test('destroy will pass extra options to success callback', function(assert) {
     assert.expect(1);
-    var SpecialSyncModel = Backbone.Model.extend({
-      sync: function(method, m, options) {
+    var SpecialSyncModel = class extends Backbone.Model {
+      sync(method, m, options) {
         _.extend(options, {specialSync: true});
         return Backbone.Model.prototype.sync.call(this, method, m, options);
-      },
-      urlRoot: '/test'
-    });
+      }
+      urlRoot = '/test'
+    };
 
     var model = new SpecialSyncModel({id: 'id'});
 
@@ -870,27 +871,29 @@
 
   QUnit.test('defaults always extend attrs (#459)', function(assert) {
     assert.expect(2);
-    var Defaulted = Backbone.Model.extend({
-      defaults: {one: 1},
-      initialize: function(attrs, opts) {
+    var Defaulted = class extends Backbone.Model {
+      defaults() {return {one: 1}; }
+      initialize(attrs, opts) {
         assert.equal(this.attributes.one, 1);
       }
-    });
+    };
     var providedattrs = new Defaulted({});
     var emptyattrs = new Defaulted();
   });
 
   QUnit.test('Inherit class properties', function(assert) {
     assert.expect(6);
-    var Parent = Backbone.Model.extend({
-      instancePropSame: function() {},
-      instancePropDiff: function() {}
-    }, {
-      classProp: function() {}
-    });
-    var Child = Parent.extend({
-      instancePropDiff: function() {}
-    });
+    var Parent = class extends Backbone.Model {
+      static classProp = function() {}
+
+      instancePropSame() {}
+      instancePropDiff() {}
+    };
+
+
+    var Child = class extends Parent {
+      instancePropDiff() {}
+    };
 
     var adult = new Parent;
     var kid   = new Child;
@@ -908,17 +911,17 @@
   QUnit.test("Nested change events don't clobber previous attributes", function(assert) {
     assert.expect(4);
     new Backbone.Model()
-    .on('change:state', function(m, newState) {
-      assert.equal(m.previous('state'), undefined);
-      assert.equal(newState, 'hello');
-      // Fire a nested change event.
-      m.set({other: 'whatever'});
-    })
-    .on('change:state', function(m, newState) {
-      assert.equal(m.previous('state'), undefined);
-      assert.equal(newState, 'hello');
-    })
-    .set({state: 'hello'});
+      .on('change:state', function(m, newState) {
+        assert.equal(m.previous('state'), undefined);
+        assert.equal(newState, 'hello');
+        // Fire a nested change event.
+        m.set({other: 'whatever'});
+      })
+      .on('change:state', function(m, newState) {
+        assert.equal(m.previous('state'), undefined);
+        assert.equal(newState, 'hello');
+      })
+      .set({state: 'hello'});
   });
 
   QUnit.test('hasChanged/set should use same comparison', function(assert) {
@@ -927,10 +930,10 @@
     model.on('change', function() {
       assert.ok(this.hasChanged('a'));
     })
-    .on('change:a', function() {
-      changed++;
-    })
-    .set({a: undefined});
+      .on('change:a', function() {
+        changed++;
+      })
+      .set({a: undefined});
     assert.equal(changed, 1);
   });
 
@@ -1097,9 +1100,9 @@
   });
 
   QUnit.test('save turns on parse flag', function(assert) {
-    var Model = Backbone.Model.extend({
-      sync: function(method, m, options) { assert.ok(options.parse); }
-    });
+    var Model = class extends Backbone.Model {
+      sync(method, m, options) { assert.ok(options.parse); }
+    };
     new Model().save();
   });
 
@@ -1288,12 +1291,12 @@
     var done = assert.async();
     assert.expect(2);
     new Backbone.Model()
-    .on('sync', function() { assert.ok(false); })
-    .on('destroy', function(){ assert.ok(true); })
-    .destroy({success: function(){
-      assert.ok(true);
-      done();
-    }});
+      .on('sync', function() { assert.ok(false); })
+      .on('destroy', function(){ assert.ok(true); })
+      .destroy({success: function(){
+        assert.ok(true);
+        done();
+      }});
   });
 
   QUnit.test('#1433 - Save: An invalid model cannot be persisted.', function(assert) {
@@ -1306,23 +1309,23 @@
 
   QUnit.test("#1377 - Save without attrs triggers 'error'.", function(assert) {
     assert.expect(1);
-    var Model = Backbone.Model.extend({
-      url: '/test/',
-      sync: function(method, m, options){ options.success(); },
-      validate: function(){ return 'invalid'; }
-    });
+    var Model = class extends Backbone.Model {
+      url = '/test/'
+      sync(method, m, options){ options.success(); }
+      validate(){ return 'invalid'; }
+    };
     var model = new Model({id: 1});
     model.on('invalid', function(){ assert.ok(true); });
     model.save();
   });
 
   QUnit.test('#1545 - `undefined` can be passed to a model constructor without coersion', function(assert) {
-    var Model = Backbone.Model.extend({
-      defaults: {one: 1},
-      initialize: function(attrs, opts) {
+    var Model = class extends Backbone.Model {
+      defaults() {return {one: 1}; }
+      initialize(attrs, opts) {
         assert.equal(attrs, undefined);
       }
-    });
+    };
     var emptyattrs = new Model();
     var undefinedattrs = new Model(undefined);
   });
@@ -1330,17 +1333,17 @@
   QUnit.test('#1478 - Model `save` does not trigger change on unchanged attributes', function(assert) {
     var done = assert.async();
     assert.expect(0);
-    var Model = Backbone.Model.extend({
-      sync: function(method, m, options) {
+    var Model = class extends Backbone.Model {
+      sync(method, m, options) {
         setTimeout(function(){
           options.success();
           done();
         }, 0);
       }
-    });
+    };
     new Model({x: true})
-    .on('change:x', function(){ assert.ok(false); })
-    .save(null, {wait: true});
+      .on('change:x', function(){ assert.ok(false); })
+      .save(null, {wait: true});
   });
 
   QUnit.test('#1664 - Changing from one value, silently to another, back to original triggers a change.', function(assert) {
@@ -1368,9 +1371,9 @@
   });
 
   QUnit.test('#1791 - `attributes` is available for `parse`', function(assert) {
-    var Model = Backbone.Model.extend({
-      parse: function() { this.has('a'); } // shouldn't throw an error
-    });
+    var Model = class extends Backbone.Model {
+      parse() { this.has('a'); } // shouldn't throw an error
+    };
     var model = new Model(null, {parse: true});
     assert.expect(0);
   });
@@ -1450,24 +1453,24 @@
   });
 
   QUnit.test('#1961 - Creating a model with {validate:true} will call validate and use the error callback', function(assert) {
-    var Model = Backbone.Model.extend({
-      validate: function(attrs) {
+    var Model = class extends Backbone.Model {
+      validate(attrs) {
         if (attrs.id === 1) return "This shouldn't happen";
       }
-    });
+    };
     var model = new Model({id: 1}, {validate: true});
     assert.equal(model.validationError, "This shouldn't happen");
   });
 
   QUnit.test('toJSON receives attrs during save(..., {wait: true})', function(assert) {
     assert.expect(1);
-    var Model = Backbone.Model.extend({
-      url: '/test',
-      toJSON: function() {
+    var Model = class extends Backbone.Model {
+      url = '/test'
+      toJSON() {
         assert.strictEqual(this.attributes.x, 1);
         return _.clone(this.attributes);
       }
-    });
+    };
     var model = new Model;
     model.save({x: 1}, {wait: true});
   });

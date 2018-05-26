@@ -28,7 +28,7 @@
         'fragment',
         'pathname',
         'protocol'
-     ));
+      ));
 
       // In IE, anchor.pathname does not contain a leading slash though
       // window.location.pathname does.
@@ -70,11 +70,10 @@
   };
   ExternalObject.routingFunction = _.bind(ExternalObject.routingFunction, ExternalObject);
 
-  var Router = Backbone.Router.extend({
+  var Router = class extends Backbone.Router {
+    count = 0;
 
-    count: 0,
-
-    routes: {
+    routes = {
       'noCallback': 'noCallback',
       'counter': 'counter',
       'search/:query': 'search',
@@ -94,92 +93,92 @@
       'query/:entity': 'query',
       'function/:value': ExternalObject.routingFunction,
       '*anything': 'anything'
-    },
+    }
 
-    preinitialize: function(options) {
+    preinitialize(options) {
       this.testpreinit = 'foo';
-    },
+    }
 
-    initialize: function(options) {
+    initialize(options) {
       this.testing = options.testing;
       this.route('implicit', 'implicit');
-    },
+    }
 
-    counter: function() {
+    counter() {
       this.count++;
-    },
+    }
 
-    implicit: function() {
+    implicit() {
       this.count++;
-    },
+    }
 
-    search: function(query, page) {
+    search(query, page) {
       this.query = query;
       this.page = page;
-    },
+    }
 
-    charUTF: function() {
+    charUTF() {
       this.charType = 'UTF';
-    },
+    }
 
-    charEscaped: function() {
+    charEscaped() {
       this.charType = 'escaped';
-    },
+    }
 
-    contacts: function() {
+    contacts() {
       this.contact = 'index';
-    },
+    }
 
-    newContact: function() {
+    newContact() {
       this.contact = 'new';
-    },
+    }
 
-    loadContact: function() {
+    loadContact() {
       this.contact = 'load';
-    },
+    }
 
-    optionalItem: function(arg) {
+    optionalItem(arg) {
       this.arg = arg !== void 0 ? arg : null;
-    },
+    }
 
-    splat: function(args) {
+    splat(args) {
       this.args = args;
-    },
+    }
 
-    github: function(repo, from, to) {
+    github(repo, from, to) {
       this.repo = repo;
       this.from = from;
       this.to = to;
-    },
+    }
 
-    complex: function(first, part, rest) {
+    complex(first, part, rest) {
       this.first = first;
       this.part = part;
       this.rest = rest;
-    },
-
-    query: function(entity, args) {
-      this.entity    = entity;
-      this.queryArgs = args;
-    },
-
-    anything: function(whatever) {
-      this.anything = whatever;
-    },
-
-    namedOptional: function(z) {
-      this.z = z;
-    },
-
-    decode: function(named, path) {
-      this.named = named;
-      this.path = path;
-    },
-
-    routeEvent: function(arg) {
     }
 
-  });
+    query(entity, args) {
+      this.entity    = entity;
+      this.queryArgs = args;
+    }
+
+    anything(whatever) {
+      this.anything = whatever;
+    }
+
+    namedOptional(z) {
+      this.z = z;
+    }
+
+    decode(named, path) {
+      this.named = named;
+      this.path = path;
+    }
+
+    routeEvent(arg) {
+    }
+
+  };
 
   QUnit.test('initialize', function(assert) {
     assert.expect(1);
@@ -365,20 +364,20 @@
 
   QUnit.test('No events are triggered if #execute returns false.', function(assert) {
     assert.expect(1);
-    var MyRouter = Backbone.Router.extend({
+    var MyRouter = class extends Backbone.Router {
 
-      routes: {
+      routes = {
         foo: function() {
           assert.ok(true);
         }
-      },
+      }
 
-      execute: function(callback, args) {
+      execute(callback, args) {
         callback.apply(this, args);
         return false;
       }
 
-    });
+    };
 
     var myRouter = new MyRouter;
 
@@ -650,13 +649,13 @@
 
   QUnit.test('#1746 - Router allows empty route.', function(assert) {
     assert.expect(1);
-    var MyRouter = Backbone.Router.extend({
-      routes: {'': 'empty'},
-      empty: function() {},
-      route: function(route) {
+    var MyRouter = class extends Backbone.Router {
+      routes = {'': 'empty'}
+      empty() {}
+      route(route) {
         assert.strictEqual(route, '');
       }
-    });
+    };
     new MyRouter;
   });
 
@@ -694,21 +693,21 @@
 
   QUnit.test('#2255 - Extend routes by making routes a function.', function(assert) {
     assert.expect(1);
-    var RouterBase = Backbone.Router.extend({
-      routes: function() {
+    var RouterBase = class extends Backbone.Router {
+      routes() {
         return {
           home: 'root',
           index: 'index.html'
         };
       }
-    });
+    };
 
-    var RouterExtended = RouterBase.extend({
-      routes: function() {
+    var RouterExtended = class extends RouterBase {
+      routes = function() {
         var _super = RouterExtended.__super__.routes;
         return _.extend(_super(), {show: 'show', search: 'search'});
       }
-    });
+    };
 
     var myRouter = new RouterExtended();
     assert.deepEqual({home: 'root', index: 'index.html', show: 'show', search: 'search'}, myRouter.routes);
@@ -743,11 +742,11 @@
       }
     });
 
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         hash: function() { assert.ok(false); }
       }
-    });
+    };
     var myRouter = new MyRouter;
 
     location.replace('http://example.com/');
@@ -819,11 +818,11 @@
       }
     });
 
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         path: function() { assert.ok(true); }
       }
-    });
+    };
     var myRouter = new MyRouter;
 
     location.replace('http://example.com/');
@@ -833,13 +832,13 @@
 
   QUnit.test('Do not decode the search params.', function(assert) {
     assert.expect(1);
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         path: function(params) {
           assert.strictEqual(params, 'x=y%3Fz');
         }
       }
-    });
+    };
     var myRouter = new MyRouter;
     Backbone.history.navigate('path?x=y%3Fz', true);
   });
@@ -849,13 +848,13 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     Backbone.history.start({pushState: true});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         path: function(params) {
           assert.strictEqual(params, 'x=y');
         }
       }
-    });
+    };
     var myRouter = new MyRouter;
     location.replace('http://example.com/path?x=y#hash');
     Backbone.history.checkUrl();
@@ -866,13 +865,13 @@
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
     Backbone.history.start({pushState: true});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         path: function(params) {
           assert.strictEqual(params, 'x=y');
         }
       }
-    });
+    };
     var myRouter = new MyRouter;
     Backbone.history.navigate('path?x=y#hash', true);
   });
@@ -882,13 +881,13 @@
     location.replace('http://example.com/myyjä');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         myyjä: function() {
           assert.ok(true);
         }
       }
-    });
+    };
     new MyRouter;
     Backbone.history.start({pushState: true});
   });
@@ -899,13 +898,13 @@
     location.pathname = '/myyj%C3%A4/foo%20%25%3F%2f%40%25%20bar';
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         'myyjä/:query': function(query) {
           assert.strictEqual(query, 'foo %?/@% bar');
         }
       }
-    });
+    };
     new MyRouter;
     Backbone.history.start({pushState: true});
   });
@@ -915,13 +914,13 @@
     location.replace('http://example.com/stuff%0Anonsense?param=foo%0Abar');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         'stuff\nnonsense': function() {
           assert.ok(true);
         }
       }
-    });
+    };
     new MyRouter;
     Backbone.history.start({pushState: true});
   });
@@ -931,15 +930,15 @@
     location.replace('http://example.com#foo/123/bar?x=y');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {'foo/:id/bar': 'foo'},
-      foo: function() {},
-      execute: function(callback, args, name) {
+    var MyRouter = class extends Backbone.Router {
+      routes = {'foo/:id/bar': 'foo'}
+      foo() {}
+      execute(callback, args, name) {
         assert.strictEqual(callback, this.foo);
         assert.deepEqual(args, ['123', 'x=y']);
         assert.strictEqual(name, 'foo');
       }
-    });
+    };
     var myRouter = new MyRouter;
     Backbone.history.start();
   });
@@ -1008,13 +1007,13 @@
     location.replace('http://example.com/foo');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         foo: function() {
           assert.ok(false, 'should not match unless root matches');
         }
       }
-    });
+    };
     var myRouter = new MyRouter;
     Backbone.history.start({root: 'root', pushState: true});
   });
@@ -1024,13 +1023,13 @@
     location.replace('http://example.com/xxxx/foo');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {
+    var MyRouter = class extends Backbone.Router {
+      routes = {
         foo: function() {
           assert.ok(false, 'should not match unless root matches');
         }
       }
-    });
+    };
     var myRouter = new MyRouter;
     Backbone.history.start({root: 'root', pushState: true});
   });
@@ -1040,9 +1039,9 @@
     location.replace('http://example.com/x+y.z/foo');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {foo: function() { assert.ok(true); }}
-    });
+    var MyRouter = class extends Backbone.Router {
+      routes = {foo: function() { assert.ok(true); }}
+    };
     var myRouter = new MyRouter;
     Backbone.history.start({root: 'x+y.z', pushState: true});
   });
@@ -1052,9 +1051,9 @@
     location.replace('http://example.com/®ooτ/foo');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {foo: function() { assert.ok(true); }}
-    });
+    var MyRouter = class extends Backbone.Router {
+      routes = {foo: function() { assert.ok(true); }}
+    };
     var myRouter = new MyRouter;
     Backbone.history.start({root: '®ooτ', pushState: true});
   });
@@ -1064,9 +1063,9 @@
     location.replace('http://example.com/®ooτ');
     Backbone.history.stop();
     Backbone.history = _.extend(new Backbone.History, {location: location});
-    var MyRouter = Backbone.Router.extend({
-      routes: {'': function() { assert.ok(true); }}
-    });
+    var MyRouter = class extends Backbone.Router {
+      routes = {'': function() { assert.ok(true); }}
+    };
     var myRouter = new MyRouter;
     Backbone.history.start({root: '®ooτ', pushState: true});
   });

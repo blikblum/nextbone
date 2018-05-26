@@ -355,7 +355,7 @@
       if (event === 'a') a = true;
       if (event === 'b') b = true;
     })
-    .trigger('a b');
+      .trigger('a b');
     assert.ok(a);
     assert.ok(b);
     assert.equal(obj.counter, 2);
@@ -477,7 +477,7 @@
     obj.on('x', function() {
       obj.on('y', incr).on('all', incr);
     })
-    .trigger('x y');
+      .trigger('x y');
     assert.strictEqual(counter, 2);
   });
 

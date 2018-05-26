@@ -1,8 +1,8 @@
 (function(QUnit) {
 
-  var Library = Backbone.Collection.extend({
-    url: function() { return '/library'; }
-  });
+  var Library = class extends Backbone.Collection {
+    url() { return '/library'; }
+  };
   var library;
 
   var attrs = {
