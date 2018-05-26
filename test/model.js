@@ -401,7 +401,7 @@
 
   QUnit.test('using a non-default id attribute.', function(assert) {
     assert.expect(5);
-    var MongoModel = class extends Backbone.Model {idAttribute = '_id'};
+    var MongoModel = class extends Backbone.Model {static idAttribute = '_id'};
     var model = new MongoModel({id: 'eye-dee', _id: 25, title: 'Model'});
     assert.equal(model.get('id'), 'eye-dee');
     assert.equal(model.id, 25);
@@ -423,9 +423,9 @@
     model = new Backbone.Model();
     assert.equal(model.cid.charAt(0), 'c');
 
-    var Collection = Backbone.Collection.extend({
-      model: Model
-    });
+    var Collection = class extends Backbone.Collection {
+      static model = Model
+    };
     var col = new Collection([{id: 'c5'}, {id: 'c6'}, {id: 'c7'}]);
 
     assert.equal(col.get('c6').cid.charAt(0), 'm');

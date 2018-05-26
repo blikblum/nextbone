@@ -43,10 +43,10 @@
   var slice = Array.prototype.slice;
 
   // try to get a prop from instance, with fallback to constructor (class property)
-  var getClassProp = function (obj, prop) {
+  var getClassProp = function(obj, prop) {
     var value = obj[prop];
-    return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop]
-  }
+    return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
+  };
 
   // Current version of the library. Keep in sync with `package.json`.
   Backbone.VERSION = '1.3.3';
@@ -396,17 +396,17 @@
 
     // The default name for the JSON `id` attribute is `"id"`. MongoDB and
     // CouchDB users may want to set this to `"_id"`.
-    idAttribute = 'id';
+    static idAttribute = 'id';
 
     // The prefix is used to create the client id which is used to identify models locally.
     // You may want to override this if you're experiencing name clashes with model ids.
-    cidPrefix = 'c';
+    static cidPrefix = 'c';
 
     constructor(attributes, options) {
       var attrs = attributes || {};
       options || (options = {});
       this.preinitialize.apply(this, arguments);
-      this.cid = _.uniqueId(this.cidPrefix);
+      this.cid = _.uniqueId(this.constructor.cidPrefix);
       this.attributes = {};
       if (options.collection) this.collection = options.collection;
       if (options.parse) attrs = this.parse(attrs, options) || {};
@@ -517,7 +517,8 @@
       }
 
       // Update the `id`.
-      if (this.idAttribute in attrs) this.id = this.get(this.idAttribute);
+      var idAttribute = this.constructor.idAttribute;
+      if (idAttribute in attrs) this.id = this.get(idAttribute);
 
       // Trigger all relevant attribute changes.
       if (!silent) {
@@ -705,7 +706,7 @@
         _.result(this.collection, 'url') ||
         urlError();
       if (this.isNew()) return base;
-      var id = this.get(this.idAttribute);
+      var id = this.get(this.constructor.idAttribute);
       return base.replace(/[^\/]$/, '$&/') + encodeURIComponent(id);
     }
 
@@ -722,7 +723,7 @@
 
     // A model is new if it has never been saved to the server, and lacks an id.
     isNew() {
-      return !this.has(this.idAttribute);
+      return !this.has(this.constructor.idAttribute);
     }
 
     // Check if the model is currently in a valid state.
@@ -763,7 +764,7 @@
   class CollectionBase {
     // The default model for a collection is just a **Backbone.Model**.
     // This should be overridden in most cases.
-    model = Model;
+    static model = Model;
 
     constructor(models, options) {
       options || (options = {});
@@ -1086,7 +1087,8 @@
 
     // Define how to uniquely identify models in the collection.
     modelId(attrs) {
-      return attrs[this.model.prototype.idAttribute || 'id'];
+      var model = this.model || this.constructor.model;
+      return attrs[model.prototype.idAttribute || 'id'];
     }
 
     // Get an iterator of all models in this collection.
@@ -1121,7 +1123,7 @@
       }
       options = options ? _.clone(options) : {};
       options.collection = this;
-      var model = new this.model(attrs, options);
+      var model = new (this.model || this.constructor.model)(attrs, options);
       if (!model.validationError) return model;
       this.trigger('invalid', this, model.validationError, options);
       return false;
@@ -1501,7 +1503,7 @@
     // order of the routes here to support behavior where the most general
     // routes can be defined at the bottom of the route map.
     _bindRoutes() {
-      var routes = getClassProp(this, 'routes')
+      var routes = getClassProp(this, 'routes');
       if (!routes) return;
       this.routes = routes;
       var routeKey, routeKeys = _.keys(this.routes);
