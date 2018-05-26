@@ -17,6 +17,11 @@ module.exports = function(config) {
         'test/*.js'
     ],
 
+    preprocessors: {
+      'test/*.js': ['babel'],
+      'backbone.js': ['babel']
+    },
+
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
@@ -38,6 +43,13 @@ module.exports = function(config) {
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: ['ChromeHeadless'],
+
+    customLaunchers: {
+      ChromeDebugging: {
+        base: 'Chrome',
+        flags: [ '--remote-debugging-port=9333' ]
+      } 
+    },
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

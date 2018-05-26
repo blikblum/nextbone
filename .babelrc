@@ -1,0 +1,32 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": [
+            "chrome 60"
+          ]
+        },
+        "modules": false
+      }
+    ]
+  ],
+  "plugins": ["transform-class-properties"],
+  "env": {
+    "test": {
+      "presets": [
+        [
+          "env",
+          {
+            "targets": {
+              "browsers": [
+                "chrome 60"
+              ]
+            }
+          }
+        ]
+      ]
+    }
+  }
+}

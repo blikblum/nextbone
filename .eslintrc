@@ -4,6 +4,10 @@
     "node": true,
     "amd": true
   },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
   "globals": {
     "attachEvent": false,
     "detachEvent": false
