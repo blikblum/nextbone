@@ -87,7 +87,7 @@
 
   QUnit.test('get with non-default ids', function(assert) {
     assert.expect(5);
-    var MongoModel = class extends Backbone.Model { idAttribute = '_id'};
+    var MongoModel = class extends Backbone.Model {static idAttribute = '_id'};
     var model = new MongoModel({_id: 100});
     var collection = new Backbone.Collection([model], {model: MongoModel});
     assert.equal(collection.get(100), model);
@@ -1394,7 +1394,7 @@
 
   QUnit.test('`set` with non-normal id', function(assert) {
     var Collection = class extends Backbone.Collection {
-      static model = class extends Backbone.Model{idAttribute = '_id'}
+      static model = class extends Backbone.Model{static idAttribute = '_id'}
     };
     var collection = new Collection({_id: 1});
     collection.set([{_id: 1, a: 1}], {add: false});
@@ -1546,9 +1546,8 @@
   QUnit.test('#2612 - nested `parse` works with `Collection#set`', function(assert) {
 
     var Job = class extends Backbone.Model {
-      constructor() {
+      preinitialize() {
         this.items = new Items();
-        Backbone.Model.apply(this, arguments);
       }
       parse(attrs) {
         this.items.set(attrs.items, {parse: true});
@@ -1557,9 +1556,8 @@
     };
 
     var Item = class extends Backbone.Model {
-      constructor() {
+      preinitialize() {
         this.subItems = new Backbone.Collection();
-        Backbone.Model.apply(this, arguments);
       }
       parse(attrs) {
         this.subItems.set(attrs.subItems, {parse: true});
@@ -1694,7 +1692,7 @@
 
     // Default to using `Collection::model::idAttribute`.
     assert.equal(StoogeCollection.prototype.modelId({id: 1}), 1);
-    Stooge.prototype.idAttribute = '_id';
+    Stooge.idAttribute = '_id';
     assert.equal(StoogeCollection.prototype.modelId({_id: 1}), 1);
   });
 
@@ -1715,15 +1713,15 @@
   });
 
   QUnit.test('Polymorphic models work with "advanced" constructors', function(assert) {
-    var A = class extends Backbone.Model {idAttribute = '_id'};
-    var B = class extends Backbone.Model {idAttribute = '_id'};
+    var A = class extends Backbone.Model {static idAttribute = '_id'};
+    var B = class extends Backbone.Model {static idAttribute = '_id'};
     var C = class extends Backbone.Collection {
       static model = class extends Backbone.Model {
         constructor(attrs) {
           return attrs.type === 'a' ? new A(attrs) : new B(attrs);
         }
 
-        idAttribute = '_id'
+        static idAttribute = '_id'
       }
     };
     var collection = new C([{_id: 1, type: 'a'}, {_id: 2, type: 'b'}]);
@@ -1765,7 +1763,7 @@
     // If the polymorphic models define their own idAttribute,
     // the modelId method should be overridden, for the reason below.
     var M = class extends Backbone.Model {
-      idAttribute = '_id'
+      static idAttribute = '_id'
     };
     var C2 = class extends Backbone.Collection {
       model(attrs) {
@@ -1954,7 +1952,7 @@
       }
     };
     var Collection = class extends Backbone.Collection {
-      static model: Model
+      static model = Model
     };
     var collection = new Collection([{id: 1}]);
     collection.invoke('method', 1, 2, 3);

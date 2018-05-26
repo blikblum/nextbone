@@ -9,8 +9,8 @@
 
   // Establish the root object, `window` (`self`) in the browser, or `global` on the server.
   // We use `self` instead of `window` for `WebWorker` support.
-  var root = (typeof self == 'object' && self.self === self && self) ||
-            (typeof global == 'object' && global.global === global && global);
+  var root = typeof self == 'object' && self.self === self && self ||
+            typeof global == 'object' && global.global === global && global;
 
   // Set up Backbone appropriately for the environment. Start with AMD.
   if (typeof define === 'function' && define.amd) {
@@ -1088,7 +1088,7 @@
     // Define how to uniquely identify models in the collection.
     modelId(attrs) {
       var model = this.model || this.constructor.model;
-      return attrs[model.prototype.idAttribute || 'id'];
+      return attrs[model && model.idAttribute || 'id'];
     }
 
     // Get an iterator of all models in this collection.
@@ -1123,7 +1123,8 @@
       }
       options = options ? _.clone(options) : {};
       options.collection = this;
-      var model = new (this.model || this.constructor.model)(attrs, options);
+      var modelClass = this.model || this.constructor.model;
+      var model = modelClass.prototype instanceof ModelBase ? new modelClass(attrs, options) : modelClass(attrs, options);
       if (!model.validationError) return model;
       this.trigger('invalid', this, model.validationError, options);
       return false;
