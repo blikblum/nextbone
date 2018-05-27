@@ -438,7 +438,7 @@
     // Proxy `Backbone.sync` by default -- but override this if you need
     // custom syncing semantics for *this* particular model.
     sync() {
-      return Backbone.sync.apply(this, arguments);
+      return Backbone.sync.handler.apply(this, arguments);
     }
 
     // Get the value of an attribute.
@@ -798,7 +798,7 @@
 
     // Proxy `Backbone.sync` by default.
     sync() {
-      return Backbone.sync.apply(this, arguments);
+      return Backbone.sync.handler.apply(this, arguments);
     }
 
     // Add a model, or list of models to the set. `models` may be Backbone
@@ -1394,44 +1394,48 @@
   // * Send up the models as XML instead of JSON.
   // * Persist models via WebSockets instead of Ajax.
 
-  Backbone.sync = function(method, model, options) {
-    var type = methodMap[method];
+  var sync = {
+    handler: function(method, model, options) {
+      var type = methodMap[method];
 
-    options || (options = {});
+      options || (options = {});
 
-    // Default JSON-request options.
-    var params = {type: type, dataType: 'json'};
+      // Default JSON-request options.
+      var params = {type: type, dataType: 'json'};
 
-    // Ensure that we have a URL.
-    if (!options.url) {
-      params.url = _.result(model, 'url') || urlError();
+      // Ensure that we have a URL.
+      if (!options.url) {
+        params.url = _.result(model, 'url') || urlError();
+      }
+
+      // Ensure that we have the appropriate request data.
+      if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
+        params.contentType = 'application/json';
+        params.data = JSON.stringify(options.attrs || model.toJSON(options));
+      }
+
+
+      // Don't process data on a non-GET request.
+      if (params.type !== 'GET') {
+        params.processData = false;
+      }
+
+      // Pass along `textStatus` and `errorThrown` from jQuery.
+      var error = options.error;
+      options.error = function(xhr, textStatus, errorThrown) {
+        options.textStatus = textStatus;
+        options.errorThrown = errorThrown;
+        if (error) error.call(options.context, xhr, textStatus, errorThrown);
+      };
+
+      // Make the request, allowing the user to override any Ajax options.
+      var xhr = options.xhr = Backbone.ajax.handler(_.extend(params, options));
+      model.trigger('request', model, xhr, options);
+      return xhr;
     }
-
-    // Ensure that we have the appropriate request data.
-    if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
-      params.contentType = 'application/json';
-      params.data = JSON.stringify(options.attrs || model.toJSON(options));
-    }
-
-
-    // Don't process data on a non-GET request.
-    if (params.type !== 'GET') {
-      params.processData = false;
-    }
-
-    // Pass along `textStatus` and `errorThrown` from jQuery.
-    var error = options.error;
-    options.error = function(xhr, textStatus, errorThrown) {
-      options.textStatus = textStatus;
-      options.errorThrown = errorThrown;
-      if (error) error.call(options.context, xhr, textStatus, errorThrown);
-    };
-
-    // Make the request, allowing the user to override any Ajax options.
-    var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
-    model.trigger('request', model, xhr, options);
-    return xhr;
   };
+
+  Backbone.sync = sync;
 
   // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
   var methodMap = {
@@ -1444,9 +1448,11 @@
 
   // Abstract method `Backbone.ajax`
   // Override this to enable ajax functionality.
-  Backbone.ajax = function() {
-
+  var ajax = {
+    handler: function() {}
   };
+
+  Backbone.ajax = ajax;
 
   // Backbone.Router
   // ---------------

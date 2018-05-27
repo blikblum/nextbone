@@ -16,12 +16,7 @@
     beforeEach: function(assert) {
       library = new Library;
       library.create(attrs, {wait: false});
-    },
-
-    afterEach: function(assert) {
-      Backbone.emulateHTTP = false;
     }
-
   });
 
   QUnit.test('read', function(assert) {
@@ -98,24 +93,24 @@
     assert.expect(0);
     var model = new Backbone.Model();
     model.url = '/test';
-    Backbone.sync('create', model);
+    Backbone.sync.handler('create', model);
   });
 
   QUnit.test('Backbone.ajax', function(assert) {
     assert.expect(1);
-    Backbone.ajax = function(settings) {
+    Backbone.ajax.handler = function(settings) {
       assert.strictEqual(settings.url, '/test');
     };
     var model = new Backbone.Model();
     model.url = '/test';
-    Backbone.sync('create', model);
+    Backbone.sync.handler('create', model);
   });
 
   QUnit.test('Call provided error callback on error.', function(assert) {
     assert.expect(1);
     var model = new Backbone.Model;
     model.url = '/test';
-    Backbone.sync('read', model, {
+    Backbone.sync.handler('read', model, {
       error: function() { assert.ok(true); }
     });
     this.ajaxSettings.error();

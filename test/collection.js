@@ -1024,7 +1024,7 @@
     assert.expect(4);
     var collection = new Backbone.Collection;
     collection.url = '/test';
-    Backbone.ajax = function(settings){ settings.success(); };
+    Backbone.ajax.handler = function(settings){ settings.success(); };
 
     collection.on('request', function(obj, xhr, options) {
       assert.ok(obj === collection, "collection has correct 'request' event after fetching");
@@ -1049,7 +1049,7 @@
     assert.expect(2);
     var collection = new Backbone.Collection;
     collection.url = '/test';
-    Backbone.ajax = function(settings) {
+    Backbone.ajax.handler = function(settings) {
       settings.success.call(settings.context);
     };
     var obj = {};
@@ -1431,15 +1431,15 @@
         return data;
       }
     };
-    var ajax = Backbone.ajax;
-    Backbone.ajax = function(params) {
+    var ajax = Backbone.ajax.handler;
+    Backbone.ajax.handler = function(params) {
       _.defer(params.success, []);
       return {someHeader: 'headerValue'};
     };
     collection.fetch({
       success: function() { done(); }
     });
-    Backbone.ajax = ajax;
+    Backbone.ajax.handler = ajax;
   });
 
   QUnit.test('fetch will pass extra options to success callback', function(assert) {
