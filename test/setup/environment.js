@@ -1,3 +1,7 @@
+import * as Backbone from '../../backbone';
+
+window.Backbone = Backbone;
+
 (function(QUnit) {
 
   var sync = Backbone.sync.handler;

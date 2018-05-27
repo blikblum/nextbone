@@ -2,25 +2,42 @@
 // For example:
 // npm install karma-firefox-launcher
 // karma start --browsers=Firefox
+
+var babel = require('rollup-plugin-babel');
+
 module.exports = function(config) {
   config.set({
     basePath: '',
     frameworks: ['qunit'],
-    plugins: ['karma-qunit', 'karma-babel-preprocessor', 'karma-chrome-launcher'],
+    plugins: ['karma-qunit', 'karma-babel-preprocessor', 'karma-rollup-preprocessor', 'karma-chrome-launcher'],
 
     // list of files / patterns to load in the browser
     files: [
       'test/vendor/jquery.js',
-      'test/vendor/json2.js',
       'test/vendor/underscore.js',
-      'backbone.js',
       'test/setup/*.js',
       'test/*.js'
     ],
 
     preprocessors: {
-      'test/*.js': ['babel'],
-      'backbone.js': ['babel']
+      'test/setup/*.js': ['rollup'],
+      'test/*.js': ['rollup']
+    },
+
+    rollupPreprocessor: {
+      /**
+			 * This is just a normal Rollup config object,
+			 * except that `input` is handled for you.
+			 */
+      plugins: [babel({
+
+      })],
+
+      output: {
+        format: 'iife',            // Helps prevent naming collisions.
+        name: 'nextboneTests',    // Required for 'iife' format.
+        sourcemap: 'inline'        // Sensible for testing.
+      }
     },
 
     // test results reporter to use

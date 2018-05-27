@@ -5,381 +5,353 @@
 //     For all details and documentation:
 //     http://backbonejs.org
 
-(function(factory) {
+import _ from 'underscore';
 
-  // Establish the root object, `window` (`self`) in the browser, or `global` on the server.
-  // We use `self` instead of `window` for `WebWorker` support.
-  var root = typeof self == 'object' && self.self === self && self ||
-            typeof global == 'object' && global.global === global && global;
+// Initial Setup
+// -------------
 
-  // Set up Backbone appropriately for the environment. Start with AMD.
-  if (typeof define === 'function' && define.amd) {
-    define(['underscore', 'exports'], function(_, exports) {
-      // Export global even in AMD case in case this script is loaded with
-      // others that may still expect a global Backbone.
-      root.Backbone = factory(root, exports, _);
-    });
+// Create a local reference to a common array method we'll want to use later.
+var slice = Array.prototype.slice;
 
-  // Next for Node.js or CommonJS.
-  } else if (typeof exports !== 'undefined') {
-    var _ = require('underscore');
-    factory(root, exports, _);
+// try to get a prop from instance, with fallback to constructor (class property)
+var getClassProp = function(obj, prop) {
+  var value = obj[prop];
+  return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
+};
 
-  // Finally, as a browser global.
+// Current version of the library. Keep in sync with `package.json`.
+var VERSION = '1.3.3';
+
+
+// Backbone.Events
+// ---------------
+
+// A module that can be mixed in to *any object* in order to provide it with
+// a custom event channel. You may bind a callback to an event with `on` or
+// remove with `off`; `trigger`-ing an event fires all callbacks in
+// succession.
+//
+//     var object = {};
+//     _.extend(object, Backbone.Events);
+//     object.on('expand', function(){ alert('expanded'); });
+//     object.trigger('expand');
+//
+var Events = {};
+
+// Regular expression used to split event strings.
+var eventSplitter = /\s+/;
+
+// A private global variable to share between listeners and listenees.
+var _listening;
+
+// Iterates over the standard `event, callback` (as well as the fancy multiple
+// space-separated events `"change blur", callback` and jQuery-style event
+// maps `{event: callback}`).
+var eventsApi = function(iteratee, events, name, callback, opts) {
+  var i = 0, names;
+  if (name && typeof name === 'object') {
+    // Handle event maps.
+    if (callback !== void 0 && 'context' in opts && opts.context === void 0) opts.context = callback;
+    for (names = _.keys(name); i < names.length ; i++) {
+      events = eventsApi(iteratee, events, names[i], name[names[i]], opts);
+    }
+  } else if (name && eventSplitter.test(name)) {
+    // Handle space-separated event names by delegating them individually.
+    for (names = name.split(eventSplitter); i < names.length; i++) {
+      events = iteratee(events, names[i], callback, opts);
+    }
   } else {
-    root.Backbone = factory(root, {}, root._);
+    // Finally, standard events.
+    events = iteratee(events, name, callback, opts);
+  }
+  return events;
+};
+
+// Bind an event to a `callback` function. Passing `"all"` will bind
+// the callback to all events fired.
+Events.on = function(name, callback, context) {
+  this._events = eventsApi(onApi, this._events || {}, name, callback, {
+    context: context,
+    ctx: this,
+    listening: _listening
+  });
+
+  if (_listening) {
+    var listeners = this._listeners || (this._listeners = {});
+    listeners[_listening.id] = _listening;
+    // Allow the listening to use a counter, instead of tracking
+    // callbacks for library interop
+    _listening.interop = false;
   }
 
-})(function(root, Backbone, _) {
+  return this;
+};
 
-  // Initial Setup
-  // -------------
+// Inversion-of-control versions of `on`. Tell *this* object to listen to
+// an event in another object... keeping track of what it's listening to
+// for easier unbinding later.
+Events.listenTo = function(obj, name, callback) {
+  if (!obj) return this;
+  var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
+  var listeningTo = this._listeningTo || (this._listeningTo = {});
+  var listening = _listening = listeningTo[id];
 
-  // Create a local reference to a common array method we'll want to use later.
-  var slice = Array.prototype.slice;
+  // This object is not listening to any other events on `obj` yet.
+  // Setup the necessary references to track the listening callbacks.
+  if (!listening) {
+    this._listenId || (this._listenId = _.uniqueId('l'));
+    listening = _listening = listeningTo[id] = new Listening(this, obj);
+  }
 
-  // try to get a prop from instance, with fallback to constructor (class property)
-  var getClassProp = function(obj, prop) {
-    var value = obj[prop];
-    return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
-  };
+  // Bind callbacks on obj.
+  var error = tryCatchOn(obj, name, callback, this);
+  _listening = void 0;
 
-  // Current version of the library. Keep in sync with `package.json`.
-  Backbone.VERSION = '1.3.3';
+  if (error) throw error;
+  // If the target obj is not Backbone.Events, track events manually.
+  if (listening.interop) listening.on(name, callback);
 
+  return this;
+};
 
-  // Backbone.Events
-  // ---------------
+// The reducing API that adds a callback to the `events` object.
+var onApi = function(events, name, callback, options) {
+  if (callback) {
+    var handlers = events[name] || (events[name] = []);
+    var context = options.context, ctx = options.ctx, listening = options.listening;
+    if (listening) listening.count++;
 
-  // A module that can be mixed in to *any object* in order to provide it with
-  // a custom event channel. You may bind a callback to an event with `on` or
-  // remove with `off`; `trigger`-ing an event fires all callbacks in
-  // succession.
-  //
-  //     var object = {};
-  //     _.extend(object, Backbone.Events);
-  //     object.on('expand', function(){ alert('expanded'); });
-  //     object.trigger('expand');
-  //
-  var Events = Backbone.Events = {};
+    handlers.push({callback: callback, context: context, ctx: context || ctx, listening: listening});
+  }
+  return events;
+};
 
-  // Regular expression used to split event strings.
-  var eventSplitter = /\s+/;
+// An try-catch guarded #on function, to prevent poisoning the global
+// `_listening` variable.
+var tryCatchOn = function(obj, name, callback, context) {
+  try {
+    obj.on(name, callback, context);
+  } catch (e) {
+    return e;
+  }
+};
 
-  // A private global variable to share between listeners and listenees.
-  var _listening;
+// Remove one or many callbacks. If `context` is null, removes all
+// callbacks with that function. If `callback` is null, removes all
+// callbacks for the event. If `name` is null, removes all bound
+// callbacks for all events.
+Events.off = function(name, callback, context) {
+  if (!this._events) return this;
+  this._events = eventsApi(offApi, this._events, name, callback, {
+    context: context,
+    listeners: this._listeners
+  });
 
-  // Iterates over the standard `event, callback` (as well as the fancy multiple
-  // space-separated events `"change blur", callback` and jQuery-style event
-  // maps `{event: callback}`).
-  var eventsApi = function(iteratee, events, name, callback, opts) {
-    var i = 0, names;
-    if (name && typeof name === 'object') {
-      // Handle event maps.
-      if (callback !== void 0 && 'context' in opts && opts.context === void 0) opts.context = callback;
-      for (names = _.keys(name); i < names.length ; i++) {
-        events = eventsApi(iteratee, events, names[i], name[names[i]], opts);
-      }
-    } else if (name && eventSplitter.test(name)) {
-      // Handle space-separated event names by delegating them individually.
-      for (names = name.split(eventSplitter); i < names.length; i++) {
-        events = iteratee(events, names[i], callback, opts);
-      }
-    } else {
-      // Finally, standard events.
-      events = iteratee(events, name, callback, opts);
+  return this;
+};
+
+// Tell this object to stop listening to either specific events ... or
+// to every object it's currently listening to.
+Events.stopListening = function(obj, name, callback) {
+  var listeningTo = this._listeningTo;
+  if (!listeningTo) return this;
+
+  var ids = obj ? [obj._listenId] : _.keys(listeningTo);
+  for (var i = 0; i < ids.length; i++) {
+    var listening = listeningTo[ids[i]];
+
+    // If listening doesn't exist, this object is not currently
+    // listening to obj. Break out early.
+    if (!listening) break;
+
+    listening.obj.off(name, callback, this);
+    if (listening.interop) listening.off(name, callback);
+  }
+  if (_.isEmpty(listeningTo)) this._listeningTo = void 0;
+
+  return this;
+};
+
+// The reducing API that removes a callback from the `events` object.
+var offApi = function(events, name, callback, options) {
+  if (!events) return;
+
+  var context = options.context, listeners = options.listeners;
+  var i = 0, names;
+
+  // Delete all event listeners and "drop" events.
+  if (!name && !context && !callback) {
+    for (names = _.keys(listeners); i < names.length; i++) {
+      listeners[names[i]].cleanup();
     }
-    return events;
-  };
+    return;
+  }
 
-  // Bind an event to a `callback` function. Passing `"all"` will bind
-  // the callback to all events fired.
-  Events.on = function(name, callback, context) {
-    this._events = eventsApi(onApi, this._events || {}, name, callback, {
-      context: context,
-      ctx: this,
-      listening: _listening
-    });
+  names = name ? [name] : _.keys(events);
+  for (; i < names.length; i++) {
+    name = names[i];
+    var handlers = events[name];
 
-    if (_listening) {
-      var listeners = this._listeners || (this._listeners = {});
-      listeners[_listening.id] = _listening;
-      // Allow the listening to use a counter, instead of tracking
-      // callbacks for library interop
-      _listening.interop = false;
-    }
+    // Bail out if there are no events stored.
+    if (!handlers) break;
 
-    return this;
-  };
-
-  // Inversion-of-control versions of `on`. Tell *this* object to listen to
-  // an event in another object... keeping track of what it's listening to
-  // for easier unbinding later.
-  Events.listenTo = function(obj, name, callback) {
-    if (!obj) return this;
-    var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
-    var listeningTo = this._listeningTo || (this._listeningTo = {});
-    var listening = _listening = listeningTo[id];
-
-    // This object is not listening to any other events on `obj` yet.
-    // Setup the necessary references to track the listening callbacks.
-    if (!listening) {
-      this._listenId || (this._listenId = _.uniqueId('l'));
-      listening = _listening = listeningTo[id] = new Listening(this, obj);
-    }
-
-    // Bind callbacks on obj.
-    var error = tryCatchOn(obj, name, callback, this);
-    _listening = void 0;
-
-    if (error) throw error;
-    // If the target obj is not Backbone.Events, track events manually.
-    if (listening.interop) listening.on(name, callback);
-
-    return this;
-  };
-
-  // The reducing API that adds a callback to the `events` object.
-  var onApi = function(events, name, callback, options) {
-    if (callback) {
-      var handlers = events[name] || (events[name] = []);
-      var context = options.context, ctx = options.ctx, listening = options.listening;
-      if (listening) listening.count++;
-
-      handlers.push({callback: callback, context: context, ctx: context || ctx, listening: listening});
-    }
-    return events;
-  };
-
-  // An try-catch guarded #on function, to prevent poisoning the global
-  // `_listening` variable.
-  var tryCatchOn = function(obj, name, callback, context) {
-    try {
-      obj.on(name, callback, context);
-    } catch (e) {
-      return e;
-    }
-  };
-
-  // Remove one or many callbacks. If `context` is null, removes all
-  // callbacks with that function. If `callback` is null, removes all
-  // callbacks for the event. If `name` is null, removes all bound
-  // callbacks for all events.
-  Events.off = function(name, callback, context) {
-    if (!this._events) return this;
-    this._events = eventsApi(offApi, this._events, name, callback, {
-      context: context,
-      listeners: this._listeners
-    });
-
-    return this;
-  };
-
-  // Tell this object to stop listening to either specific events ... or
-  // to every object it's currently listening to.
-  Events.stopListening = function(obj, name, callback) {
-    var listeningTo = this._listeningTo;
-    if (!listeningTo) return this;
-
-    var ids = obj ? [obj._listenId] : _.keys(listeningTo);
-    for (var i = 0; i < ids.length; i++) {
-      var listening = listeningTo[ids[i]];
-
-      // If listening doesn't exist, this object is not currently
-      // listening to obj. Break out early.
-      if (!listening) break;
-
-      listening.obj.off(name, callback, this);
-      if (listening.interop) listening.off(name, callback);
-    }
-    if (_.isEmpty(listeningTo)) this._listeningTo = void 0;
-
-    return this;
-  };
-
-  // The reducing API that removes a callback from the `events` object.
-  var offApi = function(events, name, callback, options) {
-    if (!events) return;
-
-    var context = options.context, listeners = options.listeners;
-    var i = 0, names;
-
-    // Delete all event listeners and "drop" events.
-    if (!name && !context && !callback) {
-      for (names = _.keys(listeners); i < names.length; i++) {
-        listeners[names[i]].cleanup();
-      }
-      return;
-    }
-
-    names = name ? [name] : _.keys(events);
-    for (; i < names.length; i++) {
-      name = names[i];
-      var handlers = events[name];
-
-      // Bail out if there are no events stored.
-      if (!handlers) break;
-
-      // Find any remaining events.
-      var remaining = [];
-      for (var j = 0; j < handlers.length; j++) {
-        var handler = handlers[j];
-        if (
-          callback && callback !== handler.callback &&
+    // Find any remaining events.
+    var remaining = [];
+    for (var j = 0; j < handlers.length; j++) {
+      var handler = handlers[j];
+      if (
+        callback && callback !== handler.callback &&
             callback !== handler.callback._callback ||
               context && context !== handler.context
-        ) {
-          remaining.push(handler);
-        } else {
-          var listening = handler.listening;
-          if (listening) listening.off(name, callback);
-        }
-      }
-
-      // Replace events if there are any remaining.  Otherwise, clean up.
-      if (remaining.length) {
-        events[name] = remaining;
+      ) {
+        remaining.push(handler);
       } else {
-        delete events[name];
+        var listening = handler.listening;
+        if (listening) listening.off(name, callback);
       }
     }
 
-    return events;
-  };
-
-  // Bind an event to only be triggered a single time. After the first time
-  // the callback is invoked, its listener will be removed. If multiple events
-  // are passed in using the space-separated syntax, the handler will fire
-  // once for each event, not once for a combination of all events.
-  Events.once = function(name, callback, context) {
-    // Map the event into a `{event: once}` object.
-    var events = eventsApi(onceMap, {}, name, callback, this.off.bind(this));
-    if (typeof name === 'string' && context == null) callback = void 0;
-    return this.on(events, callback, context);
-  };
-
-  // Inversion-of-control versions of `once`.
-  Events.listenToOnce = function(obj, name, callback) {
-    // Map the event into a `{event: once}` object.
-    var events = eventsApi(onceMap, {}, name, callback, this.stopListening.bind(this, obj));
-    return this.listenTo(obj, events);
-  };
-
-  // Reduces the event callbacks into a map of `{event: onceWrapper}`.
-  // `offer` unbinds the `onceWrapper` after it has been called.
-  var onceMap = function(map, name, callback, offer) {
-    if (callback) {
-      var once = map[name] = _.once(function() {
-        offer(name, once);
-        callback.apply(this, arguments);
-      });
-      once._callback = callback;
-    }
-    return map;
-  };
-
-  // Trigger one or many events, firing all bound callbacks. Callbacks are
-  // passed the same arguments as `trigger` is, apart from the event name
-  // (unless you're listening on `"all"`, which will cause your callback to
-  // receive the true name of the event as the first argument).
-  Events.trigger = function(name) {
-    if (!this._events) return this;
-
-    var length = Math.max(0, arguments.length - 1);
-    var args = Array(length);
-    for (var i = 0; i < length; i++) args[i] = arguments[i + 1];
-
-    eventsApi(triggerApi, this._events, name, void 0, args);
-    return this;
-  };
-
-  // Handles triggering the appropriate event callbacks.
-  var triggerApi = function(objEvents, name, callback, args) {
-    if (objEvents) {
-      var events = objEvents[name];
-      var allEvents = objEvents.all;
-      if (events && allEvents) allEvents = allEvents.slice();
-      if (events) triggerEvents(events, args);
-      if (allEvents) triggerEvents(allEvents, [name].concat(args));
-    }
-    return objEvents;
-  };
-
-  // A difficult-to-believe, but optimized internal dispatch function for
-  // triggering events. Tries to keep the usual cases speedy (most internal
-  // Backbone events have 3 arguments).
-  var triggerEvents = function(events, args) {
-    var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
-    switch (args.length) {
-      case 0: while (++i < l) (ev = events[i]).callback.call(ev.ctx); return;
-      case 1: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1); return;
-      case 2: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2); return;
-      case 3: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); return;
-      default: while (++i < l) (ev = events[i]).callback.apply(ev.ctx, args); return;
-    }
-  };
-
-  // ES class Events mixin
-  var withEvents = (Base) => {
-    var EventsClass = class extends Base {};
-    _.extend(EventsClass.prototype, Events);
-    return EventsClass;
-  };
-
-  // A listening class that tracks and cleans up memory bindings
-  // when all callbacks have been offed.
-  var Listening = function(listener, obj) {
-    this.id = listener._listenId;
-    this.listener = listener;
-    this.obj = obj;
-    this.interop = true;
-    this.count = 0;
-    this._events = void 0;
-  };
-
-  Listening.prototype.on = Events.on;
-
-  // Offs a callback (or several).
-  // Uses an optimized counter if the listenee uses Backbone.Events.
-  // Otherwise, falls back to manual tracking to support events
-  // library interop.
-  Listening.prototype.off = function(name, callback) {
-    var cleanup;
-    if (this.interop) {
-      this._events = eventsApi(offApi, this._events, name, callback, {
-        context: void 0,
-        listeners: void 0
-      });
-      cleanup = !this._events;
+    // Replace events if there are any remaining.  Otherwise, clean up.
+    if (remaining.length) {
+      events[name] = remaining;
     } else {
-      this.count--;
-      cleanup = this.count === 0;
+      delete events[name];
     }
-    if (cleanup) this.cleanup();
-  };
+  }
 
-  // Cleans up memory bindings between the listener and the listenee.
-  Listening.prototype.cleanup = function() {
-    delete this.listener._listeningTo[this.obj._listenId];
-    if (!this.interop) delete this.obj._listeners[this.id];
-  };
+  return events;
+};
 
-  // Allow the `Backbone` object to serve as a global event bus, for folks who
-  // want global "pubsub" in a convenient place.
-  _.extend(Backbone, Events);
+// Bind an event to only be triggered a single time. After the first time
+// the callback is invoked, its listener will be removed. If multiple events
+// are passed in using the space-separated syntax, the handler will fire
+// once for each event, not once for a combination of all events.
+Events.once = function(name, callback, context) {
+  // Map the event into a `{event: once}` object.
+  var events = eventsApi(onceMap, {}, name, callback, this.off.bind(this));
+  if (typeof name === 'string' && context == null) callback = void 0;
+  return this.on(events, callback, context);
+};
 
-  // Backbone.Model
-  // --------------
+// Inversion-of-control versions of `once`.
+Events.listenToOnce = function(obj, name, callback) {
+  // Map the event into a `{event: once}` object.
+  var events = eventsApi(onceMap, {}, name, callback, this.stopListening.bind(this, obj));
+  return this.listenTo(obj, events);
+};
 
-  // Backbone **Models** are the basic data object in the framework --
-  // frequently representing a row in a table in a database on your server.
-  // A discrete chunk of data and a bunch of useful, related methods for
-  // performing computations and transformations on that data.
+// Reduces the event callbacks into a map of `{event: onceWrapper}`.
+// `offer` unbinds the `onceWrapper` after it has been called.
+var onceMap = function(map, name, callback, offer) {
+  if (callback) {
+    var once = map[name] = _.once(function() {
+      offer(name, once);
+      callback.apply(this, arguments);
+    });
+    once._callback = callback;
+  }
+  return map;
+};
 
-  // Create a new model with the specified attributes. A client id (`cid`)
-  // is automatically generated and assigned for you.
+// Trigger one or many events, firing all bound callbacks. Callbacks are
+// passed the same arguments as `trigger` is, apart from the event name
+// (unless you're listening on `"all"`, which will cause your callback to
+// receive the true name of the event as the first argument).
+Events.trigger = function(name) {
+  if (!this._events) return this;
 
-  class Model {
+  var length = Math.max(0, arguments.length - 1);
+  var args = Array(length);
+  for (var i = 0; i < length; i++) args[i] = arguments[i + 1];
+
+  eventsApi(triggerApi, this._events, name, void 0, args);
+  return this;
+};
+
+// Handles triggering the appropriate event callbacks.
+var triggerApi = function(objEvents, name, callback, args) {
+  if (objEvents) {
+    var events = objEvents[name];
+    var allEvents = objEvents.all;
+    if (events && allEvents) allEvents = allEvents.slice();
+    if (events) triggerEvents(events, args);
+    if (allEvents) triggerEvents(allEvents, [name].concat(args));
+  }
+  return objEvents;
+};
+
+// A difficult-to-believe, but optimized internal dispatch function for
+// triggering events. Tries to keep the usual cases speedy (most internal
+// Backbone events have 3 arguments).
+var triggerEvents = function(events, args) {
+  var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
+  switch (args.length) {
+    case 0: while (++i < l) (ev = events[i]).callback.call(ev.ctx); return;
+    case 1: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1); return;
+    case 2: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2); return;
+    case 3: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); return;
+    default: while (++i < l) (ev = events[i]).callback.apply(ev.ctx, args); return;
+  }
+};
+
+// ES class Events mixin
+var withEvents = (Base) => {
+  var EventsClass = class extends Base {};
+  _.extend(EventsClass.prototype, Events);
+  return EventsClass;
+};
+
+// A listening class that tracks and cleans up memory bindings
+// when all callbacks have been offed.
+var Listening = function(listener, obj) {
+  this.id = listener._listenId;
+  this.listener = listener;
+  this.obj = obj;
+  this.interop = true;
+  this.count = 0;
+  this._events = void 0;
+};
+
+Listening.prototype.on = Events.on;
+
+// Offs a callback (or several).
+// Uses an optimized counter if the listenee uses Backbone.Events.
+// Otherwise, falls back to manual tracking to support events
+// library interop.
+Listening.prototype.off = function(name, callback) {
+  var cleanup;
+  if (this.interop) {
+    this._events = eventsApi(offApi, this._events, name, callback, {
+      context: void 0,
+      listeners: void 0
+    });
+    cleanup = !this._events;
+  } else {
+    this.count--;
+    cleanup = this.count === 0;
+  }
+  if (cleanup) this.cleanup();
+};
+
+// Cleans up memory bindings between the listener and the listenee.
+Listening.prototype.cleanup = function() {
+  delete this.listener._listeningTo[this.obj._listenId];
+  if (!this.interop) delete this.obj._listeners[this.id];
+};
+
+
+// Backbone.Model
+// --------------
+
+// Backbone **Models** are the basic data object in the framework --
+// frequently representing a row in a table in a database on your server.
+// A discrete chunk of data and a bunch of useful, related methods for
+// performing computations and transformations on that data.
+
+// Create a new model with the specified attributes. A client id (`cid`)
+// is automatically generated and assigned for you.
+
+class Model {
 
     // A hash of attributes whose current and previous value differ.
     changed = null;
@@ -426,7 +398,7 @@
     // Proxy `Backbone.sync` by default -- but override this if you need
     // custom syncing semantics for *this* particular model.
     sync() {
-      return Backbone.sync.handler.apply(this, arguments);
+      return sync.handler.apply(this, arguments);
     }
 
     // Get the value of an attribute.
@@ -734,28 +706,27 @@
       this.trigger('invalid', this, error, _.extend(options, {validationError: error}));
       return false;
     }
-  }
+}
 
-  _.extend(Model.prototype, Events);
-
-  Backbone.Model = Model;
+_.extend(Model.prototype, Events);
 
 
-  // Backbone.Collection
-  // -------------------
 
-  // If models tend to represent a single row of data, a Backbone Collection is
-  // more analogous to a table full of data ... or a small slice or page of that
-  // table, or a collection of rows that belong together for a particular reason
-  // -- all of the messages in this particular folder, all of the documents
-  // belonging to this particular author, and so on. Collections maintain
-  // indexes of their models, both in order, and for lookup by `id`.
+// Backbone.Collection
+// -------------------
 
-  // Create a new **Collection**, perhaps to contain a specific type of `model`.
-  // If a `comparator` is specified, the Collection will maintain
-  // its models in sort order, as they're added and removed.
+// If models tend to represent a single row of data, a Backbone Collection is
+// more analogous to a table full of data ... or a small slice or page of that
+// table, or a collection of rows that belong together for a particular reason
+// -- all of the messages in this particular folder, all of the documents
+// belonging to this particular author, and so on. Collections maintain
+// indexes of their models, both in order, and for lookup by `id`.
 
-  class Collection {
+// Create a new **Collection**, perhaps to contain a specific type of `model`.
+// If a `comparator` is specified, the Collection will maintain
+// its models in sort order, as they're added and removed.
+
+class Collection {
     // The default model for a collection is just a **Backbone.Model**.
     // This should be overridden in most cases.
     static model = Model;
@@ -786,7 +757,7 @@
 
     // Proxy `Backbone.sync` by default.
     sync() {
-      return Backbone.sync.handler.apply(this, arguments);
+      return sync.handler.apply(this, arguments);
     }
 
     // Add a model, or list of models to the set. `models` may be Backbone
@@ -1194,373 +1165,373 @@
       }
       this.trigger.apply(this, arguments);
     }
-  }
+}
 
-  _.extend(Collection.prototype, Events);
+_.extend(Collection.prototype, Events);
 
-  Backbone.Collection = Collection;
 
-  // Default options for `Collection#set`.
-  var setOptions = {add: true, remove: true, merge: true};
-  var addOptions = {add: true, remove: false};
+// Default options for `Collection#set`.
+var setOptions = {add: true, remove: true, merge: true};
+var addOptions = {add: true, remove: false};
 
-  // Splices `insert` into `array` at index `at`.
-  var splice = function(array, insert, at) {
-    at = Math.min(Math.max(at, 0), array.length);
-    var tail = Array(array.length - at);
-    var length = insert.length;
-    var i;
-    for (i = 0; i < tail.length; i++) tail[i] = array[i + at];
-    for (i = 0; i < length; i++) array[i + at] = insert[i];
-    for (i = 0; i < tail.length; i++) array[i + length + at] = tail[i];
+// Splices `insert` into `array` at index `at`.
+var splice = function(array, insert, at) {
+  at = Math.min(Math.max(at, 0), array.length);
+  var tail = Array(array.length - at);
+  var length = insert.length;
+  var i;
+  for (i = 0; i < tail.length; i++) tail[i] = array[i + at];
+  for (i = 0; i < length; i++) array[i + at] = insert[i];
+  for (i = 0; i < tail.length; i++) array[i + length + at] = tail[i];
+};
+
+// Defining an @@iterator method implements JavaScript's Iterable protocol.
+// In modern ES2015 browsers, this value is found at Symbol.iterator.
+/* global Symbol */
+var $$iterator = typeof Symbol === 'function' && Symbol.iterator;
+if ($$iterator) {
+  Collection.prototype[$$iterator] = Collection.prototype.values;
+}
+
+// CollectionIterator
+// ------------------
+
+// A CollectionIterator implements JavaScript's Iterator protocol, allowing the
+// use of `for of` loops in modern browsers and interoperation between
+// Backbone.Collection and other JavaScript functions and third-party libraries
+// which can operate on Iterables.
+var CollectionIterator = function(collection, kind) {
+  this._collection = collection;
+  this._kind = kind;
+  this._index = 0;
+};
+
+// This "enum" defines the three possible kinds of values which can be emitted
+// by a CollectionIterator that correspond to the values(), keys() and entries()
+// methods on Collection, respectively.
+var ITERATOR_VALUES = 1;
+var ITERATOR_KEYS = 2;
+var ITERATOR_KEYSVALUES = 3;
+
+// All Iterators should themselves be Iterable.
+if ($$iterator) {
+  CollectionIterator.prototype[$$iterator] = function() {
+    return this;
   };
+}
 
-  // Defining an @@iterator method implements JavaScript's Iterable protocol.
-  // In modern ES2015 browsers, this value is found at Symbol.iterator.
-  /* global Symbol */
-  var $$iterator = typeof Symbol === 'function' && Symbol.iterator;
-  if ($$iterator) {
-    Collection.prototype[$$iterator] = Collection.prototype.values;
-  }
+CollectionIterator.prototype.next = function() {
+  if (this._collection) {
 
-  // CollectionIterator
-  // ------------------
+    // Only continue iterating if the iterated collection is long enough.
+    if (this._index < this._collection.length) {
+      var model = this._collection.at(this._index);
+      this._index++;
 
-  // A CollectionIterator implements JavaScript's Iterator protocol, allowing the
-  // use of `for of` loops in modern browsers and interoperation between
-  // Backbone.Collection and other JavaScript functions and third-party libraries
-  // which can operate on Iterables.
-  var CollectionIterator = function(collection, kind) {
-    this._collection = collection;
-    this._kind = kind;
-    this._index = 0;
-  };
-
-  // This "enum" defines the three possible kinds of values which can be emitted
-  // by a CollectionIterator that correspond to the values(), keys() and entries()
-  // methods on Collection, respectively.
-  var ITERATOR_VALUES = 1;
-  var ITERATOR_KEYS = 2;
-  var ITERATOR_KEYSVALUES = 3;
-
-  // All Iterators should themselves be Iterable.
-  if ($$iterator) {
-    CollectionIterator.prototype[$$iterator] = function() {
-      return this;
-    };
-  }
-
-  CollectionIterator.prototype.next = function() {
-    if (this._collection) {
-
-      // Only continue iterating if the iterated collection is long enough.
-      if (this._index < this._collection.length) {
-        var model = this._collection.at(this._index);
-        this._index++;
-
-        // Construct a value depending on what kind of values should be iterated.
-        var value;
-        if (this._kind === ITERATOR_VALUES) {
-          value = model;
-        } else {
-          var id = this._collection.modelId(model.attributes);
-          if (this._kind === ITERATOR_KEYS) {
-            value = id;
-          } else { // ITERATOR_KEYSVALUES
-            value = [id, model];
-          }
+      // Construct a value depending on what kind of values should be iterated.
+      var value;
+      if (this._kind === ITERATOR_VALUES) {
+        value = model;
+      } else {
+        var id = this._collection.modelId(model.attributes);
+        if (this._kind === ITERATOR_KEYS) {
+          value = id;
+        } else { // ITERATOR_KEYSVALUES
+          value = [id, model];
         }
-        return {value: value, done: false};
       }
-
-      // Once exhausted, remove the reference to the collection so future
-      // calls to the next method always return done.
-      this._collection = void 0;
+      return {value: value, done: false};
     }
 
-    return {value: void 0, done: true};
-  };
+    // Once exhausted, remove the reference to the collection so future
+    // calls to the next method always return done.
+    this._collection = void 0;
+  }
+
+  return {value: void 0, done: true};
+};
 
 
-  // Proxy Backbone class methods to Underscore functions, wrapping the model's
-  // `attributes` object or collection's `models` array behind the scenes.
-  //
-  // collection.filter(function(model) { return model.get('age') > 10 });
-  // collection.each(this.addView);
-  //
-  // `Function#apply` can be slow so we use the method's arg count, if we know it.
-  var addMethod = function(base, length, method, attribute) {
-    switch (length) {
-      case 1: return function() {
-        return base[method](this[attribute]);
-      };
-      case 2: return function(value) {
-        return base[method](this[attribute], value);
-      };
-      case 3: return function(iteratee, context) {
-        return base[method](this[attribute], cb(iteratee, this), context);
-      };
-      case 4: return function(iteratee, defaultVal, context) {
-        return base[method](this[attribute], cb(iteratee, this), defaultVal, context);
-      };
-      default: return function() {
-        var args = slice.call(arguments);
-        args.unshift(this[attribute]);
-        return base[method].apply(base, args);
-      };
-    }
-  };
-
-  var addUnderscoreMethods = function(Class, base, methods, attribute) {
-    _.each(methods, function(length, method) {
-      if (base[method]) Class.prototype[method] = addMethod(base, length, method, attribute);
-    });
-  };
-
-  // Support `collection.sortBy('attr')` and `collection.findWhere({id: 1})`.
-  var cb = function(iteratee, instance) {
-    if (_.isFunction(iteratee)) return iteratee;
-    if (_.isObject(iteratee) && !instance._isModel(iteratee)) return modelMatcher(iteratee);
-    if (_.isString(iteratee)) return function(model) { return model.get(iteratee); };
-    return iteratee;
-  };
-  var modelMatcher = function(attrs) {
-    var matcher = _.matches(attrs);
-    return function(model) {
-      return matcher(model.attributes);
+// Proxy Backbone class methods to Underscore functions, wrapping the model's
+// `attributes` object or collection's `models` array behind the scenes.
+//
+// collection.filter(function(model) { return model.get('age') > 10 });
+// collection.each(this.addView);
+//
+// `Function#apply` can be slow so we use the method's arg count, if we know it.
+var addMethod = function(base, length, method, attribute) {
+  switch (length) {
+    case 1: return function() {
+      return base[method](this[attribute]);
     };
-  };
-
-  // Underscore methods that we want to implement on the Collection.
-  // 90% of the core usefulness of Backbone Collections is actually implemented
-  // right here:
-  var collectionMethods = {forEach: 3, each: 3, map: 3, collect: 3, reduce: 0,
-    foldl: 0, inject: 0, reduceRight: 0, foldr: 0, find: 3, detect: 3, filter: 3,
-    select: 3, reject: 3, every: 3, all: 3, some: 3, any: 3, include: 3, includes: 3,
-    contains: 3, invoke: 0, max: 3, min: 3, toArray: 1, size: 1, first: 3,
-    head: 3, take: 3, initial: 3, rest: 3, tail: 3, drop: 3, last: 3,
-    without: 0, difference: 0, indexOf: 3, shuffle: 1, lastIndexOf: 3,
-    isEmpty: 1, chain: 1, sample: 3, partition: 3, groupBy: 3, countBy: 3,
-    sortBy: 3, indexBy: 3, findIndex: 3, findLastIndex: 3};
-
-
-  // Underscore methods that we want to implement on the Model, mapped to the
-  // number of arguments they take.
-  var modelMethods = {keys: 1, values: 1, pairs: 1, invert: 1, pick: 0,
-    omit: 0, chain: 1, isEmpty: 1};
-
-  // Mix in each Underscore method as a proxy to `Collection#models`.
-
-  _.each([
-    [Collection, collectionMethods, 'models'],
-    [Model, modelMethods, 'attributes']
-  ], function(config) {
-    var Base = config[0],
-        methods = config[1],
-        attribute = config[2];
-
-    Base.mixin = function(obj) {
-      var mappings = _.reduce(_.functions(obj), function(memo, name) {
-        memo[name] = 0;
-        return memo;
-      }, {});
-      addUnderscoreMethods(Base, obj, mappings, attribute);
+    case 2: return function(value) {
+      return base[method](this[attribute], value);
     };
+    case 3: return function(iteratee, context) {
+      return base[method](this[attribute], cb(iteratee, this), context);
+    };
+    case 4: return function(iteratee, defaultVal, context) {
+      return base[method](this[attribute], cb(iteratee, this), defaultVal, context);
+    };
+    default: return function() {
+      var args = slice.call(arguments);
+      args.unshift(this[attribute]);
+      return base[method].apply(base, args);
+    };
+  }
+};
 
-    addUnderscoreMethods(Base, _, methods, attribute);
+var addUnderscoreMethods = function(Class, base, methods, attribute) {
+  _.each(methods, function(length, method) {
+    if (base[method]) Class.prototype[method] = addMethod(base, length, method, attribute);
   });
+};
 
-  // Backbone.sync
-  // -------------
+// Support `collection.sortBy('attr')` and `collection.findWhere({id: 1})`.
+var cb = function(iteratee, instance) {
+  if (_.isFunction(iteratee)) return iteratee;
+  if (_.isObject(iteratee) && !instance._isModel(iteratee)) return modelMatcher(iteratee);
+  if (_.isString(iteratee)) return function(model) { return model.get(iteratee); };
+  return iteratee;
+};
+var modelMatcher = function(attrs) {
+  var matcher = _.matches(attrs);
+  return function(model) {
+    return matcher(model.attributes);
+  };
+};
 
-  // Override this function to change the manner in which Backbone persists
-  // models to the server. You will be passed the type of request, and the
-  // model in question. By default, makes a RESTful Ajax request
-  // to the model's `url()`. Some possible customizations could be:
+// Underscore methods that we want to implement on the Collection.
+// 90% of the core usefulness of Backbone Collections is actually implemented
+// right here:
+var collectionMethods = {forEach: 3, each: 3, map: 3, collect: 3, reduce: 0,
+  foldl: 0, inject: 0, reduceRight: 0, foldr: 0, find: 3, detect: 3, filter: 3,
+  select: 3, reject: 3, every: 3, all: 3, some: 3, any: 3, include: 3, includes: 3,
+  contains: 3, invoke: 0, max: 3, min: 3, toArray: 1, size: 1, first: 3,
+  head: 3, take: 3, initial: 3, rest: 3, tail: 3, drop: 3, last: 3,
+  without: 0, difference: 0, indexOf: 3, shuffle: 1, lastIndexOf: 3,
+  isEmpty: 1, chain: 1, sample: 3, partition: 3, groupBy: 3, countBy: 3,
+  sortBy: 3, indexBy: 3, findIndex: 3, findLastIndex: 3};
+
+
+// Underscore methods that we want to implement on the Model, mapped to the
+// number of arguments they take.
+var modelMethods = {keys: 1, values: 1, pairs: 1, invert: 1, pick: 0,
+  omit: 0, chain: 1, isEmpty: 1};
+
+// Mix in each Underscore method as a proxy to `Collection#models`.
+
+_.each([
+  [Collection, collectionMethods, 'models'],
+  [Model, modelMethods, 'attributes']
+], function(config) {
+  var Base = config[0],
+      methods = config[1],
+      attribute = config[2];
+
+  Base.mixin = function(obj) {
+    var mappings = _.reduce(_.functions(obj), function(memo, name) {
+      memo[name] = 0;
+      return memo;
+    }, {});
+    addUnderscoreMethods(Base, obj, mappings, attribute);
+  };
+
+  addUnderscoreMethods(Base, _, methods, attribute);
+});
+
+// Backbone.sync
+// -------------
+
+// Override this function to change the manner in which Backbone persists
+// models to the server. You will be passed the type of request, and the
+// model in question. By default, makes a RESTful Ajax request
+// to the model's `url()`. Some possible customizations could be:
+//
+// * Use `setTimeout` to batch rapid-fire updates into a single request.
+// * Send up the models as XML instead of JSON.
+// * Persist models via WebSockets instead of Ajax.
+
+var sync = {
+  handler: function(method, model, options) {
+    var type = methodMap[method];
+
+    options || (options = {});
+
+    // Default JSON-request options.
+    var params = {type: type, dataType: 'json'};
+
+    // Ensure that we have a URL.
+    if (!options.url) {
+      params.url = _.result(model, 'url') || urlError();
+    }
+
+    // Ensure that we have the appropriate request data.
+    if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
+      params.contentType = 'application/json';
+      params.data = JSON.stringify(options.attrs || model.toJSON(options));
+    }
+
+
+    // Don't process data on a non-GET request.
+    if (params.type !== 'GET') {
+      params.processData = false;
+    }
+
+    // Pass along `textStatus` and `errorThrown` from jQuery.
+    var error = options.error;
+    options.error = function(xhr, textStatus, errorThrown) {
+      options.textStatus = textStatus;
+      options.errorThrown = errorThrown;
+      if (error) error.call(options.context, xhr, textStatus, errorThrown);
+    };
+
+    // Make the request, allowing the user to override any Ajax options.
+    var xhr = options.xhr = ajax.handler(_.extend(params, options));
+    model.trigger('request', model, xhr, options);
+    return xhr;
+  }
+};
+
+
+
+// Map from CRUD to HTTP for our default `Backbone.sync` implementation.
+var methodMap = {
+  create: 'POST',
+  update: 'PUT',
+  patch: 'PATCH',
+  delete: 'DELETE',
+  read: 'GET'
+};
+
+// Abstract method `Backbone.ajax`
+// Override this to enable ajax functionality.
+var ajax = {
+  handler: function() {}
+};
+
+
+// Backbone.Router
+// ---------------
+
+// Routers map faux-URLs to actions, and fire events when routes are
+// matched. Creating a new one sets its `routes` hash, if not set statically.
+
+class Router {
+  constructor(options) {
+    options || (options = {});
+    this.preinitialize.apply(this, arguments);
+    if (options.routes) this.routes = options.routes;
+    this._bindRoutes();
+    this.initialize.apply(this, arguments);
+  }
+
+  // preinitialize is an empty function by default. You can override it with a function
+  // or object.  preinitialize will run before any instantiation logic is run in the Router.
+  preinitialize(){}
+
+  // Initialize is an empty function by default. Override it with your own
+  // initialization logic.
+  initialize(){}
+
+  // Manually bind a single named route to a callback. For example:
   //
-  // * Use `setTimeout` to batch rapid-fire updates into a single request.
-  // * Send up the models as XML instead of JSON.
-  // * Persist models via WebSockets instead of Ajax.
-
-  var sync = {
-    handler: function(method, model, options) {
-      var type = methodMap[method];
-
-      options || (options = {});
-
-      // Default JSON-request options.
-      var params = {type: type, dataType: 'json'};
-
-      // Ensure that we have a URL.
-      if (!options.url) {
-        params.url = _.result(model, 'url') || urlError();
+  //     this.route('search/:query/p:num', 'search', function(query, num) {
+  //       ...
+  //     });
+  //
+  route(route, name, callback) {
+    if (!_.isRegExp(route)) route = this._routeToRegExp(route);
+    if (_.isFunction(name)) {
+      callback = name;
+      name = '';
+    }
+    if (!callback) callback = this[name];
+    var router = this;
+    History.instance.route(route, function(fragment) {
+      var args = router._extractParameters(route, fragment);
+      if (router.execute(callback, args, name) !== false) {
+        router.trigger.apply(router, ['route:' + name].concat(args));
+        router.trigger('route', name, args);
+        History.instance.trigger('route', router, name, args);
       }
+    });
+    return this;
+  }
 
-      // Ensure that we have the appropriate request data.
-      if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
-        params.contentType = 'application/json';
-        params.data = JSON.stringify(options.attrs || model.toJSON(options));
-      }
+  // Execute a route handler with the provided parameters.  This is an
+  // excellent place to do pre-route setup or post-route cleanup.
+  execute(callback, args, name) {
+    if (callback) callback.apply(this, args);
+  }
 
+  // Simple proxy to `Backbone.history` to save a fragment into the history.
+  navigate(fragment, options) {
+    History.instance.navigate(fragment, options);
+    return this;
+  }
 
-      // Don't process data on a non-GET request.
-      if (params.type !== 'GET') {
-        params.processData = false;
-      }
-
-      // Pass along `textStatus` and `errorThrown` from jQuery.
-      var error = options.error;
-      options.error = function(xhr, textStatus, errorThrown) {
-        options.textStatus = textStatus;
-        options.errorThrown = errorThrown;
-        if (error) error.call(options.context, xhr, textStatus, errorThrown);
-      };
-
-      // Make the request, allowing the user to override any Ajax options.
-      var xhr = options.xhr = Backbone.ajax.handler(_.extend(params, options));
-      model.trigger('request', model, xhr, options);
-      return xhr;
-    }
-  };
-
-  Backbone.sync = sync;
-
-  // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
-  var methodMap = {
-    create: 'POST',
-    update: 'PUT',
-    patch: 'PATCH',
-    delete: 'DELETE',
-    read: 'GET'
-  };
-
-  // Abstract method `Backbone.ajax`
-  // Override this to enable ajax functionality.
-  var ajax = {
-    handler: function() {}
-  };
-
-  Backbone.ajax = ajax;
-
-  // Backbone.Router
-  // ---------------
-
-  // Routers map faux-URLs to actions, and fire events when routes are
-  // matched. Creating a new one sets its `routes` hash, if not set statically.
-
-  class Router {
-    constructor(options) {
-      options || (options = {});
-      this.preinitialize.apply(this, arguments);
-      if (options.routes) this.routes = options.routes;
-      this._bindRoutes();
-      this.initialize.apply(this, arguments);
-    }
-
-    // preinitialize is an empty function by default. You can override it with a function
-    // or object.  preinitialize will run before any instantiation logic is run in the Router.
-    preinitialize(){}
-
-    // Initialize is an empty function by default. Override it with your own
-    // initialization logic.
-    initialize(){}
-
-    // Manually bind a single named route to a callback. For example:
-    //
-    //     this.route('search/:query/p:num', 'search', function(query, num) {
-    //       ...
-    //     });
-    //
-    route(route, name, callback) {
-      if (!_.isRegExp(route)) route = this._routeToRegExp(route);
-      if (_.isFunction(name)) {
-        callback = name;
-        name = '';
-      }
-      if (!callback) callback = this[name];
-      var router = this;
-      Backbone.history.route(route, function(fragment) {
-        var args = router._extractParameters(route, fragment);
-        if (router.execute(callback, args, name) !== false) {
-          router.trigger.apply(router, ['route:' + name].concat(args));
-          router.trigger('route', name, args);
-          Backbone.history.trigger('route', router, name, args);
-        }
-      });
-      return this;
-    }
-
-    // Execute a route handler with the provided parameters.  This is an
-    // excellent place to do pre-route setup or post-route cleanup.
-    execute(callback, args, name) {
-      if (callback) callback.apply(this, args);
-    }
-
-    // Simple proxy to `Backbone.history` to save a fragment into the history.
-    navigate(fragment, options) {
-      Backbone.history.navigate(fragment, options);
-      return this;
-    }
-
-    // Bind all defined routes to `Backbone.history`. We have to reverse the
-    // order of the routes here to support behavior where the most general
-    // routes can be defined at the bottom of the route map.
-    _bindRoutes() {
-      var routes = getClassProp(this, 'routes');
-      if (!routes) return;
-      this.routes = routes;
-      var routeKey, routeKeys = _.keys(this.routes);
-      while ((routeKey = routeKeys.pop()) != null) {
-        this.route(routeKey, this.routes[routeKey]);
-      }
-    }
-
-    // Convert a route string into a regular expression, suitable for matching
-    // against the current location hash.
-    _routeToRegExp(route) {
-      route = route.replace(escapeRegExp, '\\$&')
-        .replace(optionalParam, '(?:$1)?')
-        .replace(namedParam, function(match, optional) {
-          return optional ? match : '([^/?]+)';
-        })
-        .replace(splatParam, '([^?]*?)');
-      return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
-    }
-
-    // Given a route, and a URL fragment that it matches, return the array of
-    // extracted decoded parameters. Empty or unmatched parameters will be
-    // treated as `null` to normalize cross-browser behavior.
-    _extractParameters(route, fragment) {
-      var params = route.exec(fragment).slice(1);
-      return _.map(params, function(param, i) {
-        // Don't decode the search params.
-        if (i === params.length - 1) return param || null;
-        return param ? decodeURIComponent(param) : null;
-      });
+  // Bind all defined routes to `Backbone.history`. We have to reverse the
+  // order of the routes here to support behavior where the most general
+  // routes can be defined at the bottom of the route map.
+  _bindRoutes() {
+    var routes = getClassProp(this, 'routes');
+    if (!routes) return;
+    this.routes = routes;
+    var routeKey, routeKeys = _.keys(this.routes);
+    while ((routeKey = routeKeys.pop()) != null) {
+      this.route(routeKey, this.routes[routeKey]);
     }
   }
 
-  _.extend(Router.prototype, Events);
+  // Convert a route string into a regular expression, suitable for matching
+  // against the current location hash.
+  _routeToRegExp(route) {
+    route = route.replace(escapeRegExp, '\\$&')
+      .replace(optionalParam, '(?:$1)?')
+      .replace(namedParam, function(match, optional) {
+        return optional ? match : '([^/?]+)';
+      })
+      .replace(splatParam, '([^?]*?)');
+    return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
+  }
 
-  Backbone.Router = Router;
+  // Given a route, and a URL fragment that it matches, return the array of
+  // extracted decoded parameters. Empty or unmatched parameters will be
+  // treated as `null` to normalize cross-browser behavior.
+  _extractParameters(route, fragment) {
+    var params = route.exec(fragment).slice(1);
+    return _.map(params, function(param, i) {
+      // Don't decode the search params.
+      if (i === params.length - 1) return param || null;
+      return param ? decodeURIComponent(param) : null;
+    });
+  }
+}
 
-  // Cached regular expressions for matching named param parts and splatted
-  // parts of route strings.
-  var optionalParam = /\((.*?)\)/g;
-  var namedParam    = /(\(\?)?:\w+/g;
-  var splatParam    = /\*\w+/g;
-  var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
+_.extend(Router.prototype, Events);
 
-  // Backbone.History
-  // ----------------
 
-  // Handles cross-browser history management, based on either
-  // [pushState](http://diveintohtml5.info/history.html) and real URLs, or
-  // [onhashchange](https://developer.mozilla.org/en-US/docs/DOM/window.onhashchange)
-  // and URL fragments. If the browser supports neither (old IE, natch),
-  // falls back to polling.
+// Cached regular expressions for matching named param parts and splatted
+// parts of route strings.
+var optionalParam = /\((.*?)\)/g;
+var namedParam    = /(\(\?)?:\w+/g;
+var splatParam    = /\*\w+/g;
+var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
-  class History {
+// Backbone.History
+// ----------------
+
+// Handles cross-browser history management, based on either
+// [pushState](http://diveintohtml5.info/history.html) and real URLs, or
+// [onhashchange](https://developer.mozilla.org/en-US/docs/DOM/window.onhashchange)
+// and URL fragments. If the browser supports neither (old IE, natch),
+// falls back to polling.
+
+class History {
+
+    // Create the default Backbone.history.
+    static instance = new History();
 
     // The default interval to poll for hash changes, if necessary, is
     // twenty times a second.
@@ -1794,44 +1765,48 @@
         location.hash = '#' + fragment;
       }
     }
-  }
+}
 
-  _.extend(History.prototype, Events);
-
-  Backbone.History = History;
-
-  // Cached regex for stripping a leading hash/slash and trailing space.
-  var routeStripper = /^[#\/]|\s+$/g;
-
-  // Cached regex for stripping leading and trailing slashes.
-  var rootStripper = /^\/+|\/+$/g;
-
-  // Cached regex for stripping urls of hash.
-  var pathStripper = /#.*$/;
-
-  // Has the history handling already been started?
-  History.started = false;
+_.extend(History.prototype, Events);
 
 
-  // Create the default Backbone.history.
-  Backbone.history = new History;
+// Cached regex for stripping a leading hash/slash and trailing space.
+var routeStripper = /^[#\/]|\s+$/g;
 
-  // Helpers
-  // -------
+// Cached regex for stripping leading and trailing slashes.
+var rootStripper = /^\/+|\/+$/g;
 
-  // Throw an error when a URL is needed, and none is supplied.
-  var urlError = function() {
-    throw new Error('A "url" property or function must be specified');
+// Cached regex for stripping urls of hash.
+var pathStripper = /#.*$/;
+
+// Has the history handling already been started?
+History.started = false;
+
+
+// Helpers
+// -------
+
+// Throw an error when a URL is needed, and none is supplied.
+var urlError = function() {
+  throw new Error('A "url" property or function must be specified');
+};
+
+// Wrap an optional error callback with a fallback error event.
+var wrapError = function(model, options) {
+  var error = options.error;
+  options.error = function(resp) {
+    if (error) error.call(options.context, model, resp, options);
+    model.trigger('error', model, resp, options);
   };
+};
 
-  // Wrap an optional error callback with a fallback error event.
-  var wrapError = function(model, options) {
-    var error = options.error;
-    options.error = function(resp) {
-      if (error) error.call(options.context, model, resp, options);
-      model.trigger('error', model, resp, options);
-    };
-  };
-
-  return Backbone;
-});
+export {
+  Model,
+  Collection,
+  Events,
+  sync,
+  ajax,
+  Router,
+  History,
+  VERSION
+};

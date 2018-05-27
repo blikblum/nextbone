@@ -622,7 +622,8 @@
   });
 
   QUnit.test('Backbone object inherits Events', function(assert) {
-    assert.ok(Backbone.on === Backbone.Events.on);
+    var obj = _.extend({}, Backbone.Events);
+    assert.ok(obj.on === Backbone.Events.on);
   });
 
   QUnit.test('once with asynchronous events', function(assert) {
@@ -656,11 +657,12 @@
 
   QUnit.test('`once` on `all` should work as expected', function(assert) {
     assert.expect(1);
-    Backbone.once('all', function() {
+    var obj = _.extend({}, Backbone.Events);
+    obj.once('all', function() {
       assert.ok(true);
-      Backbone.trigger('all');
+      obj.trigger('all');
     });
-    Backbone.trigger('all');
+    obj.trigger('all');
   });
 
   QUnit.test('once without a callback is a noop', function(assert) {
