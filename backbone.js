@@ -1533,6 +1533,10 @@ class History {
     // Create the default Backbone.history.
     static instance = new History();
 
+    static start() {
+      this.instance.start();
+    }
+
     // The default interval to poll for hash changes, if necessary, is
     // twenty times a second.
     interval = 50;
