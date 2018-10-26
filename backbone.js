@@ -1356,6 +1356,15 @@ _.each([
 // * Send up the models as XML instead of JSON.
 // * Persist models via WebSockets instead of Ajax.
 
+// Map from CRUD to HTTP for our default `Backbone.sync` implementation.
+var methodMap = {
+  create: 'POST',
+  update: 'PUT',
+  patch: 'PATCH',
+  delete: 'DELETE',
+  read: 'GET'
+};
+
 var sync = {
   handler: function(method, model, options) {
     var type = methodMap[method];
@@ -1397,21 +1406,64 @@ var sync = {
   }
 };
 
+// Backbone.ajax
+// -------------
 
+// Default implementation based on `fetch` API
 
-// Map from CRUD to HTTP for our default `Backbone.sync` implementation.
-var methodMap = {
-  create: 'POST',
-  update: 'PUT',
-  patch: 'PATCH',
-  delete: 'DELETE',
-  read: 'GET'
+var stringifyGETParams = function(url, data) {
+  var query = '';
+  for (var key in data) {
+    if (data[key] == null) continue;
+    query += '&'
+      + encodeURIComponent(key) + '='
+      + encodeURIComponent(data[key]);
+  }
+  if (query) url += (~url.indexOf('?') ? '&' : '?') + query.substring(1);
+  return url;
 };
 
-// Abstract method `Backbone.ajax`
-// Override this to enable ajax functionality.
+var getData = function(response, dataType) {
+  return dataType === 'json' ? response.json() : response.text();
+};
+
+
+// Override handler method to customize ajax functionality.
 var ajax = {
-  handler: function() {}
+  handler: function(options) {
+    if (options.type === 'GET' && typeof options.data === 'object') {
+      options.url = stringifyGETParams(options.url, options.data);
+      delete options.data;
+    }
+
+    _.defaults(options, {
+      method: options.type,
+      headers: _.defaults(options.headers || {}, {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }),
+      body: options.data
+    });
+
+    return fetch(options.url, options)
+      .then(function(response) {
+        var promise = getData(response, options.dataType);
+
+        if (response.ok) return promise;
+
+        var error = new Error(response.statusText);
+        return promise.then(function(responseData) {
+          error.response = response;
+          error.responseData = responseData;
+          if (options.error) options.error(error);
+          throw error;
+        });
+      })
+      .then(function(responseData) {
+        if (options.success) options.success(responseData);
+        return responseData;
+      });
+  }
 };
 
 
