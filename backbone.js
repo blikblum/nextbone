@@ -363,13 +363,6 @@ Listening.prototype.cleanup = function() {
 // is automatically generated and assigned for you.
 
 class Model extends Events {
-
-    // A hash of attributes whose current and previous value differ.
-    changed = null;
-
-    // The value returned during the last failed validation.
-    validationError = null;
-
     // The default name for the JSON `id` attribute is `"id"`. MongoDB and
     // CouchDB users may want to set this to `"_id"`.
     static idAttribute = 'id';
@@ -380,6 +373,8 @@ class Model extends Events {
 
     constructor(attributes, options) {
       super();
+      // The value returned during the last failed validation.
+      this.validationError = null;
       var attrs = attributes || {};
       options || (options = {});
       this.preinitialize.apply(this, arguments);
@@ -390,6 +385,7 @@ class Model extends Events {
       var defaults = _.result(this, 'defaults');
       attrs = _.defaults(_.extend({}, defaults, attrs), defaults);
       this.set(attrs, options);
+      // A hash of attributes whose current and previous value differ.
       this.changed = {};
       this.initialize.apply(this, arguments);
     }
@@ -1536,7 +1532,6 @@ var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 // falls back to polling.
 
 class History extends Events {
-
     // Create the default Backbone.history.
     static instance = new History();
 
@@ -1544,12 +1539,11 @@ class History extends Events {
       this.instance.start();
     }
 
-    // The default interval to poll for hash changes, if necessary, is
-    // twenty times a second.
-    interval = 50;
-
     constructor() {
       super();
+      // The default interval to poll for hash changes, if necessary, is
+      // twenty times a second.
+      this.interval = 50;
       this.handlers = [];
       this.checkUrl = this.checkUrl.bind(this);
 
