@@ -1,6 +1,6 @@
 {
   "name": "nextbone",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "BackboneJS rewritten with ES Classes.",
   "url": "http://backbonejs.org",
   "keywords": [
@@ -43,12 +43,12 @@
     "test": "karma start && npm run lint",
     "test:debug": "karma start --browsers ChromeDebugging --no-single-run",
     "test:fetch": "cross-env NODE_ENV=test mocha --compilers js:babel-register test/fetch",
-    "build": "uglifyjs backbone.js --mangle --source-map backbone-min.map -o backbone-min.js",
+    "build": "babel backbone.js --out-file backbone.es6.js --source-maps",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint backbone.js test/*.js"
   },
   "sideEffects": false,
-  "main": "backbone.js",
+  "main": "backbone.es6.js",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -56,8 +56,8 @@
   },
   "files": [
     "backbone.js",
-    "backbone-min.js",
-    "backbone-min.map",
+    "backbone.es6.js",
+    "backbone.es6.map",
     "LICENSE"
   ]
 }
