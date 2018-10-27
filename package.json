@@ -49,6 +49,7 @@
   },
   "sideEffects": false,
   "main": "backbone.es6.js",
+  "esnext": "backbone.js",
   "license": "MIT",
   "repository": {
     "type": "git",
