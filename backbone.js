@@ -13,6 +13,11 @@ import _ from 'underscore';
 // Create a local reference to a common array method we'll want to use later.
 var slice = Array.prototype.slice;
 
+// Underscore like keys function
+var keys = function(obj) {
+  return obj ? Object.keys(obj) : [];
+};
+
 // try to get a prop from instance, with fallback to constructor (class property)
 var getClassProp = function(obj, prop) {
   var value = obj[prop];
@@ -49,7 +54,7 @@ var eventsApi = function(iteratee, events, name, callback, opts) {
   if (name && typeof name === 'object') {
     // Handle event maps.
     if (callback !== void 0 && 'context' in opts && opts.context === void 0) opts.context = callback;
-    for (names = _.keys(name); i < names.length ; i++) {
+    for (names = keys(name); i < names.length ; i++) {
       events = eventsApi(iteratee, events, names[i], name[names[i]], opts);
     }
   } else if (name && eventSplitter.test(name)) {
@@ -97,13 +102,13 @@ var offApi = function(events, name, callback, options) {
 
   // Delete all event listeners and "drop" events.
   if (!name && !context && !callback) {
-    for (names = _.keys(listeners); i < names.length; i++) {
+    for (names = keys(listeners); i < names.length; i++) {
       listeners[names[i]].cleanup();
     }
     return;
   }
 
-  names = name ? [name] : _.keys(events);
+  names = name ? [name] : keys(events);
   for (; i < names.length; i++) {
     name = names[i];
     var handlers = events[name];
@@ -255,7 +260,7 @@ class Events {
     var listeningTo = this._listeningTo;
     if (!listeningTo) return this;
 
-    var ids = obj ? [obj._listenId] : _.keys(listeningTo);
+    var ids = obj ? [obj._listenId] : keys(listeningTo);
     for (var i = 0; i < ids.length; i++) {
       var listening = listeningTo[ids[i]];
 
@@ -704,6 +709,39 @@ class Model extends Events {
       return this._validate({}, _.extend({}, options, {validate: true}));
     }
 
+    // underscore methods
+    keys() {
+      return keys(this.attributes);
+    }
+
+    values() {
+      return Object.values(this.attributes);
+    }
+
+    pairs() {
+      return Object.entries(this.attributes);
+    }
+
+    entries() {
+      return Object.entries(this.attributes);
+    }
+
+    invert() {
+      return _.invert(this.attributes);
+    }
+
+    pick(...args) {
+      return _.pick(this.attributes, ...args);
+    }
+
+    omit(...args) {
+      return _.omit(this.attributes, ...args);
+    }
+
+    isEmpty() {
+      return _.isEmpty(this.attributes);
+    }
+
     // Run validation against the next complete set of model attributes,
     // returning `true` if all is well. Otherwise, fire an `"invalid"` event.
     _validate(attrs, options) {
@@ -1077,6 +1115,154 @@ class Collection extends Events {
       return new CollectionIterator(this, ITERATOR_KEYSVALUES);
     }
 
+    forEach(iteratee, context) {
+      return this.models.forEach(iteratee, context);
+    }
+
+    each(iteratee, context) {
+      return this.forEach(iteratee, context);
+    }
+
+    map(iteratee, context) {
+      return this.models.map(cb(iteratee, this), context);
+    }
+
+    reduce(...args) {
+      return this.models.reduce(...args);
+    }
+
+    reduceRight(...args) {
+      return this.models.reduceRight(...args);
+    }
+
+    find(predicate, context) {
+      return this.models.find(cb(predicate, this), context);
+    }
+
+    filter(predicate, context) {
+      return this.models.filter(cb(predicate, this), context);
+    }
+
+    reject(predicate, context) {
+      return this.models.filter(_.negate(cb(predicate, this)), context);
+    }
+
+    every(predicate, context) {
+      return this.models.every(cb(predicate, this), context);
+    }
+
+    some(predicate, context) {
+      return this.models.some(cb(predicate, this), context);
+    }
+
+    includes(value, fromIndex) {
+      return this.models.includes(value, fromIndex);
+    }
+
+    contains(value, fromIndex) {
+      return this.includes(value, fromIndex);
+    }
+
+    invoke(...args) {
+      return _.invoke(this.models, ...args);
+    }
+
+    max(iteratee, context) {
+      return _.max(this.models, cb(iteratee, this), context);
+    }
+
+    min(iteratee, context) {
+      return _.min(this.models, cb(iteratee, this), context);
+    }
+
+    toArray() {
+      return this.models.slice();
+    }
+
+    size() {
+      return this.models.length;
+    }
+
+    first(n) {
+      return _.first(this.models, n);
+    }
+
+    take(n) {
+      return _.first(this.models, n);
+    }
+
+    initial(n) {
+      return _.initial(this.models, n);
+    }
+
+    last(n) {
+      return _.last(this.models, n);
+    }
+
+    rest(index) {
+      return _.rest(this.models, index);
+    }
+
+    drop(index) {
+      return _.rest(this.models, index);
+    }
+
+    without(...args) {
+      return _.without(this.models, ...args);
+    }
+
+    difference(...args) {
+      return _.difference(this.models, ...args);
+    }
+
+    indexOf(model, fromIndex) {
+      return this.models.indexOf(model, fromIndex);
+    }
+
+    lastIndexOf(model, fromIndex) {
+      return this.models.lastIndexOf(model, fromIndex);
+    }
+
+    findIndex(predicate, context) {
+      return this.models.findIndex(cb(predicate, this), context);
+    }
+
+    findLastIndex(predicate, context) {
+      return _.findLastIndex(this.models, cb(predicate, this), context);
+    }
+
+    shuffle() {
+      return _.shuffle(this.models);
+    }
+
+    isEmpty() {
+      return this.models.length === 0;
+    }
+
+    sample(n) {
+      return _.sample(this.models, n);
+    }
+
+    partition(predicate) {
+      return _.partition(this.models, cb(predicate, this));
+    }
+
+    groupBy(predicate, context) {
+      return _.groupBy(this.models, cb(predicate, this), context);
+    }
+
+    indexBy(predicate, context) {
+      return _.indexBy(this.models, cb(predicate, this), context);
+    }
+
+    sortBy(predicate, context) {
+      return _.sortBy(this.models, cb(predicate, this), context);
+    }
+
+    countBy(predicate, context) {
+      return _.countBy(this.models, cb(predicate, this), context);
+    }
+
     // Private method to reset all internal state. Called when the collection
     // is first initialized or reset.
     _reset() {
@@ -1255,42 +1441,6 @@ CollectionIterator.prototype.next = function() {
   return {value: void 0, done: true};
 };
 
-
-// Proxy Backbone class methods to Underscore functions, wrapping the model's
-// `attributes` object or collection's `models` array behind the scenes.
-//
-// collection.filter(function(model) { return model.get('age') > 10 });
-// collection.each(this.addView);
-//
-// `Function#apply` can be slow so we use the method's arg count, if we know it.
-var addMethod = function(base, length, method, attribute) {
-  switch (length) {
-    case 1: return function() {
-      return base[method](this[attribute]);
-    };
-    case 2: return function(value) {
-      return base[method](this[attribute], value);
-    };
-    case 3: return function(iteratee, context) {
-      return base[method](this[attribute], cb(iteratee, this), context);
-    };
-    case 4: return function(iteratee, defaultVal, context) {
-      return base[method](this[attribute], cb(iteratee, this), defaultVal, context);
-    };
-    default: return function() {
-      var args = slice.call(arguments);
-      args.unshift(this[attribute]);
-      return base[method].apply(base, args);
-    };
-  }
-};
-
-var addUnderscoreMethods = function(Class, base, methods, attribute) {
-  _.each(methods, function(length, method) {
-    if (base[method]) Class.prototype[method] = addMethod(base, length, method, attribute);
-  });
-};
-
 // Support `collection.sortBy('attr')` and `collection.findWhere({id: 1})`.
 var cb = function(iteratee, instance) {
   if (_.isFunction(iteratee)) return iteratee;
@@ -1298,51 +1448,13 @@ var cb = function(iteratee, instance) {
   if (_.isString(iteratee)) return function(model) { return model.get(iteratee); };
   return iteratee;
 };
+
 var modelMatcher = function(attrs) {
   var matcher = _.matches(attrs);
   return function(model) {
     return matcher(model.attributes);
   };
 };
-
-// Underscore methods that we want to implement on the Collection.
-// 90% of the core usefulness of Backbone Collections is actually implemented
-// right here:
-var collectionMethods = {forEach: 3, each: 3, map: 3, collect: 3, reduce: 0,
-  foldl: 0, inject: 0, reduceRight: 0, foldr: 0, find: 3, detect: 3, filter: 3,
-  select: 3, reject: 3, every: 3, all: 3, some: 3, any: 3, include: 3, includes: 3,
-  contains: 3, invoke: 0, max: 3, min: 3, toArray: 1, size: 1, first: 3,
-  head: 3, take: 3, initial: 3, rest: 3, tail: 3, drop: 3, last: 3,
-  without: 0, difference: 0, indexOf: 3, shuffle: 1, lastIndexOf: 3,
-  isEmpty: 1, chain: 1, sample: 3, partition: 3, groupBy: 3, countBy: 3,
-  sortBy: 3, indexBy: 3, findIndex: 3, findLastIndex: 3};
-
-
-// Underscore methods that we want to implement on the Model, mapped to the
-// number of arguments they take.
-var modelMethods = {keys: 1, values: 1, pairs: 1, invert: 1, pick: 0,
-  omit: 0, chain: 1, isEmpty: 1};
-
-// Mix in each Underscore method as a proxy to `Collection#models`.
-
-_.each([
-  [Collection, collectionMethods, 'models'],
-  [Model, modelMethods, 'attributes']
-], function(config) {
-  var Base = config[0],
-      methods = config[1],
-      attribute = config[2];
-
-  Base.mixin = function(obj) {
-    var mappings = _.reduce(_.functions(obj), function(memo, name) {
-      memo[name] = 0;
-      return memo;
-    }, {});
-    addUnderscoreMethods(Base, obj, mappings, attribute);
-  };
-
-  addUnderscoreMethods(Base, _, methods, attribute);
-});
 
 // Backbone.sync
 // -------------
@@ -1535,7 +1647,7 @@ class Router extends Events {
     var routes = getClassProp(this, 'routes');
     if (!routes) return;
     this.routes = routes;
-    var routeKey, routeKeys = _.keys(this.routes);
+    var routeKey, routeKeys = keys(this.routes);
     while ((routeKey = routeKeys.pop()) != null) {
       this.route(routeKey, this.routes[routeKey]);
     }
