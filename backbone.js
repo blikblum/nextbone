@@ -319,42 +319,44 @@ var withEvents = (Base) => {
 
 // A listening class that tracks and cleans up memory bindings
 // when all callbacks have been offed.
-var Listening = function(listener, obj) {
-  this.id = listener._listenId;
-  this.listener = listener;
-  this.obj = obj;
-  this.interop = true;
-  this.count = 0;
-  this._events = void 0;
-};
+class Listening {
+  constructor(listener, obj) {
+    this.id = listener._listenId;
+    this.listener = listener;
+    this.obj = obj;
+    this.interop = true;
+    this.count = 0;
+    this._events = void 0;
+  }
+
+  // Offs a callback (or several).
+  // Uses an optimized counter if the listenee uses Backbone.Events.
+  // Otherwise, falls back to manual tracking to support events
+  // library interop.
+
+  off(name, callback) {
+    var cleanup;
+    if (this.interop) {
+      this._events = eventsApi(offApi, this._events, name, callback, {
+        context: void 0,
+        listeners: void 0
+      });
+      cleanup = !this._events;
+    } else {
+      this.count--;
+      cleanup = this.count === 0;
+    }
+    if (cleanup) this.cleanup();
+  }
+
+  // Cleans up memory bindings between the listener and the listenee.
+  cleanup() {
+    delete this.listener._listeningTo[this.obj._listenId];
+    if (!this.interop) delete this.obj._listeners[this.id];
+  }
+}
 
 Listening.prototype.on = Events.prototype.on;
-
-// Offs a callback (or several).
-// Uses an optimized counter if the listenee uses Backbone.Events.
-// Otherwise, falls back to manual tracking to support events
-// library interop.
-Listening.prototype.off = function(name, callback) {
-  var cleanup;
-  if (this.interop) {
-    this._events = eventsApi(offApi, this._events, name, callback, {
-      context: void 0,
-      listeners: void 0
-    });
-    cleanup = !this._events;
-  } else {
-    this.count--;
-    cleanup = this.count === 0;
-  }
-  if (cleanup) this.cleanup();
-};
-
-// Cleans up memory bindings between the listener and the listenee.
-Listening.prototype.cleanup = function() {
-  delete this.listener._listeningTo[this.obj._listenId];
-  if (!this.interop) delete this.obj._listeners[this.id];
-};
-
 
 // Backbone.Model
 // --------------
