@@ -908,7 +908,7 @@ class Collection extends Events {
     var orderChanged = false;
     var replace = !sortable && add && remove;
     if (set.length && replace) {
-      orderChanged = this.length !== set.length || _.some(this.models, function(m, index) {
+      orderChanged = this.length !== set.length || this.models.some(function(m, index) {
         return m !== set[index];
       });
       this.models.length = 0;
@@ -1877,7 +1877,7 @@ class History extends Events {
     // If the root doesn't match, no routes can match either.
     if (!this.matchRoot()) return false;
     fragment = this.fragment = this.getFragment(fragment);
-    return _.some(this.handlers, function(handler) {
+    return this.handlers.some(function(handler) {
       if (handler.route.test(fragment)) {
         handler.callback(fragment);
         return true;
