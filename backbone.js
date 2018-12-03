@@ -1699,7 +1699,13 @@ var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
 class History extends Events {
   // Create the default Backbone.history.
-  static instance = new History();
+  static get instance() {
+    return this._instance || (this._instance = new History());
+  }
+
+  static set instance(value) {
+    this._instance = value;
+  }
 
   static start() {
     this.instance.start();
@@ -1948,9 +1954,6 @@ var rootStripper = /^\/+|\/+$/g;
 
 // Cached regex for stripping urls of hash.
 var pathStripper = /#.*$/;
-
-// Has the history handling already been started?
-History.started = false;
 
 
 // Helpers
