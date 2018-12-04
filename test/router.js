@@ -608,25 +608,6 @@
     Backbone.History.instance.navigate('fragment');
   });
 
-  QUnit.test('Transition from pushState to hashChange.', function(assert) {
-    assert.expect(1);
-    Backbone.History.instance.stop();
-    location.replace('http://example.com/root/x/y?a=b');
-    location.replace = function(url) {
-      assert.strictEqual(url, '/root#x/y?a=b');
-    };
-    Backbone.History.instance = _.extend(new Backbone.History, {
-      location: location,
-      history: {
-        pushState: null,
-        replaceState: null
-      }
-    });
-    Backbone.History.instance.start({
-      root: 'root',
-      pushState: true
-    });
-  });
 
   QUnit.test('#1695 - hashChange to pushState with search.', function(assert) {
     assert.expect(1);
@@ -942,19 +923,6 @@
     Backbone.History.instance.start();
   });
 
-  QUnit.test('pushState to hashChange with only search params.', function(assert) {
-    assert.expect(1);
-    Backbone.History.instance.stop();
-    location.replace('http://example.com?a=b');
-    location.replace = function(url) {
-      assert.strictEqual(url, '/#?a=b');
-    };
-    Backbone.History.instance = _.extend(new Backbone.History, {
-      location: location,
-      history: null
-    });
-    Backbone.History.instance.start({pushState: true});
-  });
 
   QUnit.test('#3123 - History#navigate decodes before comparison.', function(assert) {
     assert.expect(1);
@@ -982,23 +950,6 @@
       assert.strictEqual(params, 'a=value&backUrl=https%3A%2F%2Fwww.msn.com%2Fidp%2Fidpdemo%3Fspid%3Dspdemo%26target%3Db');
     });
     Backbone.History.instance.start();
-  });
-
-  QUnit.test('#3358 - pushState to hashChange transition with search params', function(assert) {
-    assert.expect(1);
-    Backbone.History.instance.stop();
-    location.replace('http://example.com/root?foo=bar');
-    location.replace = function(url) {
-      assert.strictEqual(url, '/root#?foo=bar');
-    };
-    Backbone.History.instance = _.extend(new Backbone.History, {
-      location: location,
-      history: {
-        pushState: undefined,
-        replaceState: undefined
-      }
-    });
-    Backbone.History.instance.start({root: '/root', pushState: true});
   });
 
   QUnit.test('Paths that don\'t match the root should not match no root', function(assert) {

@@ -1770,7 +1770,7 @@ class History extends Events {
   // Get the cross-browser normalized URL fragment from the path or hash.
   getFragment(fragment) {
     if (fragment == null) {
-      if (this._usePushState || !this._wantsHashChange) {
+      if (this._usePushState || !this._useHashChange) {
         fragment = this.getPath();
       } else {
         fragment = this.getHash();
@@ -1789,12 +1789,8 @@ class History extends Events {
     // Is pushState desired ... is it available?
     this.options          = _.extend({root: '/'}, this.options, options);
     this.root             = this.options.root;
-    this._wantsHashChange = this.options.hashChange !== false;
-    this._hasHashChange   = 'onhashchange' in window && (document.documentMode === void 0 || document.documentMode > 7);
-    this._useHashChange   = this._wantsHashChange && this._hasHashChange;
-    this._wantsPushState  = !!this.options.pushState;
-    this._hasPushState    = !!(this.history && this.history.pushState);
-    this._usePushState    = this._wantsPushState && this._hasPushState;
+    this._useHashChange   = this.options.hashChange !== false;
+    this._usePushState    = !!this.options.pushState;
     this.fragment         = this.getFragment();
 
     // Normalize root to always include a leading and trailing slash.
@@ -1802,25 +1798,13 @@ class History extends Events {
 
     // Transition from hashChange to pushState or vice versa if both are
     // requested.
-    if (this._wantsHashChange && this._wantsPushState) {
-
-      // If we've started off with a route from a `pushState`-enabled
-      // browser, but we're currently in a browser that doesn't support it...
-      if (!this._hasPushState && !this.atRoot()) {
-        var rootPath = this.root.slice(0, -1) || '/';
-        this.location.replace(rootPath + '#' + this.getPath());
-        // Return immediately as browser will do redirect to new url
-        return true;
-
-      // Or if we've started out with a hash-based route, but we're currently
+    if (this._useHashChange && this._usePushState) {
+      // If we've started out with a hash-based route, but we're currently
       // in a browser where it could be `pushState`-based instead...
-      } else if (this._hasPushState && this.atRoot()) {
+      if (this.atRoot()) {
         this.navigate(this.getHash(), {replace: true});
       }
-
     }
-
-
 
     var addEventListener = window.addEventListener;
 
@@ -1830,8 +1814,6 @@ class History extends Events {
       addEventListener('popstate', this.checkUrl, false);
     } else if (this._useHashChange) {
       addEventListener('hashchange', this.checkUrl, false);
-    } else if (this._wantsHashChange) {
-      this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
     }
 
     if (!this.options.silent) return this.loadUrl();
@@ -1849,9 +1831,6 @@ class History extends Events {
       removeEventListener('hashchange', this.checkUrl, false);
     }
 
-
-    // Some environments will throw when clearing an undefined interval.
-    if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
     History.started = false;
   }
 
@@ -1921,7 +1900,7 @@ class History extends Events {
 
     // If hash changes haven't been explicitly disabled, update the hash
     // fragment to store history.
-    } else if (this._wantsHashChange) {
+    } else if (this._useHashChange) {
       this._updateHash(this.location, fragment, options.replace);
 
     // If you've told us that you explicitly don't want fallback hashchange-
