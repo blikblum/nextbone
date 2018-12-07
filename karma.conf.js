@@ -36,7 +36,10 @@ module.exports = function(config) {
       output: {
         format: 'iife',            // Helps prevent naming collisions.
         name: 'nextboneTests',    // Required for 'iife' format.
-        sourcemap: 'inline'        // Sensible for testing.
+        sourcemap: 'inline',      // Sensible for testing.
+        globals: {
+          underscore: '_'
+        }
       }
     },
 
