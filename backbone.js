@@ -6,7 +6,7 @@
 //     http://backbonejs.org
 
 import {uniqueId, clone, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
-  invert, omit, pick, isArray, isString, isFunction, isEmpty, isRegExp, isObject, negate, invoke, max, min, first, initial,
+  invert, omit, pick, isArray, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
   last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy, matches} from 'underscore';
 
 // Initial Setup
@@ -15,9 +15,13 @@ import {uniqueId, clone, extend, once, result, defaults as getDefaults, escape, 
 // Create a local reference to a common array method we'll want to use later.
 var slice = Array.prototype.slice;
 
-// Underscore like keys function
+// Underscore like functions
 var keys = function(obj) {
   return obj ? Object.keys(obj) : [];
+};
+
+var isObjectEmpty = function(obj) {
+  return obj == null || Object.keys(obj).length === 0;
 };
 
 // try to get a prop from instance, with fallback to constructor (class property)
@@ -273,7 +277,7 @@ class Events {
       listening.obj.off(name, callback, this);
       if (listening.interop) listening.off(name, callback);
     }
-    if (isEmpty(listeningTo)) this._listeningTo = void 0;
+    if (isObjectEmpty(listeningTo)) this._listeningTo = void 0;
 
     return this;
   }
@@ -541,7 +545,7 @@ class Model extends Events {
   // Determine if the model has changed since the last `"change"` event.
   // If you specify an attribute name, determine if that attribute has changed.
   hasChanged(attr) {
-    if (attr == null) return !isEmpty(this.changed);
+    if (attr == null) return !isObjectEmpty(this.changed);
     return has(this.changed, attr);
   }
 
@@ -743,7 +747,7 @@ class Model extends Events {
   }
 
   isEmpty() {
-    return isEmpty(this.attributes);
+    return isObjectEmpty(this.attributes);
   }
 
   // Run validation against the next complete set of model attributes,
