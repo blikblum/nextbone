@@ -7,7 +7,7 @@
 
 import {uniqueId, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
   invert, omit, pick, isArray, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
-  last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy, matches} from 'underscore';
+  last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy} from 'underscore';
 
 // Initial Setup
 // -------------
@@ -24,8 +24,27 @@ var clone = function(obj) {
   return Object.assign({}, obj);
 };
 
+// Returns whether an object has a given set of `key:value` pairs.
+var isMatch = function(object, attrs) {
+  var objKeys = keys(attrs), length = objKeys.length;
+  if (object == null) return !length;
+  var obj = Object(object);
+  for (var i = 0; i < length; i++) {
+    var key = objKeys[i];
+    if (attrs[key] !== obj[key] || !(key in obj)) return false;
+  }
+  return true;
+};
+
 var isObjectEmpty = function(obj) {
   return obj == null || Object.keys(obj).length === 0;
+};
+
+var matches = function(attrs) {
+  attrs = Object.assign({}, attrs);
+  return function(obj) {
+    return isMatch(obj, attrs);
+  };
 };
 
 
