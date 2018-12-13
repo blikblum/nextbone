@@ -1772,9 +1772,8 @@
       assert.expect(0);
       return;
     }
-    assert.expect(2);
+    assert.expect(1);
     var collection = new Backbone.Collection([]);
-    assert.strictEqual(collection[$$iterator], collection.values);
     var iterator = collection[$$iterator]();
     assert.deepEqual(iterator.next(), {value: void 0, done: true});
   });
