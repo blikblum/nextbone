@@ -6,7 +6,7 @@
 //     http://backbonejs.org
 
 import {uniqueId, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
-  invert, omit, pick, isArray, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
+  invert, omit, pick, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
   last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy} from 'underscore';
 
 // Initial Setup
@@ -23,6 +23,8 @@ var keys = function(obj) {
 var clone = function(obj) {
   return Object.assign({}, obj);
 };
+
+var isArray = Array.isArray;
 
 // Returns whether an object has a given set of `key:value` pairs.
 var isMatch = function(object, attrs) {
