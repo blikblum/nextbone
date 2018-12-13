@@ -374,11 +374,11 @@ Listening.prototype.on = Events.prototype.on;
 class Model extends Events {
   // The default name for the JSON `id` attribute is `"id"`. MongoDB and
   // CouchDB users may want to set this to `"_id"`.
-  static idAttribute = 'id';
+  // static idAttribute = 'id';
 
   // The prefix is used to create the client id which is used to identify models locally.
   // You may want to override this if you're experiencing name clashes with model ids.
-  static cidPrefix = 'c';
+  // static cidPrefix = 'c';
 
   constructor(attributes, options) {
     super();
@@ -387,7 +387,7 @@ class Model extends Events {
     var attrs = attributes || {};
     options || (options = {});
     this.preinitialize.apply(this, arguments);
-    this.cid = uniqueId(this.constructor.cidPrefix);
+    this.cid = uniqueId(this.constructor.cidPrefix || 'c');
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
     if (options.parse) attrs = this.parse(attrs, options) || {};
@@ -499,7 +499,7 @@ class Model extends Events {
     }
 
     // Update the `id`.
-    var idAttribute = this.constructor.idAttribute;
+    var idAttribute = this.constructor.idAttribute || 'id';
     if (idAttribute in attrs) this.id = this.get(idAttribute);
 
     // Trigger all relevant attribute changes.
@@ -688,7 +688,7 @@ class Model extends Events {
       result(this.collection, 'url') ||
       urlError();
     if (this.isNew()) return base;
-    var id = this.get(this.constructor.idAttribute);
+    var id = this.get(this.constructor.idAttribute || 'id');
     return base.replace(/[^\/]$/, '$&/') + encodeURIComponent(id);
   }
 
@@ -705,7 +705,7 @@ class Model extends Events {
 
   // A model is new if it has never been saved to the server, and lacks an id.
   isNew() {
-    return !this.has(this.constructor.idAttribute);
+    return !this.has(this.constructor.idAttribute || 'id');
   }
 
   // Check if the model is currently in a valid state.
@@ -776,7 +776,7 @@ class Model extends Events {
 class Collection extends Events {
   // The default model for a collection is just a **Backbone.Model**.
   // This should be overridden in most cases.
-  static model = Model;
+  // static model = Model;
 
   constructor(models, options) {
     super();
@@ -1100,7 +1100,7 @@ class Collection extends Events {
 
   // Define how to uniquely identify models in the collection.
   modelId(attrs) {
-    var model = this.model || this.constructor.model;
+    var model = this.model || this.constructor.model || Model;
     return attrs[model && model.idAttribute || 'id'];
   }
 
@@ -1284,7 +1284,7 @@ class Collection extends Events {
     }
     options = options ? clone(options) : {};
     options.collection = this;
-    var modelClass = this.model || this.constructor.model;
+    var modelClass = this.model || this.constructor.model || Model;
     var model = modelClass.prototype instanceof Model || modelClass === Model ? new modelClass(attrs, options) : modelClass(attrs, options);
     if (!model.validationError) return model;
     this.trigger('invalid', this, model.validationError, options);
