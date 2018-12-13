@@ -5,7 +5,7 @@
 //     For all details and documentation:
 //     http://backbonejs.org
 
-import {uniqueId, clone, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
+import {uniqueId, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
   invert, omit, pick, isArray, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
   last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy, matches} from 'underscore';
 
@@ -20,9 +20,14 @@ var keys = function(obj) {
   return obj ? Object.keys(obj) : [];
 };
 
+var clone = function(obj) {
+  return Object.assign({}, obj);
+};
+
 var isObjectEmpty = function(obj) {
   return obj == null || Object.keys(obj).length === 0;
 };
+
 
 // try to get a prop from instance, with fallback to constructor (class property)
 var getClassProp = function(obj, prop) {
