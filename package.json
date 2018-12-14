@@ -1,6 +1,6 @@
 {
   "name": "nextbone",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "BackboneJS rewritten with ES Classes.",
   "url": "http://backbonejs.org",
   "keywords": [
