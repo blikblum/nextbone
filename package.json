@@ -47,6 +47,7 @@
   },
   "sideEffects": false,
   "main": "backbone.js",
+  "module": "backbone.js",
   "license": "MIT",
   "repository": {
     "type": "git",
