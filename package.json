@@ -43,7 +43,7 @@
     "test:debug": "karma start --browsers ChromeDebugging --no-single-run",
     "test:fetch": "cross-env NODE_ENV=test mocha --require babel-core/register test/fetch",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
-    "lint": "eslint backbone.js test/*.js"
+    "lint": "eslint backbone.js computed.js test/*.js"
   },
   "sideEffects": false,
   "main": "backbone.js",
