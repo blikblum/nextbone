@@ -63,7 +63,7 @@ class ComputedFields {
   }
 
   _thenDependentChanges(depends, callback) {
-    depends.forEach(name => {
+    depends && depends.forEach(name => {
       if (typeof name === 'string') {
         this.model.on('change:' + name, callback);
       }
@@ -86,6 +86,7 @@ class ComputedFields {
   }
 
   _dependentFields(depends) {
+    if (!depends) return {};
     return depends.reduce((memo, field) => {
       if (_.isString(field)) {
         memo[field] = this.model.get(field);
@@ -101,6 +102,7 @@ const computed = options => {
     if (def.toJSON === false) {
       result.push(key);
     }
+    return result;
   }, []);
 
   return ModelClass => {
