@@ -1,4 +1,4 @@
-import { Model, Collection, ajax } from '../../backbone';
+import { Model, Collection, ajax } from 'nextbone';
 import { localStorage } from '../../localstorage';
 import { clone, uniq } from 'underscore';
 
