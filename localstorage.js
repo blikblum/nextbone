@@ -1,4 +1,5 @@
 import { chain, contains, isObject, without, isUndefined } from 'underscore';
+import { sync } from 'nextbone';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
@@ -206,7 +207,7 @@ function getLocalStorage(model) {
  *  `jQuery.ajax`
  * @returns {undefined}
  */
-function sync(method, model, options) {
+function localStorageSync(method, model, options) {
   const store = getLocalStorage(model);
   let resp, errorMessage;
   let resolve, reject;
@@ -263,20 +264,31 @@ function sync(method, model, options) {
   return promise;
 }
 
+const previousSync = sync.handler;
+
+/** Get the local or ajax sync call
+ * @param {Model} model - Model to sync
+ * @param {object} options - Options to pass, takes ajaxSync
+ * @returns {function} The sync method that will be called
+ */
+function getSyncMethod(model, options) {
+  const forceAjaxSync = options.ajaxSync;
+  const hasLocalStorage = getLocalStorage(model);
+
+  return !forceAjaxSync && hasLocalStorage ? localStorageSync : previousSync;
+}
+
+sync.handler = function localStorageSyncHandler(method, model, options = {}) {
+  const fn = getSyncMethod(model, options);
+  fn.call(this, method, model, options);
+};
+
 export function localStorage(name, serializer) {
   return ModelClass => {
     return class extends ModelClass {
       constructor(...args) {
         super(...args);
         this.localStorage = new LocalStorage(name, serializer);
-      }
-
-      sync(method, model, options = {}) {
-        const forceAjaxSync = options.ajaxSync;
-        const hasLocalStorage = getLocalStorage(model);
-
-        const fn = !forceAjaxSync && hasLocalStorage ? sync : super.sync;
-        fn(method, model, options);
       }
     }
   }
