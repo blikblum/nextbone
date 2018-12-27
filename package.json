@@ -30,12 +30,15 @@
     "karma": "^2.0.2",
     "karma-babel-preprocessor": "^7.0.0",
     "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
     "karma-qunit": "^2.1.0",
     "karma-rollup-preprocessor": "^6.0.0",
     "mocha": "^5.2.0",
     "qunit": "^2.6.1",
     "rollup": "^0.59.4",
     "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
     "sinon": "^7.1.0",
     "whatwg-fetch": "^3.0.0"
   },
@@ -44,6 +47,7 @@
     "test:debug": "karma start --browsers ChromeDebugging --no-single-run",
     "test:computed": "cross-env NODE_ENV=test mocha --require babel-core/register test/computed",
     "test:fetch": "cross-env NODE_ENV=test mocha --require babel-core/register test/fetch",
+    "test:localstorage": "karma start test/localstorage/karma.conf.js",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint backbone.js computed.js test/*.js"
   },
