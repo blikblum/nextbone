@@ -442,6 +442,11 @@ class Model extends Events {
     return clone(this.attributes);
   }
 
+  // Get the Model class idAttribute. Read only.
+  get idAttribute() {
+    return this.constructor.idAttribute || 'id';
+  }
+
   // Proxy `Backbone.sync` by default -- but override this if you need
   // custom syncing semantics for *this* particular model.
   sync() {
