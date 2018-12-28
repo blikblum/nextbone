@@ -145,27 +145,7 @@ class LocalStorage {
 
     return model;
   }
-
-  /** Clear localStorage for a collection
-   * @returns {undefined}
-   */
-  _clear() {
-    const local = window.localStorage;
-    const itemRe = new RegExp(`^${this.name}-`);
-
-    // Remove id-tracking item (e.g., "foo").
-    local.removeItem(this.name);
-
-    // Match all data items (e.g., "foo-ID") and remove.
-    for (let k in local) {
-      if (itemRe.test(k)) {
-        local.removeItem(k);
-      }
-    }
-
-    this.records.length = 0;
-  }
-
+  
   /** Number of items in localStorage
    * @returns {integer} - Number of items
    */
