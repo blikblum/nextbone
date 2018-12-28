@@ -36,8 +36,8 @@ const defaultSerializer = {
   }
 };
 
-const writerIdMap = {};
-let instanceCount = 0;
+const revisionMap = {};
+let revisionCounter = 0;
 
 /** LocalStorage proxy class for Backbone models.
  * Usage:
@@ -49,7 +49,6 @@ class LocalStorage {
   constructor(name = '', serializer = defaultSerializer) {
     this.name = name;
     this.serializer = serializer;
-    this.id = ++instanceCount;
   }
 
   /** Return the global localStorage variable
@@ -63,8 +62,9 @@ class LocalStorage {
    * @returns {Array} The records.
   */
   getRecords() {
-    if (!this.records || writerIdMap[this.name] !== this.id) {
+    if (!this.records || revisionMap[this.name] !== this.revision) {
       const store = this._getItem(this.name);
+      this.revision = revisionMap[this.name];
       return store && store.split(',') || [];
     }
     return this.records;
@@ -76,7 +76,8 @@ class LocalStorage {
   save(records) {
     this._setItem(this.name, records.join(','));
     this.records = records;
-    writerIdMap[this.name] = this.id;
+    let revision = revisionMap[this.name];
+    this.revision = revisionMap[this.name] = ++revision;
   }
 
   /** Add a new model with a unique GUID, if it doesn't already have its own ID
