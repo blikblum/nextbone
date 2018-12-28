@@ -1,4 +1,4 @@
-import {chain, contains, isObject, without, isUndefined} from 'underscore';
+import {contains, isObject, without, isUndefined} from 'underscore';
 import {sync} from 'nextbone';
 
 /** Generates 4 random hex digits
@@ -128,10 +128,10 @@ class LocalStorage {
    */
   findAll() {
     const records = this.getRecords();
-    return chain(records).map(
+    return records.map(
       id => this.serializer.deserialize(this._getItem(this._itemName(id)))
     ).filter(
-      item => item != null).value();
+      item => item != null);
   }
 
   /** Delete a model from `this.data`, returning it.
