@@ -37,7 +37,6 @@ const defaultSerializer = {
 };
 
 const revisionMap = {};
-let revisionCounter = 0;
 
 /** LocalStorage proxy class for Backbone models.
  * Usage:
