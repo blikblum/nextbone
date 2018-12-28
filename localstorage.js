@@ -1,5 +1,5 @@
-import { chain, contains, isObject, without, isUndefined } from 'underscore';
-import { sync } from 'nextbone';
+import {chain, contains, isObject, without, isUndefined} from 'underscore';
+import {sync} from 'nextbone';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
@@ -36,6 +36,9 @@ const defaultSerializer = {
   }
 };
 
+const writerIdMap = {};
+let instanceCount = 0;
+
 /** LocalStorage proxy class for Backbone models.
  * Usage:
  *   export const MyModel = Backbone.Model.extend({
@@ -46,9 +49,7 @@ class LocalStorage {
   constructor(name = '', serializer = defaultSerializer) {
     this.name = name;
     this.serializer = serializer;
-
-    const store = this._getItem(this.name);
-    this.records = (store && store.split(',')) || [];
+    this.id = ++instanceCount;
   }
 
   /** Return the global localStorage variable
@@ -58,11 +59,24 @@ class LocalStorage {
     return window.localStorage;
   }
 
+  /** Returns the records associated with store
+   * @returns {Array} The records.
+  */
+  getRecords() {
+    if (!this.records || writerIdMap[this.name] !== this.id) {
+      const store = this._getItem(this.name);
+      return store && store.split(',') || [];
+    }
+    return this.records;
+  }
+
   /** Save the current status to localStorage
    * @returns {undefined}
    */
-  save() {
-    this._setItem(this.name, this.records.join(','));
+  save(records) {
+    this._setItem(this.name, records.join(','));
+    this.records = records;
+    writerIdMap[this.name] = this.id;
   }
 
   /** Add a new model with a unique GUID, if it doesn't already have its own ID
@@ -76,8 +90,9 @@ class LocalStorage {
     }
 
     this._setItem(this._itemName(model.id), this.serializer.serialize(model));
-    this.records.push(model.id.toString());
-    this.save();
+    const records = this.getRecords();
+    records.push(model.id.toString());
+    this.save(records);
 
     return this.find(model);
   }
@@ -90,10 +105,11 @@ class LocalStorage {
     this._setItem(this._itemName(model.id), this.serializer.serialize(model));
 
     const modelId = model.id.toString();
+    const records = this.getRecords();
 
-    if (!contains(this.records, modelId)) {
-      this.records.push(modelId);
-      this.save();
+    if (!contains(records, modelId)) {
+      records.push(modelId);
+      this.save(records);
     }
     return this.find(model);
   }
@@ -110,7 +126,8 @@ class LocalStorage {
    * @returns {Array} The array of models stored
    */
   findAll() {
-    return chain(this.records).map(
+    const records = this.getRecords();
+    return chain(records).map(
       id => this.serializer.deserialize(this._getItem(this._itemName(id)))
     ).filter(
       item => item != null).value();
@@ -122,10 +139,9 @@ class LocalStorage {
   */
   destroy(model) {
     this._removeItem(this._itemName(model.id));
-    const newRecords = without(this.records, model);
+    const newRecords = without(this.getRecords(), model);
 
-    this.records = newRecords;
-    this.save();
+    this.save(newRecords);
 
     return model;
   }
@@ -189,14 +205,14 @@ class LocalStorage {
   _removeItem(key) {
     window.localStorage.removeItem(key);
   }
-};
+}
 
 /** Returns the localStorage attribute for a model
  * @param {Model} model - Model to get localStorage
  * @returns {Storage} The localstorage
  */
 function getLocalStorage(model) {
-  return model.localStorage || (model.collection && model.collection.localStorage);
+  return model.localStorage || model.collection && model.collection.localStorage;
 }
 
 /** Override Backbone's `sync` method to run against localStorage
@@ -290,6 +306,6 @@ export function localStorage(name, serializer) {
         super(...args);
         this.localStorage = new LocalStorage(name, serializer);
       }
-    }
-  }
+    };
+  };
 }

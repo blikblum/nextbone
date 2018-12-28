@@ -374,7 +374,7 @@ describe('LocalStorage Collection', function() {
     });
   });
 
-  describe('will fetch from localStorage if updated separately', function() {
+  describe('in another instance', function() {
     let newCollection = null;
 
     beforeEach(function() {
@@ -391,12 +391,31 @@ describe('LocalStorage Collection', function() {
       expect(newCollection.length).to.equal(1);
     });
 
-    it('will update future changes', function() {
+    it('reads data saved in first instance', function() {
       const newAttributes = clone(attributes);
       newAttributes.number = 1338;
       mySavedCollection.create(newAttributes);
       newCollection.fetch();
       expect(newCollection.length).to.equal(2);
+    });
+
+    it('reads data saved in both instances', function() {
+      let newAttributes = clone(attributes);
+      newAttributes.number = 1338;
+      mySavedCollection.create(newAttributes);
+      newAttributes = clone(attributes);
+      newAttributes.number = 1339;
+      newCollection.create(newAttributes);
+      
+      mySavedCollection.fetch();
+      newCollection.fetch();
+
+      expect(mySavedCollection.length).to.equal(3);
+      expect(newCollection.length).to.equal(3);
+      expect(mySavedCollection.find({number: 1338})).to.be.a('object');
+      expect(mySavedCollection.find({number: 1339})).to.be.a('object');
+      expect(newCollection.find({number: 1338})).to.be.a('object');
+      expect(newCollection.find({number: 1339})).to.be.a('object');      
     });
   });
 });
