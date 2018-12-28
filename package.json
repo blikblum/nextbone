@@ -50,7 +50,7 @@
     "test:fetch": "cross-env NODE_ENV=test mocha --require babel-core/register test/fetch",
     "test:localstorage": "karma start test/localstorage/karma.conf.js",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
-    "lint": "eslint backbone.js computed.js test/*.js"
+    "lint": "eslint backbone.js computed.js localstorage.js test/*.js"
   },
   "sideEffects": false,
   "main": "backbone.js",
