@@ -1,5 +1,4 @@
-import {contains, isObject, without, isUndefined} from 'underscore';
-import {sync} from './backbone.js';
+import { sync } from './backbone.js';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
@@ -24,7 +23,7 @@ const defaultSerializer = {
    * @returns {string} A JSON-encoded string
    */
   serialize(item) {
-    return isObject(item) ? JSON.stringify(item) : item;
+    return typeof item === 'object' && item ? JSON.stringify(item) : item;
   },
 
   /** Custom deserialization for data.
@@ -107,7 +106,7 @@ class LocalStorage {
     const modelId = model.id.toString();
     const records = this.getRecords();
 
-    if (!contains(records, modelId)) {
+    if (!records.includes(modelId)) {
       records.push(modelId);
       this.save(records);
     }
@@ -139,7 +138,7 @@ class LocalStorage {
   */
   destroy(model) {
     this._removeItem(this._itemName(model.id));
-    const newRecords = without(this.getRecords(), model);
+    const newRecords = this.getRecords().filter(item => item !== model);
 
     this.save(newRecords);
 
@@ -215,7 +214,7 @@ function localStorageSync(method, model, options) {
   try {
     switch (method) {
       case 'read':
-        resp = isUndefined(model.id) ? store.findAll() : store.find(model);
+        resp = model.id === undefined ? store.findAll() : store.find(model);
         break;
       case 'create':
         resp = store.create(model);
