@@ -1,4 +1,4 @@
-import { sync } from './backbone.js';
+import {sync} from './backbone.js';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
@@ -144,7 +144,7 @@ class LocalStorage {
 
     return model;
   }
-  
+
   /** Number of items in localStorage
    * @returns {integer} - Number of items
    */
@@ -214,7 +214,7 @@ function localStorageSync(method, model, options) {
   try {
     switch (method) {
       case 'read':
-        resp = model.id === undefined ? store.findAll() : store.find(model);
+        resp = typeof model.id === 'undefined' ? store.findAll() : store.find(model);
         break;
       case 'create':
         resp = store.create(model);
