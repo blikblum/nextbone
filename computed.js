@@ -1,98 +1,70 @@
 import _ from 'underscore';
 
-class ComputedFields {
-  constructor(model, options) {
-    this.model = model;
-    this.options = options;
-    this._computedFields = [];
-    this.initialize();
+const computeFieldValue = (computedField, model) => {
+  if (computedField && computedField.get) {
+    const values = getDependentValues(computedField.depends, model);
+    return computedField.get.call(model, values);
   }
+};
 
-  initialize() {
-    this._lookUpComputedFields();
-    this._bindModelEvents();
-  }
-
-  _lookUpComputedFields() {
-    var computed = _.isFunction(this.options) ? this.options() : this.options;
-
-    for (var key in computed) {
-      var field = computed[key];
-
-      if (field && (field.set || field.get)) {
-        this._computedFields.push({name: key, field: field});
-      }
+const getDependentValues = (depends, model) => {
+  if (!depends) return {};
+  return depends.reduce((memo, field) => {
+    if (_.isString(field)) {
+      memo[field] = model.get(field);
     }
+    return memo;
+  }, {});
+};
+
+class ComputedFields {
+  constructor(model, fields) {
+    this.model = model;
+    this._bindModelEvents(fields);
   }
 
-  _bindModelEvents() {
-    this._computedFields.forEach(computedField => {
-      var fieldName = computedField.name;
-      var field = computedField.field;
+  _bindModelEvents(fields) {
+    fields.forEach(computedField => {
+      const fieldName = computedField.name;
+      const field = computedField.field;
 
-      var updateComputed = () => {
-        var value = this._computeFieldValue(field);
+      const updateComputed = () => {
+        var value = computeFieldValue(field, this.model);
         this.model.set(fieldName, value, {__computedSkip: true});
       };
 
-      var updateDependent = (model, value, options) => {
+      const updateDependent = (model, value, options) => {
         if (options && options.__computedSkip) {
           return;
         }
 
         if (field.set) {
-          var fields = this._dependentFields(field.depends);
+          const values = getDependentValues(field.depends, this.model);
           value = value || this.model.get(fieldName);
 
-          field.set.call(this.model, value, fields);
-          this.model.set(fields, options);
+          field.set.call(this.model, value, values);
+          this.model.set(values, options);
         }
       };
 
-      this._thenDependentChanges(field.depends, updateComputed);
-      this._thenComputedChanges(fieldName, updateDependent);
+      this.model.on('change:' + fieldName, updateDependent);
 
-      if (this._isModelInitialized()) {
+      if (field.depends) {
+        field.depends.forEach(dependent => {
+          if (typeof dependent === 'string') {
+            this.model.on('change:' + dependent, updateComputed);
+          }
+
+          if (typeof dependent === 'function') {
+            dependent.call(this.model, updateComputed);
+          }
+        });
+      }
+
+      if (!_.isEmpty(this.model.attributes)) {
         updateComputed();
       }
     });
-  }
-
-  _isModelInitialized() {
-    return !_.isEmpty(this.model.attributes);
-  }
-
-  _thenDependentChanges(depends, callback) {
-    depends && depends.forEach(name => {
-      if (typeof name === 'string') {
-        this.model.on('change:' + name, callback);
-      }
-
-      if (typeof name === 'function') {
-        name.call(this.model, callback);
-      }
-    });
-  }
-
-  _thenComputedChanges(fieldName, callback) {
-    this.model.on('change:' + fieldName, callback);
-  }
-
-  _computeFieldValue(computedField) {
-    if (computedField && computedField.get) {
-      var fields = this._dependentFields(computedField.depends);
-      return computedField.get.call(this.model, fields);
-    }
-  }
-
-  _dependentFields(depends) {
-    if (!depends) return {};
-    return depends.reduce((memo, field) => {
-      if (_.isString(field)) {
-        memo[field] = this.model.get(field);
-      }
-      return memo;
-    }, {});
   }
 }
 
@@ -105,11 +77,19 @@ const computed = options => {
     return result;
   }, []);
 
+  const fields = [];
+  for (let key in options) {
+    const field = options[key];
+    if (field && (field.set || field.get)) {
+      fields.push({name: key, field: field});
+    }
+  }
+
   return ModelClass => {
     return class extends ModelClass {
       constructor(...args) {
         super(...args);
-        this.computedFields = new ComputedFields(this, options);
+        this.computedFields = new ComputedFields(this, fields);
       }
 
       toJSON(...args) {

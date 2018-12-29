@@ -25,7 +25,6 @@ describe('nextbone/computed', function () {
 
     it('should be initialized', function () {
       expect(model.computedFields).to.exist;
-      expect(model.computedFields._computedFields.length).to.equal(1);
     });
 
     it('should access model attributes', function () {
@@ -467,7 +466,6 @@ describe('nextbone/computed', function () {
 
     it('should be initialized', function () {
       expect(model.computedFields).to.exist;
-      expect(model.computedFields._computedFields.length).to.equal(1);
     });
 
     it('should get value of computed field', function () {
