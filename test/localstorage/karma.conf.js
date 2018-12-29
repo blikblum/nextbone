@@ -6,8 +6,6 @@
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
-const alias = require('rollup-plugin-alias');
-const path = require('path');
 
 module.exports = function(config) {
   config.set({
@@ -40,9 +38,6 @@ module.exports = function(config) {
         }), 
         nodeResolve({
           only: [/^(?!.*?underscore).*/]
-        }),
-        alias({
-          nextbone: path.join(__dirname, '../../backbone.js')
         })
       ],
 

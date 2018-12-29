@@ -1,5 +1,5 @@
 import {contains, isObject, without, isUndefined} from 'underscore';
-import {sync} from 'nextbone';
+import {sync} from './backbone.js';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
