@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import { isEmpty, reduce, omit } from 'underscore';
 
 const computeFieldValue = (computedField, model) => {
   if (computedField && computedField.get) {
@@ -10,7 +10,7 @@ const computeFieldValue = (computedField, model) => {
 const getDependentValues = (depends, model) => {
   if (!depends) return {};
   return depends.reduce((memo, field) => {
-    if (_.isString(field)) {
+    if (typeof field === 'string') {
       memo[field] = model.get(field);
     }
     return memo;
@@ -61,7 +61,7 @@ class ComputedFields {
         });
       }
 
-      if (!_.isEmpty(this.model.attributes)) {
+      if (!isEmpty(this.model.attributes)) {
         updateComputed();
       }
     });
@@ -70,7 +70,7 @@ class ComputedFields {
 
 
 const computed = options => {
-  const excludeFromJSON = _.reduce(options, (result, def, key) => {
+  const excludeFromJSON = reduce(options, (result, def, key) => {
     if (def.toJSON === false) {
       result.push(key);
     }
@@ -97,7 +97,7 @@ const computed = options => {
         if (!excludeFromJSON.length || args[0] && args[0].computedFields) {
           return result;
         }
-        return _.omit(result, excludeFromJSON);
+        return omit(result, excludeFromJSON);
       }
     };
   };
