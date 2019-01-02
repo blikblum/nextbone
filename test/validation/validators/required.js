@@ -1,28 +1,29 @@
+
 module.exports = {
     "required validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: {
-                        required: true
-                    },
-                    agree: {
-                        required: true
-                    },
-                    posts: {
-                        required: true
-                    },
-                    dependsOnName: {
-                        required: function (val, attr, computed) {
-                            that.ctx = this;
-                            that.attr = attr;
-                            that.computed = computed;
-                            return this.get('name') === 'name';
-                        }
+
+            @validation({
+                name: {
+                    required: true
+                },
+                agree: {
+                    required: true
+                },
+                posts: {
+                    required: true
+                },
+                dependsOnName: {
+                    required: function (val, attr, computed) {
+                        that.ctx = this;
+                        that.attr = attr;
+                        that.computed = computed;
+                        return this.get('name') === 'name';
                     }
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model({
                 name: 'name',
@@ -30,7 +31,7 @@ module.exports = {
                 posts: ['post'],
                 dependsOnName: 'depends'
             });
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message": function (done) {

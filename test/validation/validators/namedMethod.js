@@ -1,25 +1,18 @@
+
 module.exports = {
     "named method validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: {
-                        fn: 'validateName'
-                    }
-                },
-                validateName: function (val, attr, computed) {
-                    that.ctx = this;
-                    that.attr = attr;
-                    that.computed = computed;
-                    if (val !== 'backbone') {
-                        return 'Error';
-                    }
+
+            @validation({
+                name: {
+                    fn: 'validateName'
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "is invalid when method returns error message": function () {
@@ -56,22 +49,14 @@ module.exports = {
     "named method validator short hand syntax": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: 'validateName'
-                },
-                validateName: function (val, attr, computed) {
-                    that.ctx = this;
-                    that.attr = attr;
-                    that.computed = computed;
-                    if (val !== 'backbone') {
-                        return 'Error';
-                    }
-                }
-            });
+
+            @validation({
+                name: 'validateName'
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "is invalid when method returns error message": function () {

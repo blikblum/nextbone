@@ -1,17 +1,18 @@
+
 module.exports = {
     "min validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    age: {
-                        min: 1
-                    }
+
+            @validation({
+                age: {
+                    min: 1
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message": function (done) {

@@ -1,24 +1,24 @@
 module.exports = {
     "Specifying error messages": {
         beforeEach: function () {
-            this.model = new Backbone.Model();
             this.invalid = sinon.spy();
-            _.extend(this.model, Backbone.Validation.mixin);
         },
 
         "per validator": {
             beforeEach: function () {
-                this.model.validation = {
-                    email: [{
-                        required: true,
-                        msg: 'required'
-                    }, {
-                        pattern: 'email',
-                        msg: function () {
-                            return 'pattern';
-                        }
-                    }]
-                };
+                @validation({
+                  email: [{
+                      required: true,
+                      msg: 'required'
+                  }, {
+                      pattern: 'email',
+                      msg: function () {
+                          return 'pattern';
+                      }
+                  }]
+                })
+                class Model extends Backbone.Model {}
+                this.model = new Model();
             },
 
             "and violating first validator returns msg specified for first validator": function () {
@@ -36,13 +36,15 @@ module.exports = {
 
         "per attribute": {
             beforeEach: function () {
-                this.model.validation = {
-                    email: {
-                        required: true,
-                        pattern: 'email',
-                        msg: 'error'
-                    }
-                };
+                @validation({
+                  email: {
+                      required: true,
+                      pattern: 'email',
+                      msg: 'error'
+                  }
+                })
+                class Model extends Backbone.Model {}
+                this.model = new Model();
             },
 
             "and violating first validator returns msg specified for attribute": function () {

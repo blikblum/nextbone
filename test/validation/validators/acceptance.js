@@ -1,17 +1,18 @@
+
 module.exports = {
     "acceptance validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    agree: {
-                        acceptance: true
-                    }
+
+            @validation({
+                agree: {
+                    acceptance: true
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message": function (done) {

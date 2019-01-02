@@ -1,19 +1,20 @@
+
 module.exports = {"equalTo validator": {
     beforeEach: function() {
         var that = this;
-        var Model = Backbone.Model.extend({
-            validation: {
-                password: {
-                    required: true
-                },
-                passwordRepeat: {
-                    equalTo: 'password'
-                }
+
+        @validation({
+            password: {
+                required: true
+            },
+            passwordRepeat: {
+                equalTo: 'password'
             }
-        });
+        })
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
 
         this.model.set({password: 'password'});
     },

@@ -1,17 +1,18 @@
+
 module.exports = {
     "max validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    age: {
-                        max: 10
-                    }
+
+            @validation({
+                age: {
+                    max: 10
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message": function (done) {

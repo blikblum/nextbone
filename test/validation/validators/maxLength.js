@@ -1,16 +1,16 @@
+
 module.exports = {
     "maxLength validator": {
-        beforeEach: function () {            
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: {
-                        maxLength: 2
-                    }
+        beforeEach: function () {
+            @validation({
+                name: {
+                    maxLength: 2
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message for string": function (done) {

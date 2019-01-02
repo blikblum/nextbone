@@ -1,3 +1,4 @@
+
 module.exports = {
   'Nested validation': {
     "one level": {
@@ -5,17 +6,16 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        var Model = Backbone.Model.extend({
-          validation: {
-            'address.street': {
-              required: true,
-              msg: 'error'
-            }
+        @validation({
+          'address.street': {
+            required: true,
+            msg: 'error'
           }
-        });
+        })
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       "invalid": {
@@ -84,17 +84,16 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        var Model = Backbone.Model.extend({
-          validation: {
-            'foo.bar.baz': {
-              required: true,
-              msg: 'error'
-            }
+        @validation({
+          'foo.bar.baz': {
+            required: true,
+            msg: 'error'
           }
-        });
+        })
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       "invalid": {
@@ -167,21 +166,20 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        var Model = Backbone.Model.extend({
-          validation: {
-            'foo.bar.baz': {
-              required: true,
-              msg: 'error'
-            },
-            'foo.foo': {
-              required: true,
-              msg: 'error'
-            }
+        @validation({
+          'foo.bar.baz': {
+            required: true,
+            msg: 'error'
+          },
+          'foo.foo': {
+            required: true,
+            msg: 'error'
           }
-        });
+        })
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       "invalid": {
@@ -262,26 +260,20 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        var Model = Backbone.Model.extend({
-          validation: {
-            'foo.bar': {
-              fn: 'validateBazAndQux',
-              msg: 'bazQuxError1'
-            },
-            'foo.foo': {
-              fn: 'validateBazAndQux',
-              msg: 'bazQuxError2'
-            }
+        @validation({
+          'foo.bar': {
+            fn: 'validateBazAndQux',
+            msg: 'bazQuxError1'
           },
-          validateBazAndQux: function (value, attr, computedState) {
-            if (!value || !value.baz || !value.qux) {
-              return "error";
-            }
+          'foo.foo': {
+            fn: 'validateBazAndQux',
+            msg: 'bazQuxError2'
           }
-        });
+        })
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       "invalid": {
@@ -380,19 +372,15 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        var Model = Backbone.Model.extend({
-        });
-
-        var Collection = Backbone.Collection.extend({
-          model: Model
-        });
+        class Model extends Backbone.Model {}
+        class Collection extends Backbone.Collection {}
 
         this.model = new Model();
         this.model.set({
           model: this.model,
           collection: new Collection([this.model])
         });
-        _.extend(this.model, Backbone.Validation.mixin);
+        
 
         this.result = this.model.set({
           foo: 'bar'

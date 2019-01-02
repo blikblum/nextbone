@@ -1,20 +1,21 @@
+
+import { validation } from "nextbone/validation";
 module.exports = {
     "Backbone.Validation": {
         beforeEach: function () {
-            var Model = Backbone.Model.extend({
-                validation: {
-                    age: function (val) {
-                        if (!val) {
-                            return 'Age is invalid';
-                        }
-                    },
-                    name: function (val) {
-                        if (!val) {
-                            return 'Name is invalid';
-                        }
+            @validation({
+                age: function (val) {
+                    if (!val) {
+                        return 'Age is invalid';
+                    }
+                },
+                name: function (val) {
+                    if (!val) {
+                        return 'Name is invalid';
                     }
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
         },
@@ -22,7 +23,7 @@ module.exports = {
 
         "when bound to model with two validated attributes": {
             beforeEach: function () {
-              _.extend(this.model, Backbone.Validation.mixin);
+              
             },
 
             "attribute without validator should be set sucessfully": function () {
@@ -167,7 +168,7 @@ module.exports = {
                 beforeEach: function () {
                     this.invalid = sinon.spy();
                     this.valid = sinon.spy();
-                    this.model.validation = {
+                    @validation({
                         age: {
                             min: 1,
                             msg: 'error'
@@ -176,7 +177,9 @@ module.exports = {
                             required: true,
                             msg: 'error'
                         }
-                    };                    
+                    })
+                    class Model extends Backbone.Model {}
+                    this.model = new Model();                  
                 },
 
                 "all attributes on the model is validated when nothing has been set": function () {
@@ -219,19 +222,18 @@ module.exports = {
 
         "when bound to model with three validators on one attribute": {
             beforeEach: function () {
-                this.Model = Backbone.Model.extend({
-                    validation: {
-                        postalCode: {
-                            minLength: 2,
-                            pattern: 'digits',
-                            maxLength: 4
-                        }
+                this.Model = @validation({
+                    postalCode: {
+                        minLength: 2,
+                        pattern: 'digits',
+                        maxLength: 4
                     }
-                });
+                })
+                class extends Backbone.Model {};
 
                 this.model = new this.Model();                
 
-                _.extend(this.model, Backbone.Validation.mixin);
+                
             },
 
             "and violating the first validator the model is invalid": function () {
@@ -261,25 +263,25 @@ module.exports = {
 
         "when bound to model with two dependent attribute validations": {
             beforeEach: function () {
-                var Model = Backbone.Model.extend({
-                    validation: {
-                        one: function (val, attr, computed) {
-                            if (val < computed.two) {
-                                return 'error';
-                            }
-                        },
-                        two: function (val, attr, computed) {
-                            if (val > computed.one) {
-                                return 'error';
-                            }
+                @validation({
+                    one: function (val, attr, computed) {
+                        if (val < computed.two) {
+                            return 'error';
+                        }
+                    },
+                    two: function (val, attr, computed) {
+                        if (val > computed.one) {
+                            return 'error';
                         }
                     }
-                });
+                })
+                class Model extends Backbone.Model {}
+
                 this.model = new Model();
                 this.valid = sinon.spy();
                 this.invalid = sinon.spy();
 
-                _.extend(this.model, Backbone.Validation.mixin);
+                
             },
 
             "when setting invalid value on second input": {
@@ -325,7 +327,7 @@ module.exports = {
                     };
                 };
 
-                _.extend(this.model, Backbone.Validation.mixin);
+                
             },
 
             "and conforming to all validators the model is valid": function () {

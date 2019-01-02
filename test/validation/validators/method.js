@@ -1,23 +1,25 @@
+
 module.exports = {
     "method validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: {
-                        fn: function (val, attr, computed) {
-                            that.ctx = this;
-                            that.attr = attr;
-                            that.computed = computed;
-                            if (name !== 'backbone') {
-                                return 'Error';
-                            }
+
+            @validation({
+                name: {
+                    fn: function (val, attr, computed) {
+                        that.ctx = this;
+                        that.attr = attr;
+                        that.computed = computed;
+                        if (name !== 'backbone') {
+                            return 'Error';
                         }
                     }
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
+
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "is invalid when method returns error message": function () {
@@ -60,20 +62,21 @@ module.exports = {
     "method validator short hand syntax": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: function (val, attr, computed) {
-                        that.ctx = this;
-                        that.attr = attr;
-                        that.computed = computed;
-                        if (name !== 'backbone') {
-                            return 'Error';
-                        }
+
+            @validation({
+                name: function (val, attr, computed) {
+                    that.ctx = this;
+                    that.attr = attr;
+                    that.computed = computed;
+                    if (name !== 'backbone') {
+                        return 'Error';
                     }
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
+
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "is invalid when method returns error message": function () {
@@ -115,13 +118,12 @@ module.exports = {
 module.exports = {
     "method validator using other built in validator(s)": {
         beforeEach: function () {
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: function (val, attr, computed) {
-                        return Backbone.Validation.validators.length(val, attr, 4, this);
-                    }
+            @validation({
+                name: function (val, attr, computed) {
+                    return Backbone.Validation.validators.length(val, attr, 4, this);
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             _.extend(Model.prototype, Backbone.Validation.mixin);
             this.model = new Model();

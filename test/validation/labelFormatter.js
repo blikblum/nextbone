@@ -1,27 +1,23 @@
+
 module.exports = {
   'Label formatters': {
     "Attribute names on the model can be formatted in error messages using": {
       beforeEach: function () {
-        var Model = Backbone.Model.extend({
-          validation: {
-            someAttribute: {
-              required: true
-            },
-            some_attribute: {
-              required: true
-            },
-            some_other_attribute: {
-              required: true
-            }
+        @validation({
+          someAttribute: {
+            required: true
           },
-
-          labels: {
-            someAttribute: 'Custom label'
+          some_attribute: {
+            required: true
+          },
+          some_other_attribute: {
+            required: true
           }
-        });
+        })
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       afterEach: function () {
@@ -59,13 +55,12 @@ module.exports = {
         },
 
         "returns sentence cased name when label attribute is not defined": function () {
-          var Model = Backbone.Model.extend({
-            validation: {
-              someAttribute: {
-                required: true
-              }
+          @validation({
+            someAttribute: {
+              required: true
             }
-          });
+          })
+          class Model extends Backbone.Model {}
 
           var model = new Model();
           _.extend(model, Backbone.Validation.mixin);

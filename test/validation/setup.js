@@ -1,9 +1,12 @@
-var assert = require('chai').assert;
+const assert = require('chai').assert;
 
 global._ = require('underscore');
-global.Backbone = require('backbone');
-require('../dist/backbone.validation');
+global.Backbone = require('../../backbone');
+const Validation = require('../../validation');
 global.sinon = require('sinon');
+
+global.Backbone.Validation = Validation;
+global.validation = Validation.validation;
 
 global.assert = assert;
 
@@ -21,14 +24,3 @@ refute.defined = assert.isUndefined;
 refute.same = assert.notStrictEqual;
 refute.exception = assert.doesNotThrow;
 refute.calledWith = sinon.assert.neverCalledWith;
-
-var jsdom;
-
-before(function() {
-  jsdom = require('jsdom-global')()
-  Backbone.$ = $ = require('jquery')(window)
-})
-
-after(function() {
-  jsdom()
-})

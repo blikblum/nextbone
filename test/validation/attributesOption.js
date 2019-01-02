@@ -1,31 +1,27 @@
+
 module.exports = {
   "Setting options.attributes": {
       beforeEach: function () {
-          var Model = Backbone.Model.extend({
-              validation: {
-                  age: {
-                      required: true
-                  },
-                  name: {
-                      required: true
-                  },
-                  password: {
-                      required: true
-                  },
-                  email: {
-                      pattern: 'email'
-                  }
+          @validation({
+              age: {
+                  required: true
+              },
+              name: {
+                  required: true
+              },
+              password: {
+                  required: true
+              },
+              email: {
+                  pattern: 'email'
               }
-          });
+          })
+          class Model extends Backbone.Model {}
 
-          this.model = new Model();          
+          this.model = new Model();
       },
 
       "through Model.validate options": {
-        beforeEach: function () {
-            Object.assign(this.model, Backbone.Validation.mixin)
-        },
-
         "only the attributes in array should be validated": function () {
             var errors = this.model.validate(undefined, {attributes: ['name', 'age']});
             assert.defined(errors.name);

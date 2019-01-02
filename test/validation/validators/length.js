@@ -1,16 +1,16 @@
+
 module.exports = {
     "length validator": {
-        beforeEach: function () {            
-            var Model = Backbone.Model.extend({
-                validation: {
-                    postalCode: {
-                        length: 2
-                    }
+        beforeEach: function () {
+            @validation({
+                postalCode: {
+                    length: 2
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message for string": function (done) {

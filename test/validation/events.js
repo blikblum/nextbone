@@ -1,23 +1,23 @@
+
 module.exports = {
     "Backbone.Validation events": {
         beforeEach: function () {
-            var Model = Backbone.Model.extend({
-                validation: {
-                    age: function (val) {
-                        if (!val) {
-                            return 'age';
-                        }
-                    },
-                    name: function (val) {
-                        if (!val) {
-                            return 'name';
-                        }
+            @validation({
+                age: function (val) {
+                    if (!val) {
+                        return 'age';
+                    }
+                },
+                name: function (val) {
+                    if (!val) {
+                        return 'name';
                     }
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "model is updated before the events are raised": function () {

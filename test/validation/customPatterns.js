@@ -1,3 +1,4 @@
+
 module.exports = {
   'Extending Backbone.Validation with custom pattern': {
     beforeEach: function () {
@@ -5,16 +6,15 @@ module.exports = {
         custom: /^test/
       });
 
-      var Model = Backbone.Model.extend({
-        validation: {
-          name: {
-            pattern: 'custom'
-          }
+      @validation({
+        name: {
+          pattern: 'custom'
         }
-      });
+      })
+      class Model extends Backbone.Model {}
 
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
     },
 
     "should execute the custom pattern validator": function () {
@@ -35,16 +35,15 @@ module.exports = {
         email: /^test/
       });
 
-      var Model = Backbone.Model.extend({
-        validation: {
-          name: {
-            pattern: 'email'
-          }
+      @validation({
+        name: {
+          pattern: 'email'
         }
-      });
+      })
+      class Model extends Backbone.Model {}
 
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
     },
 
     afterEach: function () {

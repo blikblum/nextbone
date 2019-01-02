@@ -1,3 +1,4 @@
+
 module.exports = {
 
   "preValidate": {
@@ -6,7 +7,7 @@ module.exports = {
       beforeEach: function () {
         this.model = new Backbone.Model();
 
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       "returns nothing": function () {
@@ -16,21 +17,21 @@ module.exports = {
 
     "when model has defined validation": {
       beforeEach: function () {
-        var Model = Backbone.Model.extend({
-          validation: {
-            name: {
-              required: true
-            },
-            address: {
-              required: true,
-            },
-            authenticated: {
-              required: false
-            }
+        @validation({
+          name: {
+            required: true
+          },
+          address: {
+            required: true,
+          },
+          authenticated: {
+            required: false
           }
-        });
+        })
+        class Model extends Backbone.Model {}
+
         this.model = new Model();
-        _.extend(this.model, Backbone.Validation.mixin);
+        
       },
 
       "and pre-validating single attribute": {
@@ -76,23 +77,24 @@ module.exports = {
             VISA : 0,
             AMEX : 1
           };
-          var Model = Backbone.Model.extend({
-            validation: {
-              card_type: {
-                required: true
-              },
-              security_code: function(value, attr, computedState){
-                var requiredLength = (computedState.card_type === CARD_TYPES.AMEX? 4 : 3);
-                if(value && _.isString(value) && value.length !== requiredLength) {
-                  return 'Please enter a valid security code.';
-                }
+
+          @validation({
+            card_type: {
+              required: true
+            },
+            security_code: function(value, attr, computedState){
+              var requiredLength = (computedState.card_type === CARD_TYPES.AMEX? 4 : 3);
+              if(value && _.isString(value) && value.length !== requiredLength) {
+                return 'Please enter a valid security code.';
               }
             }
-          });
+          })
+          class Model extends Backbone.Model {}
+
           Model.CARD_TYPES = CARD_TYPES;
           this.ModelDefinition = Model;
           this.model = new Model();
-          _.extend(this.model, Backbone.Validation.mixin);
+          
         },
 
         "and pre-validating hash of attributes": {

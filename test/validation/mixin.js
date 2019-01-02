@@ -1,3 +1,4 @@
+import { validation } from "nextbone/validation";
 module.exports = {
     "Mixin validation": {
         beforeEach: function () {
@@ -5,15 +6,14 @@ module.exports = {
 
             _.extend(Backbone.Model.prototype, Backbone.Validation.mixin);
 
-            this.Model = Backbone.Model.extend({
-                validation: {
-                    name: function (val) {
-                        if (!val) {
-                            return 'error';
-                        }
+            this.Model = @validation({
+                name: function (val) {
+                    if (!val) {
+                        return 'error';
                     }
                 }
-            });
+            })
+            class extends Backbone.Model {};
 
             this.model = new this.Model();
         },

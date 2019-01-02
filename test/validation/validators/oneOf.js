@@ -1,17 +1,18 @@
+
 module.exports = {
     "oneOf validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    country: {
-                        oneOf: ['Norway', 'Sweeden']
-                    }
+
+            @validation({
+                country: {
+                    oneOf: ['Norway', 'Sweeden']
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message": function (done) {

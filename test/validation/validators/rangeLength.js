@@ -1,17 +1,18 @@
+
 module.exports = {
     "rangeLength validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: {
-                        rangeLength: [2, 4]
-                    }
+
+            @validation({
+                name: {
+                    rangeLength: [2, 4]
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message for strings": function (done) {

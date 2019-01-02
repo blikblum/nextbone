@@ -1,19 +1,20 @@
+
 module.exports = {
 	"forceUpdate": {
 		beforeEach: function () {
-			var Model = Backbone.Model.extend({
-				validation: {
-					name: {
-						required: true
-					}
-				}
-			});
-			this.model = new Model();			
-		},
+            @validation({
+                name: {
+                    required: true
+                }
+            })
+            class Model extends Backbone.Model {}
+
+            this.model = new Model();
+        },
 
 		"default behaviour": {
 			beforeEach: function () {
-				_.extend(this.model, Backbone.Validation.mixin);
+				
 			},
 
 			"invalid values are not set on model": function () {
@@ -23,7 +24,7 @@ module.exports = {
 
 		"forcing update when setting attribute": {
 			beforeEach: function () {
-				_.extend(this.model, Backbone.Validation.mixin);
+				
 			},
 
 			"invalid values are set on model": function () {
@@ -36,7 +37,7 @@ module.exports = {
 				Backbone.Validation.configure({
 					forceUpdate: true
 				});
-				_.extend(this.model, Backbone.Validation.mixin);
+				
 			},
 
 			afterEach: function () {

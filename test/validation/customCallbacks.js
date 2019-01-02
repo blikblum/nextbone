@@ -1,4 +1,5 @@
 
+
 module.exports = {
     "Overriding default callbacks in Backbone.Validation": {
         beforeEach: function () {
@@ -13,19 +14,18 @@ module.exports = {
                 invalid: this.invalid
             });
 
-            var Model = Backbone.Model.extend({
-                validation: {
-                    age: function (val) {
-                        if (val === 0) {
-                            return "Age is invalid";
-                        }
+            @validation({
+                age: function (val) {
+                    if (val === 0) {
+                        return "Age is invalid";
                     }
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model();
 
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         afterEach: function () {

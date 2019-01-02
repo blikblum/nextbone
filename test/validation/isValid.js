@@ -1,10 +1,11 @@
+
 module.exports = {
 	"isValid": {
 		"when model has not defined any validation": {
 			beforeEach: function () {
 				this.model = new Backbone.Model();
 
-				_.extend(this.model, Backbone.Validation.mixin);
+				
 			},
 
 			"returns true": function () {
@@ -14,16 +15,16 @@ module.exports = {
 
 		"when model has defined validation": {
 			beforeEach: function () {
-				var Model = Backbone.Model.extend({
-					validation: {
-						name: {
-							required: true
-						}
-					}
-				});
-				this.model = new Model();
-				_.extend(this.model, Backbone.Validation.mixin);
-			},
+                @validation({
+                    name: {
+                        required: true
+                    }
+                })
+                class Model extends Backbone.Model {}
+
+                this.model = new Model();
+                
+            },
 
 			"returns undefined when model is never validated": function () {
 				refute.defined(this.model.isValid());
@@ -55,14 +56,16 @@ module.exports = {
 
 			"and passing name of attribute": {
 				beforeEach: function () {
-					this.model.validation = {
+          @validation({
 						name: {
 							required: true
 						},
 						age: {
 							required: true
 						}
-					};
+					})
+          class Model extends Backbone.Model {}
+          this.model = new Model();
 				},
 
 				"returns false when attribute is invalid": function () {
@@ -85,7 +88,7 @@ module.exports = {
 
 			"and passing array of attributes": {
 				beforeEach: function () {
-					this.model.validation = {
+          @validation({
 						name: {
 							required: true
 						},
@@ -95,7 +98,8 @@ module.exports = {
 						phone: {
 							required: true
 						}
-					};
+					})
+          class Model extends Backbone.Model {}
 				},
 
 				"returns false when all attributes are invalid": function () {

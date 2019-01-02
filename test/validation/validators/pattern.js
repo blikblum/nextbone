@@ -1,23 +1,24 @@
+
 module.exports = {
     "pattern validator": {
         beforeEach: function () {
             var that = this;
-            var Model = Backbone.Model.extend({
-                validation: {
-                    name: {
-                        pattern: /^test/
-                    },
-                    email: {
-                        pattern: 'email'
-                    }
+
+            @validation({
+                name: {
+                    pattern: /^test/
+                },
+                email: {
+                    pattern: 'email'
                 }
-            });
+            })
+            class Model extends Backbone.Model {}
 
             this.model = new Model({
                 name: 'test',
                 email: 'test@example.com'
             });
-            _.extend(this.model, Backbone.Validation.mixin);
+            
         },
 
         "has default error message": function (done) {

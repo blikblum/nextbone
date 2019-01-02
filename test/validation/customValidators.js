@@ -1,3 +1,4 @@
+
 module.exports = {
 
   'Extending Backbone.Validation with custom validator': {
@@ -12,16 +13,15 @@ module.exports = {
         }
       });
 
-      var Model = Backbone.Model.extend({
-        validation: {
-          age: {
-            custom: 1
-          }
+      @validation({
+        age: {
+          custom: 1
         }
-      });
+      })
+      class Model extends Backbone.Model {}
 
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
     },
 
     "should execute the custom validator": function () {
@@ -36,17 +36,13 @@ module.exports = {
 
   'Defining a custom validator as a string': {
     beforeEach: function () {
-      var Model = Backbone.Model.extend({
-        validation: {
-          age: 'validateAge'
-        },
+      @validation({
+        age: 'validateAge'
+      })
+      class Model extends Backbone.Model {}
 
-        validateAge(value, attr, computedState) {
-          if (value != 1) return 'Age invalid'
-        }
-      });
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
       this.validateAgeSpy = sinon.spy(this.model, 'validateAge');
     },
 
@@ -68,21 +64,13 @@ module.exports = {
 
   'Defining a custom validator as a string array': {
     beforeEach: function () {
-      var Model = Backbone.Model.extend({
-        validation: {
-          age: ['validateAge', 'validateNumber']
-        },
+      @validation({
+        age: ['validateAge', 'validateNumber']
+      })
+      class Model extends Backbone.Model {}
 
-        validateAge(value, attr, computedState) {
-          if (value != 1) return 'Age invalid'
-        },
-
-        validateNumber(value, attr, computedState) {
-          if (typeof value !== 'number') return 'Not a number'
-        }
-      });
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
       this.validateAgeSpy = sinon.spy(this.model, 'validateAge');
       this.validateNumberSpy = sinon.spy(this.model, 'validateNumber');
     },
@@ -113,16 +101,15 @@ module.exports = {
         }
       });
 
-      var Model = Backbone.Model.extend({
-        validation: {
-          age: {
-            min: 1
-          }
+      @validation({
+        age: {
+          min: 1
         }
-      });
+      })
+      class Model extends Backbone.Model {}
 
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
     },
 
     afterEach: function () {
@@ -152,16 +139,15 @@ module.exports = {
         }
       });
 
-      var Model = Backbone.Model.extend({
-        validation: {
-          name: {
-            custom: 'custom'
-          }
+      @validation({
+        name: {
+          custom: 'custom'
         }
-      });
+      })
+      class Model extends Backbone.Model {}
 
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
     },
 
     "violating first validator in chain return first error message": function () {
@@ -188,16 +174,15 @@ module.exports = {
         }
       });
 
-      var Model = Backbone.Model.extend({
-        validation: {
-          name: {
-            custom: 'custom'
-          }
+      @validation({
+        name: {
+          custom: 'custom'
         }
-      });
+      })
+      class Model extends Backbone.Model {}
 
       this.model = new Model();
-      _.extend(this.model, Backbone.Validation.mixin);
+      
     },
 
     "a custom validator can return a formatted message": function () {
