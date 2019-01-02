@@ -123,7 +123,7 @@ var getValidators = function(attr, rules) {
 // for that attribute. If one or more errors are found,
 // the first error message is returned.
 // If the attribute is valid, an empty string is returned.
-var validateAttr = function(model, attr, value, computed) {
+var validateAttr = function(model, attr, value, computed, rules) {
   // Reduces the array of validators to an error message by
   // applying all the validators and returning the first error
   // message, if any.
@@ -143,13 +143,13 @@ var validateAttr = function(model, attr, value, computed) {
 // Loops through the model's attributes and validates the specified attrs.
 // Returns and object containing names of invalid attributes
 // as well as error messages.
-var validateModel = function(model, allAttrs, validatedAttrs) {
+var validateModel = function(model, allAttrs, validatedAttrs, rules) {
   var error,
       invalidAttrs = {},
       isValid = true;
 
   _.each(validatedAttrs, function(val, attr) {
-    error = validateAttr(model, attr, val, allAttrs);
+    error = validateAttr(model, attr, val, allAttrs, rules);
     if (error) {
       invalidAttrs[attr] = error;
       isValid = false;
@@ -420,7 +420,7 @@ const validation = rules => {
           _.extend(allAttrs, attr);
 
           _.each(attr, function(value, attrKey) {
-            error = validateAttr(self, attrKey, value, allAttrs);
+            error = validateAttr(self, attrKey, value, allAttrs, rules);
             if(error){
               result[attrKey] = error;
             }
@@ -429,7 +429,7 @@ const validation = rules => {
           return _.isEmpty(result) ? undefined : result;
         }
         else {
-          return validateAttr(this, attr, value, allAttrs);
+          return validateAttr(this, attr, value, allAttrs, rules);
         }
       }
 
@@ -448,7 +448,7 @@ const validation = rules => {
           flattened = flatten(self.attributes);
           //Loop through all attributes and mark attributes invalid if appropriate
           _.each(attrs, function (attr) {
-            error = validateAttr(self, attr, flattened[attr], _.extend({}, self.attributes));
+            error = validateAttr(self, attr, flattened[attr], _.extend({}, self.attributes), rules);
             if (error) {
               invalidAttrs = invalidAttrs || {};
               invalidAttrs[attr] = error;
@@ -479,7 +479,7 @@ const validation = rules => {
             allAttrs = _.extend({}, validatedAttrs, model.attributes, attrs),
             flattened = flatten(allAttrs),
             changedAttrs = attrs ? flatten(attrs) : flattened,
-            result = validateModel(model, allAttrs, _.pick(flattened, _.keys(validatedAttrs)));
+            result = validateModel(model, allAttrs, _.pick(flattened, _.keys(validatedAttrs)), rules);
 
         model._isValid = result.isValid;
 
