@@ -14,24 +14,22 @@ module.exports = {
             required: true
           }
         })
-        class Model extends Backbone.Model {}
-
-        this.model = new Model();
-        
+        class Model extends Backbone.Model {
+          labels = {
+            someAttribute: 'Custom label'
+          }
+        }
+        this.model = new Model();        
       },
 
       afterEach: function () {
         // Reset to default formatter
-        Backbone.Validation.configure({
-          labelFormatter: 'sentenceCase'
-        });
+        Backbone.Validation.options.labelFormatter = 'sentenceCase'        
       },
 
       "no formatting": {
         beforeEach: function () {
-          Backbone.Validation.configure({
-            labelFormatter: 'none'
-          });
+          Backbone.Validation.options.labelFormatter = 'none'          
         },
 
         "returns the attribute name": function () {
@@ -41,9 +39,7 @@ module.exports = {
 
       "label formatting": {
         beforeEach: function () {
-          Backbone.Validation.configure({
-            labelFormatter: 'label'
-          });
+          Backbone.Validation.options.labelFormatter = 'label'
         },
 
         "looks up a label on the model": function () {
@@ -62,18 +58,14 @@ module.exports = {
           })
           class Model extends Backbone.Model {}
 
-          var model = new Model();
-          _.extend(model, Backbone.Validation.mixin);
-
+          var model = new Model();          
           assert.equals('Some attribute is required', model.preValidate('someAttribute', ''));
         }
       },
 
       "sentence formatting": {
         beforeEach: function () {
-          Backbone.Validation.configure({
-            labelFormatter: 'sentenceCase'
-          });
+          Backbone.Validation.options.labelFormatter = 'sentenceCase'          
         },
 
         "sentence cases camel cased attribute name": function () {

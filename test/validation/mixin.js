@@ -1,13 +1,9 @@
-import { validation } from "nextbone/validation";
+
 module.exports = {
     "Mixin validation": {
         beforeEach: function () {
-            this.origPrototype = _.clone(Backbone.Model.prototype);
-
-            _.extend(Backbone.Model.prototype, Backbone.Validation.mixin);
-
             this.Model = @validation({
-                name: function (val) {
+              name: function (val) {
                     if (!val) {
                         return 'error';
                     }
@@ -16,10 +12,6 @@ module.exports = {
             class extends Backbone.Model {};
 
             this.model = new this.Model();
-        },
-
-        afterEach: function () {
-            Backbone.Model.prototype = this.origPrototype;
         },
 
         "isValid is undefined when no validation has occurred": function () {
@@ -50,15 +42,11 @@ module.exports = {
 
         "when forcing update globally": {
             beforeEach: function () {
-                Backbone.Validation.configure({
-                    forceUpdate: true
-                });
+                Backbone.Validation.options.forceUpdate = true;
             },
 
             afterEach: function () {
-                Backbone.Validation.configure({
-                    forceUpdate: false
-                });
+                Backbone.Validation.options.forceUpdate = false;
             },
 
             "succeeds setting invalid value when forcing update globally": function () {

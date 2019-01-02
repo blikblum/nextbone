@@ -13,20 +13,12 @@ module.exports = {
         },
 
 		"default behaviour": {
-			beforeEach: function () {
-				
-			},
-
 			"invalid values are not set on model": function () {
 				refute(this.model.set({ name: '' }, { validate: true }));
 			}
 		},
 
 		"forcing update when setting attribute": {
-			beforeEach: function () {
-				
-			},
-
 			"invalid values are set on model": function () {
 				assert(this.model.set({ name: '' }, { forceUpdate: true, validate: true }));
 			}
@@ -34,16 +26,11 @@ module.exports = {
 
 		"forcing update globally": {
 			beforeEach: function () {
-				Backbone.Validation.configure({
-					forceUpdate: true
-				});
-				
+			  Backbone.Validation.options.forceUpdate = true;
 			},
 
 			afterEach: function () {
-				Backbone.Validation.configure({
-					forceUpdate: false
-				});
+        Backbone.Validation.options.forceUpdate = false;				
 			},
 
 			"invalid values are set on model": function () {

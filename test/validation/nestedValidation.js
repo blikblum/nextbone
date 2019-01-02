@@ -270,7 +270,13 @@ module.exports = {
             msg: 'bazQuxError2'
           }
         })
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+          validateBazAndQux (value, attr, computedState) {
+            if (!value || !value.baz || !value.qux) {
+              return "error";
+            }
+          }
+        }
 
         this.model = new Model();
         

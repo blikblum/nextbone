@@ -5,9 +5,9 @@ module.exports = {
 
     "when model has not defined any validation": {
       beforeEach: function () {
-        this.model = new Backbone.Model();
-
-        
+        @validation({})
+        class Model extends Backbone.Model {};
+        this.model = new Model;
       },
 
       "returns nothing": function () {

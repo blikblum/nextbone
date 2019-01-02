@@ -2,13 +2,13 @@
 module.exports = {
     "min validator": {
         beforeEach: function () {
-            var that = this;
-
-            @validation({
+            this.validation = {
                 age: {
                     min: 1
                 }
-            })
+            }
+
+            @validation(this.validation)
             class Model extends Backbone.Model {}
 
             this.model = new Model();
@@ -69,7 +69,7 @@ module.exports = {
 
         "when required:false": {
             beforeEach: function () {
-                this.model.validation.age.required = false;
+                this.validation.age.required = false;
             },
 
             "null is valid": function () {
@@ -87,7 +87,7 @@ module.exports = {
 
         "when required:true": {
             beforeEach: function () {
-                this.model.validation.age.required = true;
+                this.validation.age.required = true;
             },
 
             "undefined is invalid": function () {
@@ -105,7 +105,7 @@ module.exports = {
 
         "when min:0, 0 < val < 1": {
             setUp: function() {
-                this.model.validation.aFloat = {
+                this.validation.aFloat = {
                     min: 0
                 };
             },

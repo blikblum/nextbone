@@ -2,11 +2,12 @@
 module.exports = {
     "length validator": {
         beforeEach: function () {
-            @validation({
+            this.validation = {
                 postalCode: {
                     length: 2
                 }
-            })
+            }
+            @validation(this.validation)
             class Model extends Backbone.Model {}
 
             this.model = new Model();
@@ -67,7 +68,7 @@ module.exports = {
 
         "when required:false": {
             beforeEach: function () {
-                this.model.validation.postalCode.required = false;
+                this.validation.postalCode.required = false;
             },
 
             "null is valid": function () {
@@ -85,7 +86,7 @@ module.exports = {
 
         "when required:true": {
             beforeEach: function () {
-                this.model.validation.postalCode.required = true;
+                this.validation.postalCode.required = true;
             },
 
             "undefined is invalid": function () {

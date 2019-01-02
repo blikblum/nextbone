@@ -2,13 +2,13 @@
 module.exports = {
     "oneOf validator": {
         beforeEach: function () {
-            var that = this;
-
-            @validation({
+            this.validation = {
                 country: {
                     oneOf: ['Norway', 'Sweeden']
                 }
-            })
+            }
+
+            @validation(this.validation)
             class Model extends Backbone.Model {}
 
             this.model = new Model();
@@ -57,7 +57,7 @@ module.exports = {
 
         "when required:false": {
             beforeEach: function () {
-                this.model.validation.country.required = false;
+                this.validation.country.required = false;
             },
 
             "null is valid": function () {
@@ -75,7 +75,7 @@ module.exports = {
 
         "when required:true": {
             beforeEach: function () {
-                this.model.validation.country.required = true;
+                this.validation.country.required = true;
             },
 
             "undefined is invalid": function () {

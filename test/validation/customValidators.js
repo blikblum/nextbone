@@ -39,7 +39,11 @@ module.exports = {
       @validation({
         age: 'validateAge'
       })
-      class Model extends Backbone.Model {}
+      class Model extends Backbone.Model {
+        validateAge(value, attr, computedState) {
+          if (value != 1) return 'Age invalid'
+        }
+      }
 
       this.model = new Model();
       
@@ -67,7 +71,15 @@ module.exports = {
       @validation({
         age: ['validateAge', 'validateNumber']
       })
-      class Model extends Backbone.Model {}
+      class Model extends Backbone.Model {
+        validateAge(value, attr, computedState) {
+          if (value != 1) return 'Age invalid'
+        }
+
+        validateNumber(value, attr, computedState) {
+          if (typeof value !== 'number') return 'Not a number'
+        }
+      }
 
       this.model = new Model();
       

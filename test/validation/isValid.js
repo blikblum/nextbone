@@ -100,6 +100,7 @@ module.exports = {
 						}
 					})
           class Model extends Backbone.Model {}
+          this.model = new Model;
 				},
 
 				"returns false when all attributes are invalid": function () {

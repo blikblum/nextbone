@@ -2,13 +2,13 @@
 module.exports = {
     "max validator": {
         beforeEach: function () {
-            var that = this;
-
-            @validation({
+            this.validation = {
                 age: {
                     max: 10
                 }
-            })
+            }
+
+            @validation(this.validation)
             class Model extends Backbone.Model {}
 
             this.model = new Model();
@@ -69,7 +69,7 @@ module.exports = {
 
         "when required:false": {
             beforeEach: function () {
-                this.model.validation.age.required = false;
+                this.validation.age.required = false;
             },
 
             "null is valid": function () {
@@ -87,7 +87,7 @@ module.exports = {
 
         "when required:true": {
             beforeEach: function () {
-                this.model.validation.age.required = true;
+                this.validation.age.required = true;
             },
 
             "undefined is invalid": function () {

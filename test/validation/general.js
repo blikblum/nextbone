@@ -1,5 +1,5 @@
 
-import { validation } from "nextbone/validation";
+
 module.exports = {
     "Backbone.Validation": {
         beforeEach: function () {

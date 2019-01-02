@@ -12,7 +12,6 @@ module.exports = {
             class Model extends Backbone.Model {}
 
             this.model = new Model();
-            
         },
 
         "is invalid when method returns error message": function () {
@@ -53,10 +52,17 @@ module.exports = {
             @validation({
                 name: 'validateName'
             })
-            class Model extends Backbone.Model {}
-
+            class Model extends Backbone.Model {
+              validateName (val, attr, computed) {
+                that.ctx = this;
+                that.attr = attr;
+                that.computed = computed;
+                if (val !== 'backbone') {
+                    return 'Error';
+                }
+              }
+            }
             this.model = new Model();
-            
         },
 
         "is invalid when method returns error message": function () {
