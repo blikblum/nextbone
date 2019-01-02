@@ -16,6 +16,23 @@
         "/base/": "${workspaceRoot}/",
         "/base/test/setup/": "${workspaceRoot}/"
       }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Validation Tests",
+      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-u",
+        "exports",
+        "--require",
+        "babel-core/register",
+        "${workspaceRoot}/test/validation"
+      ],
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
