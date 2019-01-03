@@ -1480,7 +1480,6 @@ class CollectionIterator {
   }
 }
 
-
 // Support `collection.sortBy('attr')` and `collection.findWhere({id: 1})`.
 var cb = function(iteratee, instance) {
   if (isFunction(iteratee)) return iteratee;
@@ -1494,6 +1493,54 @@ var modelMatcher = function(attrs) {
   return function(model) {
     return matcher(model.attributes);
   };
+};
+
+
+// Backbone.view
+// -------------
+
+// Set of decorators to custom elements based on lit-element base class
+
+// Make a event delegation handler for the given `eventName` and `selector`
+// and attach it to `el`.
+// If selector is empty, the listener will be bound to `el`. If not, a
+// new handler that will recursively traverse up the event target's DOM
+// hierarchy looking for a node that matches the selector. If one is found,
+// the event's `delegateTarget` property is set to it and the return the
+// result of calling bound `listener` with the parameters given to the
+// handler.
+const delegate = function(el, eventName, selector, listener) {
+  var handler = selector ? function(e) {
+    var node = e.target;
+    for (; node && node !== el; node = node.parentNode) {
+      if (node.matches(selector)) {
+        e.delegateTarget = node;
+        listener.call(el, e);
+      }
+    }
+  } : listener.bind(el);
+
+  el.addEventListener(eventName, handler, false);
+  return handler;
+};
+
+// Method decorator to register a delegated event
+const event = (eventName, selector) => (target, methodName, descriptor) => {
+  const ctor = target.constructor;
+  const classEvents = ctor.hasOwnProperty('__events') ? ctor.__events : ctor.__events = [];
+  classEvents.push({eventName, selector, listener: descriptor.value});
+};
+
+// Custom element decorator
+const view = ElementClass => class extends ElementClass {
+  constructor() {
+    super();
+    const ctor = this.constructor;
+    const classEvents = ctor.hasOwnProperty('__events') ? ctor.__events : [];
+    classEvents.forEach(({eventName, selector, listener}) => {
+      delegate(this, eventName, selector, listener);
+    });
+  }
 };
 
 // Backbone.sync
@@ -1994,6 +2041,8 @@ export {
   Model,
   Collection,
   Events,
+  view,
+  event,
   sync,
   ajax,
   Router,
