@@ -13,9 +13,8 @@ module.exports = function(config) {
     plugins: ['karma-qunit', 'karma-rollup-preprocessor', 'karma-chrome-launcher'],
 
     // list of files / patterns to load in the browser
-    files: [
-      'test/vendor/jquery.js',
-      'test/vendor/underscore.js',
+    files: [      
+      'node_modules/underscore/underscore.js',
       'test/setup/*.js',
       'test/*.js'
     ],
