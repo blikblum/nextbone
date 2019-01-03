@@ -67,4 +67,31 @@ const elHTML = `<h1>Test</h1>
     el.click();
   });
 
+  QUnit.test('state', function(assert) {
+    assert.expect(2);
+    let updateCallCount = 0;
+    @Backbone.view
+    class Test extends HTMLElement {
+
+      @Backbone.state
+      model = new Backbone.Model();
+
+      @Backbone.state
+      collection = new Backbone.Collection();
+
+      requestUpdate() {
+        updateCallCount++;
+      }
+    }
+
+    const tag = defineCE(Test);
+    const el = fixtureSync(`<${tag}></${tag}>`);
+    el.model.set('test', 1);
+    el.collection.reset([]);
+    assert.equal(updateCallCount, 2);
+    el.model = new Backbone.Model();
+    el.collection = new Backbone.Collection();
+    assert.equal(updateCallCount, 4);
+  });
+
 })(QUnit);

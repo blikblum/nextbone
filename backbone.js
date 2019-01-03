@@ -1524,6 +1524,14 @@ const delegate = function(el, eventName, selector, listener) {
   return handler;
 };
 
+const bindViewState = (el, value) => {
+  if (value instanceof Model) {
+    el.listenTo(value, 'change', () => el.requestUpdate());
+  } else if (value instanceof Collection) {
+    el.listenTo(value, 'sort update reset change', () => el.requestUpdate());
+  }
+};
+
 // Method decorator to register a delegated event
 const event = (eventName, selector) => (target, methodName, descriptor) => {
   const ctor = target.constructor;
@@ -1531,15 +1539,59 @@ const event = (eventName, selector) => (target, methodName, descriptor) => {
   classEvents.push({eventName, selector, listener: descriptor.value});
 };
 
+// Method decorator to define an observable model/collection to a property
+const state = (target, name, descriptor) => {
+  const ctor = target.constructor;
+  const classStates = ctor.hasOwnProperty('__states') ? ctor.__states : ctor.__states = new Set();
+  classStates.add(name);
+  const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+  const desc = {
+    get() { return this[key]; },
+    set(value) {
+      const oldValue = this[key];
+      if (this.isConnected) {
+        bindViewState(this, value);
+      }
+      if (oldValue !== value && (oldValue instanceof Model || oldValue instanceof Collection)) {
+        this.stopListening(oldValue);
+      }
+      this[key] = value;
+      this.requestUpdate(name, oldValue);
+    },
+    configurable: true,
+    enumerable: true
+  };
+  Object.defineProperty(target, name, desc);
+};
+
 // Custom element decorator
-const view = ElementClass => class extends ElementClass {
-  constructor() {
-    super();
-    const classEvents = ElementClass.hasOwnProperty('__events') ? ElementClass.__events : [];
-    classEvents.forEach(({eventName, selector, listener}) => {
-      delegate(this, eventName, selector, listener);
-    });
+const view = ElementClass => {
+  class ViewClass extends ElementClass {
+    constructor() {
+      super();
+      if (ElementClass.hasOwnProperty('__events')) {
+        ElementClass.__events.forEach(({eventName, selector, listener}) => {
+          delegate(this, eventName, selector, listener);
+        });
+      }
+    }
+
+    connectedCallback() {
+      super.connectedCallback && super.connectedCallback();
+      if (ElementClass.hasOwnProperty('__states')) {
+        ElementClass.__states.forEach(name => {
+          bindViewState(this, this[name]);
+        });
+      }
+    }
+
+    disconnectedCallback() {
+      this.stopListening();
+      super.disconnectedCallback && super.disconnectedCallback();
+    }
   }
+  Events.extend(ViewClass.prototype);
+  return ViewClass;
 };
 
 // Backbone.sync
@@ -2042,6 +2094,7 @@ export {
   Events,
   view,
   event,
+  state,
   sync,
   ajax,
   Router,
