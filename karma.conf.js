@@ -3,7 +3,8 @@
 // npm install karma-firefox-launcher
 // karma start --browsers=Firefox
 
-var babel = require('rollup-plugin-babel');
+const babel = require('rollup-plugin-babel');
+const nodeResolve = require('rollup-plugin-node-resolve');
 
 module.exports = function(config) {
   config.set({
@@ -30,8 +31,12 @@ module.exports = function(config) {
 			 * except that `input` is handled for you.
 			 */
       plugins: [babel({
-
-      })],
+          exclude: ['node_modules/**']
+        }),
+        nodeResolve({
+          only: [/^(?!.*?underscore).*/]
+        })
+      ],
 
       output: {
         format: 'iife',            // Helps prevent naming collisions.
