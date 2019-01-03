@@ -1535,8 +1535,7 @@ const event = (eventName, selector) => (target, methodName, descriptor) => {
 const view = ElementClass => class extends ElementClass {
   constructor() {
     super();
-    const ctor = this.constructor;
-    const classEvents = ctor.hasOwnProperty('__events') ? ctor.__events : [];
+    const classEvents = ElementClass.hasOwnProperty('__events') ? ElementClass.__events : [];
     classEvents.forEach(({eventName, selector, listener}) => {
       delegate(this, eventName, selector, listener);
     });
