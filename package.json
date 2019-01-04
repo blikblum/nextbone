@@ -63,6 +63,9 @@
   },
   "files": [
     "backbone.js",
+    "computed.js",
+    "localstorage.js",
+    "validation.js",
     "LICENSE"
   ]
 }
