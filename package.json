@@ -51,7 +51,7 @@
     "test:localstorage": "karma start test/localstorage/karma.conf.js",
     "test:validation": "cross-env NODE_ENV=test mocha --require babel-core/register --ui exports --recursive test/validation",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
-    "lint": "eslint backbone.js computed.js localstorage.js test/*.js"
+    "lint": "eslint backbone.js computed.js localstorage.js test/core/*.js"
   },
   "sideEffects": false,
   "main": "backbone.js",
