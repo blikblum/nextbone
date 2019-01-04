@@ -12,7 +12,7 @@
       }
     ]
   ],
-  "plugins": ["transform-class-properties", "transform-decorators-legacy"],
+  "plugins": ["transform-decorators-legacy", "transform-class-properties"],
   "env": {
     "test": {
       "presets": [
