@@ -1549,10 +1549,11 @@ const registerStateProperty = (ctor, name, key) => {
     get() { return this[key]; },
     set(value) {
       const oldValue = this[key];
+      if (value === oldValue) return;
       if (this.isConnected) {
         bindViewState(this, value);
       }
-      if (oldValue !== value && (oldValue instanceof Model || oldValue instanceof Collection)) {
+      if (oldValue instanceof Model || oldValue instanceof Collection) {
         this.stopListening(oldValue);
       }
       this[key] = value;
