@@ -2,6 +2,26 @@
 
   QUnit.module('Backbone.Events');
 
+  QUnit.test('extending a class with mixin', function(assert) {
+    assert.expect(3);
+    class Test {
+    }
+    var TestWithEvents = Backbone.withEvents(Test);
+    assert.equal(TestWithEvents.prototype.on, Backbone.Events.prototype.on);
+    assert.equal(TestWithEvents.prototype.off, Backbone.Events.prototype.off);
+    assert.equal(TestWithEvents.prototype.trigger, Backbone.Events.prototype.trigger);
+  });
+
+  QUnit.test('extending a class with decorator', function(assert) {
+    assert.expect(3);
+    @Backbone.withEvents
+    class Test {
+    }
+    assert.equal(Test.prototype.on, Backbone.Events.prototype.on);
+    assert.equal(Test.prototype.off, Backbone.Events.prototype.off);
+    assert.equal(Test.prototype.trigger, Backbone.Events.prototype.trigger);
+  });
+
   QUnit.test('on and trigger', function(assert) {
     assert.expect(2);
     var obj = {counter: 0};

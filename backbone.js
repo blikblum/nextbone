@@ -342,13 +342,6 @@ class Events {
   }
 }
 
-// ES class Events mixin
-var withEvents = (Base) => {
-  var WithEventsClass = class extends Base {};
-  Events.extend(WithEventsClass.prototype);
-  return WithEventsClass;
-};
-
 // A listening class that tracks and cleans up memory bindings
 // when all callbacks have been offed.
 class Listening {
@@ -1594,6 +1587,12 @@ const createViewClass = (ElementClass) => {
   return ViewClass;
 };
 
+const createEventsClass = (BaseClass) => {
+  const WithEventsClass = class extends BaseClass {};
+  Events.extend(WithEventsClass.prototype);
+  return WithEventsClass;
+};
+
 // Method decorator to register a delegated event
 const event = (eventName, selector) => (...args) => {
   if (isSpecDecoratorCall(args)) {
@@ -1639,6 +1638,20 @@ const view = (...args) => {
     };
   }
   return createViewClass(args[0]);
+};
+
+// ES class Events mixin / decorator
+const withEvents = (...args) => {
+  if (isSpecDecoratorCall(args)) {
+    const elementDescriptor = args[0];
+    return {
+      ...elementDescriptor,
+      finisher(BaseClass) {
+        return createEventsClass(BaseClass);
+      }
+    };
+  }
+  return createEventsClass(args[0]);
 };
 
 // Backbone.sync
@@ -2142,6 +2155,7 @@ export {
   view,
   event,
   state,
+  withEvents,
   sync,
   ajax,
   Router,
