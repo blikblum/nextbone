@@ -68,7 +68,7 @@ const elHTML = `<h1>Test</h1>
   });
 
   QUnit.test('state', function(assert) {
-    assert.expect(2);
+    assert.expect(6);
     let updateCallCount = 0;
     @Backbone.view
     class Test extends HTMLElement {
@@ -86,12 +86,41 @@ const elHTML = `<h1>Test</h1>
 
     const tag = defineCE(Test);
     const el = fixtureSync(`<${tag}></${tag}>`);
+    const parentEl = el.parentNode;
+
+    // changes to model/collection should trigger element update
     el.model.set('test', 1);
     el.collection.reset([]);
     assert.equal(updateCallCount, 2);
-    el.model = new Backbone.Model();
-    el.collection = new Backbone.Collection();
+
+    // update property instance should trigger element update
+    const newModel = new Backbone.Model();
+    const newCollection = new Backbone.Collection();
+    el.model = newModel;
+    el.collection = newCollection;
     assert.equal(updateCallCount, 4);
+
+    // setting the same instance should not trigger element update
+    el.model = newModel;
+    el.collection = newCollection;
+    assert.equal(updateCallCount, 4);
+
+    // but changes to model/collection should trigger element update but not doubled
+    el.model.set('test', 3);
+    el.collection.reset([]);
+    assert.equal(updateCallCount, 6);
+
+    // when disconnected no update should be triggered
+    el.remove();
+    el.model.set('test', 4);
+    el.collection.reset([{test: 'x'}]);
+    assert.equal(updateCallCount, 6);
+
+    // when reconnected should be trigger element update
+    parentEl.appendChild(el);
+    el.model.set('test', 5);
+    el.collection.reset([{test: 4}]);
+    assert.equal(updateCallCount, 8);
   });
 
 })(QUnit);
