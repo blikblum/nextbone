@@ -1532,19 +1532,19 @@ const bindViewState = (el, value) => {
   }
 };
 
-// Method decorator to register a delegated event
-const event = (eventName, selector) => (target, methodName, descriptor) => {
-  const ctor = target.constructor;
-  const classEvents = ctor.hasOwnProperty('__events') ? ctor.__events : ctor.__events = [];
-  classEvents.push({eventName, selector, listener: descriptor.value});
+const isSpecDecoratorCall = (args) => {
+  const descriptorKind = args[0].kind;
+  return args.length === 1 && (descriptorKind === 'field' || descriptorKind === 'method' || descriptorKind === 'class');
 };
 
-// Method decorator to define an observable model/collection to a property
-const state = (target, name, descriptor) => {
-  const ctor = target.constructor;
+const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
+  const classEvents = ctor.hasOwnProperty('__events') ? ctor.__events : ctor.__events = [];
+  classEvents.push({eventName, selector, listener});
+};
+
+const registerStateProperty = (ctor, name, key) => {
   const classStates = ctor.hasOwnProperty('__states') ? ctor.__states : ctor.__states = new Set();
   classStates.add(name);
-  const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
   const desc = {
     get() { return this[key]; },
     set(value) {
@@ -1561,11 +1561,10 @@ const state = (target, name, descriptor) => {
     configurable: true,
     enumerable: true
   };
-  Object.defineProperty(target, name, desc);
+  Object.defineProperty(ctor.prototype, name, desc);
 };
 
-// Custom element decorator
-const view = ElementClass => {
+const createViewClass = (ElementClass) => {
   class ViewClass extends ElementClass {
     constructor() {
       super();
@@ -1592,6 +1591,53 @@ const view = ElementClass => {
   }
   Events.extend(ViewClass.prototype);
   return ViewClass;
+};
+
+// Method decorator to register a delegated event
+const event = (eventName, selector) => (...args) => {
+  if (isSpecDecoratorCall(args)) {
+    const elementDescriptor = args[0];
+    return {
+      ...elementDescriptor,
+      finisher(ctor) {
+        registerDelegatedEvent(ctor, eventName, selector, elementDescriptor.descriptor.value);
+      }
+    };
+  }
+  // args[0]: target, args[1]: name, args[2]: descriptor
+  registerDelegatedEvent(args[0].constructor, eventName, selector, args[2].value);
+};
+
+// Method decorator to define an observable model/collection to a property
+const state = (...args) => {
+  const isSpec = isSpecDecoratorCall(args);
+  const name = isSpec ? args[0].key : args[1];
+  const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+  if (isSpec) {
+    const elementDescriptor = args[0];
+    return {
+      ...elementDescriptor,
+      key,
+      finisher(ctor) {
+        registerStateProperty(ctor, name, key);
+      }
+    };
+  }
+  registerStateProperty(args[0].constructor, name, key);
+};
+
+// Custom element decorator
+const view = (...args) => {
+  if (isSpecDecoratorCall(args)) {
+    const elementDescriptor = args[0];
+    return {
+      ...elementDescriptor,
+      finisher(ElementClass) {
+        return createViewClass(ElementClass);
+      }
+    };
+  }
+  return createViewClass(args[0]);
 };
 
 // Backbone.sync
