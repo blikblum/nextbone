@@ -1528,6 +1528,12 @@ const bindViewState = (el, value) => {
   }
 };
 
+const bindStateEvent = (el, value, {event, listener}) => {
+  if (value instanceof Events) {
+    el.listenTo(value, event, listener.bind(el));
+  }
+};
+
 const isSpecDecoratorCall = (args) => {
   const descriptorKind = args[0].kind;
   return args.length === 1 && (descriptorKind === 'field' || descriptorKind === 'method' || descriptorKind === 'class');
@@ -1562,6 +1568,11 @@ const registerStateProperty = (ctor, name, key) => {
   ctor.createProperty(name, {type: Object});
 };
 
+const registerStateEvent = (ctor, propName, event, listener) => {
+  const stateEvents = ctor.__stateEvents || (ctor.__stateEvents = {});
+  stateEvents[propName] = {event, listener};  
+};
+
 const ensureViewClass = (ElementClass) => {
   if (ElementClass[isClassDecorated]) return ElementClass;
   ElementClass[isClassDecorated] = true;
@@ -1583,6 +1594,12 @@ const ensureViewClass = (ElementClass) => {
         states.forEach(name => {
           bindViewState(this, this[name]);
         });
+      }
+      const propEvents = this.constructor.__stateEvents;
+      if (propEvents) {
+        for (let propName in propEvents) {
+          bindStateEvent(this, this[propName], propEvents[propName])
+        }
       }
     }
 
@@ -1628,6 +1645,23 @@ const state = (...args) => {
     };
   }
   registerStateProperty(args[0].constructor, name, key);
+};
+
+// Method decorator to listen to an event from a property
+const propertyEvent = (propName, event) => (...args) => {
+  const isSpec = isSpecDecoratorCall(args);  
+  if (isSpec) {
+    const elementDescriptor = args[0];
+    return {
+      ...elementDescriptor,      
+      finisher(ctor) {
+        registerStateEvent(ctor, propName, event, elementDescriptor.descriptor.value);
+        return ensureViewClass(ctor);
+      }
+    };
+  }
+  // args[0]: target, args[1]: name, args[2]: descriptor
+  registerStateEvent(args[0].constructor, propName, event, args[2].value);
 };
 
 // Custom element decorator
