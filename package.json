@@ -43,7 +43,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "scripts": {
-    "test": "karma start && npm run lint",
+    "test": "karma start",
     "test:debug": "karma start --browsers ChromeDebugging --no-single-run",
     "test:computed": "cross-env NODE_ENV=test mocha --require babel-core/register test/computed",
     "test:fetch": "cross-env NODE_ENV=test mocha --require babel-core/register test/fetch",
