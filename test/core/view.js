@@ -68,10 +68,14 @@ const elHTML = `<h1>Test</h1>
   });
 
   QUnit.test('state', function(assert) {
-    assert.expect(6);
-    let updateCallCount = 0;
+    assert.expect(7);
+    let requestUpdateCount = 0;
+    let createPropertyCount = 0;
     @Backbone.view
     class Test extends HTMLElement {
+      static createProperty() {
+        createPropertyCount++;
+      }
 
       @Backbone.state
       model = new Backbone.Model();
@@ -80,7 +84,7 @@ const elHTML = `<h1>Test</h1>
       collection = new Backbone.Collection();
 
       requestUpdate() {
-        updateCallCount++;
+        requestUpdateCount++;
       }
     }
 
@@ -91,36 +95,38 @@ const elHTML = `<h1>Test</h1>
     // changes to model/collection should trigger element update
     el.model.set('test', 1);
     el.collection.reset([]);
-    assert.equal(updateCallCount, 2);
+    assert.equal(requestUpdateCount, 2);
 
     // update property instance should trigger element update
     const newModel = new Backbone.Model();
     const newCollection = new Backbone.Collection();
     el.model = newModel;
     el.collection = newCollection;
-    assert.equal(updateCallCount, 4);
+    assert.equal(requestUpdateCount, 4);
 
     // setting the same instance should not trigger element update
     el.model = newModel;
     el.collection = newCollection;
-    assert.equal(updateCallCount, 4);
+    assert.equal(requestUpdateCount, 4);
 
     // but changes to model/collection should trigger element update but not doubled
     el.model.set('test', 3);
     el.collection.reset([]);
-    assert.equal(updateCallCount, 6);
+    assert.equal(requestUpdateCount, 6);
 
     // when disconnected no update should be triggered
     el.remove();
     el.model.set('test', 4);
     el.collection.reset([{test: 'x'}]);
-    assert.equal(updateCallCount, 6);
+    assert.equal(requestUpdateCount, 6);
 
     // when reconnected should be trigger element update
     parentEl.appendChild(el);
     el.model.set('test', 5);
     el.collection.reset([{test: 4}]);
-    assert.equal(updateCallCount, 8);
+    assert.equal(requestUpdateCount, 8);
+
+    assert.equal(createPropertyCount, 2);
   });
 
 })(QUnit);
