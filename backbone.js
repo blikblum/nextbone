@@ -1494,6 +1494,8 @@ var modelMatcher = function(attrs) {
 
 // Set of decorators to custom elements based on lit-element base class
 
+const isClassDecorated = Symbol();
+
 // Make a event delegation handler for the given `eventName` and `selector`
 // and attach it to `el`.
 // If selector is empty, the listener will be bound to `el`. If not, a
@@ -1531,12 +1533,12 @@ const isSpecDecoratorCall = (args) => {
 };
 
 const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
-  const classEvents = ctor.hasOwnProperty('__events') ? ctor.__events : ctor.__events = [];
+  const classEvents = ctor.__events || (ctor.__events = []);
   classEvents.push({eventName, selector, listener});
 };
 
 const registerStateProperty = (ctor, name, key) => {
-  const classStates = ctor.hasOwnProperty('__states') ? ctor.__states : ctor.__states = new Set();
+  const classStates = ctor.__states || (ctor.__states = new Set());
   classStates.add(name);
   const desc = {
     get() { return this[key]; },
@@ -1559,12 +1561,15 @@ const registerStateProperty = (ctor, name, key) => {
   ctor.createProperty(name, {type: Object});
 };
 
-const createViewClass = (ElementClass) => {
+const ensureViewClass = (ElementClass) => {
+  if (ElementClass[isClassDecorated]) return ElementClass;
+  ElementClass[isClassDecorated] = true;
   class ViewClass extends ElementClass {
     constructor() {
       super();
-      if (ElementClass.hasOwnProperty('__events')) {
-        ElementClass.__events.forEach(({eventName, selector, listener}) => {
+      const events = this.constructor.__events;
+      if (events) {
+        events.forEach(({eventName, selector, listener}) => {
           delegate(this, eventName, selector, listener);
         });
       }
@@ -1572,8 +1577,9 @@ const createViewClass = (ElementClass) => {
 
     connectedCallback() {
       super.connectedCallback && super.connectedCallback();
-      if (ElementClass.hasOwnProperty('__states')) {
-        ElementClass.__states.forEach(name => {
+      const states = this.constructor.__states;
+      if (states) {
+        states.forEach(name => {
           bindViewState(this, this[name]);
         });
       }
@@ -1596,6 +1602,7 @@ const event = (eventName, selector) => (...args) => {
       ...elementDescriptor,
       finisher(ctor) {
         registerDelegatedEvent(ctor, eventName, selector, elementDescriptor.descriptor.value);
+        return ensureViewClass(ctor);
       }
     };
   }
@@ -1615,6 +1622,7 @@ const state = (...args) => {
       key,
       finisher(ctor) {
         registerStateProperty(ctor, name, key);
+        return ensureViewClass(ctor);
       }
     };
   }
@@ -1627,12 +1635,10 @@ const view = (...args) => {
     const elementDescriptor = args[0];
     return {
       ...elementDescriptor,
-      finisher(ElementClass) {
-        return createViewClass(ElementClass);
-      }
+      finisher: ensureViewClass
     };
   }
-  return createViewClass(args[0]);
+  return ensureViewClass(args[0]);
 };
 
 // ES class Events mixin / decorator
