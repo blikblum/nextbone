@@ -20,6 +20,10 @@ const elHTML = `<h1>Test</h1>
       let el, oneEl, oneChildEl, twoEl;
       @classDecorator
       class Test extends HTMLElement {
+        get renderRoot() {
+          return this;
+        }
+
         connectedCallback() {
           this.innerHTML = elHTML;
         }
@@ -54,6 +58,10 @@ const elHTML = `<h1>Test</h1>
       let el;
       @classDecorator
       class Test extends HTMLElement {
+        get renderRoot() {
+          return this;
+        }
+
         connectedCallback() {
           this.innerHTML = elHTML;
         }
