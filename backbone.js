@@ -1587,12 +1587,6 @@ const createViewClass = (ElementClass) => {
   return ViewClass;
 };
 
-const createEventsClass = (BaseClass) => {
-  const WithEventsClass = class extends BaseClass {};
-  Events.extend(WithEventsClass.prototype);
-  return WithEventsClass;
-};
-
 // Method decorator to register a delegated event
 const event = (eventName, selector) => (...args) => {
   if (isSpecDecoratorCall(args)) {
@@ -1647,11 +1641,13 @@ const withEvents = (...args) => {
     return {
       ...elementDescriptor,
       finisher(BaseClass) {
-        return createEventsClass(BaseClass);
+        Events.extend(BaseClass.prototype);
       }
     };
   }
-  return createEventsClass(args[0]);
+  const WithEventsClass = class extends args[0] {};
+  Events.extend(WithEventsClass.prototype);
+  return WithEventsClass;
 };
 
 // Backbone.sync
