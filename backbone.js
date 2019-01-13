@@ -1598,11 +1598,15 @@ const ensureViewClass = (ElementClass) => {
 // Method decorator to register a delegated event
 const event = (eventName, selector) => (...args) => {
   if (isSpecDecoratorCall(args)) {
-    const elementDescriptor = args[0];
+    const {kind, key, placement, descriptor, initializer} = args[0];
     return {
-      ...elementDescriptor,
+      kind,
+      placement,
+      descriptor,
+      initializer,
+      key,
       finisher(ctor) {
-        registerDelegatedEvent(ctor, eventName, selector, elementDescriptor.descriptor.value);
+        registerDelegatedEvent(ctor, eventName, selector, descriptor.value);
         return ensureViewClass(ctor);
       }
     };
@@ -1617,9 +1621,12 @@ const state = (...args) => {
   const name = isSpec ? args[0].key : args[1];
   const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
   if (isSpec) {
-    const elementDescriptor = args[0];
+    const {kind, placement, descriptor, initializer} = args[0];
     return {
-      ...elementDescriptor,
+      kind,
+      placement,
+      descriptor,
+      initializer,
       key,
       finisher(ctor) {
         registerStateProperty(ctor, name, key);
@@ -1633,9 +1640,10 @@ const state = (...args) => {
 // Custom element decorator
 const view = (...args) => {
   if (isSpecDecoratorCall(args)) {
-    const elementDescriptor = args[0];
+    const {kind, elements} = args[0];
     return {
-      ...elementDescriptor,
+      kind,
+      elements,
       finisher: ensureViewClass
     };
   }
@@ -1645,9 +1653,10 @@ const view = (...args) => {
 // ES class Events mixin / decorator
 const withEvents = (...args) => {
   if (isSpecDecoratorCall(args)) {
-    const elementDescriptor = args[0];
+    const {kind, elements} = args[0];
     return {
-      ...elementDescriptor,
+      kind,
+      elements,
       finisher(BaseClass) {
         Events.extend(BaseClass.prototype);
       }
