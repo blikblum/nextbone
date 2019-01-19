@@ -1,5 +1,6 @@
 import {fixture, defineCE} from '@open-wc/testing-helpers';
 import {LitElement, html} from 'lit-element';
+import {render} from 'lit-html'
 
 
 const elHTML = html`<h1>Test</h1>        
@@ -79,6 +80,62 @@ const elHTML = html`<h1>Test</h1>
       el = await fixture(`<${tag}></${tag}>`);
       el.click();
     });
+
+    QUnit.test(`event - child delegation with HTMLElement${suffix}`, async function(assert) {
+      assert.expect(6);
+      let el, oneEl, oneChildEl, twoEl;
+      @classDecorator
+      class Test extends HTMLElement {
+        connectedCallback() {
+          render(elHTML, this)
+        }
+
+        @Backbone.event('click', '.one')
+        oneClick(e) {
+          assert.equal(this, el, 'this should be the element instance');
+          assert.equal(e.target, oneChildEl, 'target should be .one-child element');
+          assert.equal(e.delegateTarget, oneEl, 'delegateTarget should be .one element');
+        }
+
+        @Backbone.event('click', '.two')
+        twoClick(e) {
+          assert.equal(this, el, 'this should be the element instance');
+          assert.equal(e.target, twoEl, 'target should be .two element');
+          assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
+        }
+      }
+
+      const tag = defineCE(Test);
+      el = await fixture(`<${tag}></${tag}>`);
+      oneEl = el.querySelector('.one');
+      oneChildEl = el.querySelector('.one-child');
+      twoEl = el.querySelector('.two');
+      oneChildEl.click();
+      twoEl.click();
+      el.click();
+    });
+
+    QUnit.test(`event - no delegation with HTMLElement${suffix}`, async function(assert) {
+      assert.expect(3);
+      let el;
+      @classDecorator
+      class Test extends HTMLElement {
+        connectedCallback() {
+          render(elHTML, this)
+        }
+
+        @Backbone.event('click')
+        selfClick(e) {
+          assert.equal(this, el, 'this should be the element instance');
+          assert.equal(e.target, el, 'target should be be the element instance');
+          assert.notOk(e.delegateTarget, 'delegateTarget should be undefined');
+        }
+      }
+
+      const tag = defineCE(Test);
+      el = await fixture(`<${tag}></${tag}>`);
+      el.click();
+    });    
 
     QUnit.test(`state${suffix}`, async function(assert) {
       assert.expect(8);
