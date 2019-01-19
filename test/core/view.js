@@ -1,6 +1,6 @@
 import {fixture, defineCE} from '@open-wc/testing-helpers';
 import {LitElement, html} from 'lit-element';
-import {render} from 'lit-html'
+import {render} from 'lit-html';
 
 
 const elHTML = html`<h1>Test</h1>        
@@ -87,7 +87,7 @@ const elHTML = html`<h1>Test</h1>
       @classDecorator
       class Test extends HTMLElement {
         connectedCallback() {
-          render(elHTML, this)
+          render(elHTML, this);
         }
 
         @Backbone.event('click', '.one')
@@ -121,7 +121,7 @@ const elHTML = html`<h1>Test</h1>
       @classDecorator
       class Test extends HTMLElement {
         connectedCallback() {
-          render(elHTML, this)
+          render(elHTML, this);
         }
 
         @Backbone.event('click')
@@ -135,7 +135,7 @@ const elHTML = html`<h1>Test</h1>
       const tag = defineCE(Test);
       el = await fixture(`<${tag}></${tag}>`);
       el.click();
-    });    
+    });
 
     QUnit.test(`state${suffix}`, async function(assert) {
       assert.expect(8);

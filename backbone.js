@@ -1559,7 +1559,9 @@ const registerStateProperty = (ctor, name, key) => {
     enumerable: true
   };
   Object.defineProperty(ctor.prototype, name, desc);
-  ctor.createProperty(name, {type: Object, noAccessor: true});
+  if (ctor.createProperty) {
+    ctor.createProperty(name, {type: Object, noAccessor: true});
+  }
 };
 
 const ensureViewClass = (ElementClass) => {
