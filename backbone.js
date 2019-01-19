@@ -1553,12 +1553,13 @@ const registerStateProperty = (ctor, name, key) => {
         this.stopListening(oldValue);
       }
       this[key] = value;
+      this.requestUpdate(name, oldValue);
     },
     configurable: true,
     enumerable: true
   };
   Object.defineProperty(ctor.prototype, name, desc);
-  ctor.createProperty(name, {type: Object});
+  ctor.createProperty(name, {type: Object, noAccessor: true});
 };
 
 const ensureViewClass = (ElementClass) => {
