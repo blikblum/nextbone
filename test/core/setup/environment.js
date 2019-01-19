@@ -1,4 +1,4 @@
-import * as Backbone from '../../../backbone';
+import * as Backbone from '../../../nextbone';
 
 window.Backbone = Backbone;
 

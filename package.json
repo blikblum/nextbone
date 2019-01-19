@@ -54,15 +54,15 @@
     "lint": "eslint backbone.js computed.js localstorage.js test/core/*.js"
   },
   "sideEffects": false,
-  "main": "backbone.js",
-  "module": "backbone.js",
+  "main": "nextbone.js",
+  "module": "nextbone.js",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/blikblum/nextbone.git"
   },
   "files": [
-    "backbone.js",
+    "nextbone.js",
     "computed.js",
     "localstorage.js",
     "validation.js",

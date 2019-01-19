@@ -1,4 +1,4 @@
-import {sync} from './backbone.js';
+import {sync} from './nextbone.js';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
