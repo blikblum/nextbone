@@ -4,7 +4,7 @@ global.XMLHttpRequest = function() {
 
 var sinon = require('sinon');
 var expect = require('chai').expect;
-var Backbone = require('../../backbone');
+var Backbone = require('../../nextbone');
 
 (function() {
   if (typeof window === 'undefined') global.self = {};
