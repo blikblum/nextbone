@@ -1,7 +1,7 @@
 {
   "name": "nextbone",
-  "version": "0.6.0",
-  "description": "BackboneJS rewritten with ES Classes.",
+  "version": "0.7.0",
+  "description": "BackboneJS with ES classes and web components",
   "url": "https://github.com/blikblum/nextbone",
   "keywords": [
     "model",
