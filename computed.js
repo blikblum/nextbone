@@ -68,8 +68,7 @@ class ComputedFields {
   }
 }
 
-
-const computed = options => {
+const createClass = (ModelClass, options) => {
   const excludeFromJSON = reduce(options, (result, def, key) => {
     if (def.toJSON === false) {
       result.push(key);
@@ -85,23 +84,34 @@ const computed = options => {
     }
   }
 
-  return ModelClass => {
-    return class extends ModelClass {
-      constructor(...args) {
-        super(...args);
-        this.computedFields = new ComputedFields(this, fields);
-      }
+  return class extends ModelClass {
+    constructor(...args) {
+      super(...args);
+      this.computedFields = new ComputedFields(this, fields);
+    }
 
-      toJSON(...args) {
-        const result = super.toJSON(...args);
-        if (!excludeFromJSON.length || args[0] && args[0].computedFields) {
-          return result;
-        }
-        return omit(result, excludeFromJSON);
+    toJSON(...args) {
+      const result = super.toJSON(...args);
+      if (!excludeFromJSON.length || args[0] && args[0].computedFields) {
+        return result;
       }
-    };
+      return omit(result, excludeFromJSON);
+    }
   };
+};
 
+const computed = options => ctorOrDescriptor => {
+  if (typeof ctorOrDescriptor === 'function') {
+    return createClass(ctorOrDescriptor, options);
+  }
+  const {kind, elements} = ctorOrDescriptor;
+  return {
+    kind,
+    elements,
+    finisher(ctor) {
+      return createClass(ctor, options);
+    }
+  };
 };
 
 

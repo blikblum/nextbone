@@ -278,13 +278,25 @@ sync.handler = function localStorageSyncHandler(method, model, options = {}) {
   fn.call(this, method, model, options);
 };
 
-export function localStorage(name, serializer) {
-  return ModelClass => {
-    return class extends ModelClass {
-      constructor(...args) {
-        super(...args);
-        this.localStorage = new LocalStorage(name, serializer);
-      }
-    };
+const createClass = (ModelClass, name, serializer) => {
+  return class extends ModelClass {
+    constructor(...args) {
+      super(...args);
+      this.localStorage = new LocalStorage(name, serializer);
+    }
   };
-}
+};
+
+export const localStorage = (name, serializer) => ctorOrDescriptor => {
+  if (typeof ctorOrDescriptor === 'function') {
+    return createClass(ctorOrDescriptor, name, serializer);
+  }
+  const {kind, elements} = ctorOrDescriptor;
+  return {
+    kind,
+    elements,
+    finisher(ctor) {
+      return createClass(ctor, name, serializer);
+    }
+  };
+};

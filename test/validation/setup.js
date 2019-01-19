@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 
 global._ = require('underscore');
-global.Backbone = require('../../backbone');
+global.Backbone = require('../../nextbone');
 const Validation = require('../../validation');
 global.sinon = require('sinon');
 

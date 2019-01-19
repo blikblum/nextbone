@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { computed } from '../../computed'
-import { Model, Collection } from '../../backbone'
+import { Model, Collection } from '../../nextbone'
 
 describe('nextbone/computed', function () {
 
