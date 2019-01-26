@@ -2167,6 +2167,7 @@ export {
   Model,
   Collection,
   Events,
+  delegate,
   view,
   event,
   state,
