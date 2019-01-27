@@ -476,12 +476,10 @@
   QUnit.test('defaults', function(assert) {
     assert.expect(9);
     var Defaulted = class extends Backbone.Model {
-      defaults() {
-        return {
-          one: 1,
-          two: 2
-        };
-      }
+      static defaults = {
+        one: 1,
+        two: 2
+      };
     };
     var model = new Defaulted({two: undefined});
     assert.equal(model.get('one'), 1);
@@ -501,7 +499,7 @@
     assert.equal(model.get('one'), 3);
     assert.equal(model.get('two'), 4);
     Defaulted = class extends Backbone.Model {
-      defaults() { return {hasOwnProperty: true}; }
+      static defaults = {hasOwnProperty: true};
     };
     model = new Defaulted();
     assert.equal(model.get('hasOwnProperty'), true);

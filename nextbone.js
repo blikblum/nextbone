@@ -414,7 +414,7 @@ class Model extends Events {
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
     if (options.parse) attrs = this.parse(attrs, options) || {};
-    var defaults = result(this, 'defaults');
+    var defaults = getClassProp(this, 'defaults');
     attrs = getDefaults(extend({}, defaults, attrs), defaults);
     this.set(attrs, options);
     // A hash of attributes whose current and previous value differ.
