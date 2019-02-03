@@ -275,7 +275,7 @@ function getSyncMethod(model, options) {
 
 sync.handler = function localStorageSyncHandler(method, model, options = {}) {
   const fn = getSyncMethod(model, options);
-  fn.call(this, method, model, options);
+  return fn.call(this, method, model, options);
 };
 
 const createClass = (ModelClass, name, serializer) => {
