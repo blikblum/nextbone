@@ -45,7 +45,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "scripts": {
-    "test": "karma start",
+    "test": "karma start test/core/karma.conf.js",
     "test:computed": "cross-env NODE_ENV=test mocha --require @babel/register test/computed",
     "test:fetch": "cross-env NODE_ENV=test mocha --require @babel/register test/fetch",
     "test:localstorage": "karma start test/localstorage/karma.conf.js",

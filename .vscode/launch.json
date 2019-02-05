@@ -13,8 +13,7 @@
       "port": 9333,
       "pathMapping": {
         "/": "${workspaceRoot}",
-        "/base/": "${workspaceRoot}/",
-        "/base/test/setup/": "${workspaceRoot}/"
+        "/base/": "${workspaceRoot}/"        
       }
     },
     {
