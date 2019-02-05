@@ -17,12 +17,12 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [      
       'node_modules/underscore/underscore.js',
-      'test/core/setup/*.js',
+      'test/core/setup.js',
       'test/core/*.js'
     ],
 
     preprocessors: {
-      'test/core/setup/*.js': ['rollup'],
+      'test/core/setup.js': ['rollup'],
       'test/core/*.js': ['rollup']
     },
 
