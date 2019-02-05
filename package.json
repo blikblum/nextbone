@@ -46,7 +46,6 @@
   },
   "scripts": {
     "test": "karma start",
-    "test:debug": "karma start --browsers ChromeDebugging --no-single-run",
     "test:computed": "cross-env NODE_ENV=test mocha --require @babel/register test/computed",
     "test:fetch": "cross-env NODE_ENV=test mocha --require @babel/register test/fetch",
     "test:localstorage": "karma start test/localstorage/karma.conf.js",
