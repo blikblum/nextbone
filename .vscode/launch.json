@@ -8,13 +8,24 @@
     {
       "type": "chrome",
       "request": "attach",
-      "name": "Attach to Karma",     
+      "name": "Core Tests (Attach to Karma)",
       "address": "localhost",
       "port": 9333,
       "pathMapping": {
         "/": "${workspaceRoot}",
         "/base/": "${workspaceRoot}/",
         "/base/test/setup/": "${workspaceRoot}/"
+      }
+    },
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Localstorage Tests (Attach to Karma)",
+      "address": "localhost",
+      "port": 9333,
+      "pathMapping": {
+        "/": "${workspaceRoot}",
+        "/base/": "${workspaceRoot}/"
       }
     },
     {

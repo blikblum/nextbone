@@ -7,6 +7,8 @@ const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
 
+const isDebug = process.argv.includes('--debug')
+
 module.exports = function(config) {
   config.set({
     basePath: '',
@@ -71,7 +73,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeHeadless'],
+    browsers: [isDebug ? 'ChromeDebugging' : 'ChromeHeadless'],
 
     customLaunchers: {
       ChromeDebugging: {
@@ -82,6 +84,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: true
+    singleRun: !isDebug
   });
 };
