@@ -17,8 +17,8 @@ const elHTML = html`<h1>Test</h1>
   // test the possibility to use field/method decorators without view decorator
   [Backbone.view, _.noop].forEach(classDecorator => {
     const suffix = classDecorator === Backbone.view ? '' : ' - without class decorator';
-    QUnit.test(`event - child delegation${suffix}`, async function(assert) {
-      assert.expect(6);
+    QUnit.test(`event${suffix}`, async function(assert) {
+      assert.expect(9);
       let el, oneEl, oneChildEl, twoEl;
       @classDecorator
       class Test extends LitElement {
@@ -43,32 +43,8 @@ const elHTML = html`<h1>Test</h1>
           assert.equal(e.target, twoEl, 'target should be .two element');
           assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
         }
-      }
 
-      const tag = defineCE(Test);
-      el = await fixture(`<${tag}></${tag}>`);
-      oneEl = el.querySelector('.one');
-      oneChildEl = el.querySelector('.one-child');
-      twoEl = el.querySelector('.two');
-      oneChildEl.click();
-      twoEl.click();
-      el.click();
-    });
-
-    QUnit.test(`event - no delegation${suffix}`, async function(assert) {
-      assert.expect(3);
-      let el;
-      @classDecorator
-      class Test extends LitElement {
-        createRenderRoot() {
-          return this;
-        }
-
-        render() {
-          return elHTML;
-        }
-
-        @Backbone.event('click')
+        @Backbone.event('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
@@ -78,7 +54,12 @@ const elHTML = html`<h1>Test</h1>
 
       const tag = defineCE(Test);
       el = await fixture(`<${tag}></${tag}>`);
-      el.click();
+      oneEl = el.querySelector('.one');
+      oneChildEl = el.querySelector('.one-child');
+      twoEl = el.querySelector('.two');
+      oneChildEl.click();
+      twoEl.click();
+      el.dispatchEvent(new CustomEvent('my-event'));
     });
 
     QUnit.test(`event - with shadowDOM${suffix}`, async function(assert) {
@@ -122,8 +103,8 @@ const elHTML = html`<h1>Test</h1>
       el.dispatchEvent(new CustomEvent('my-event'));
     });
 
-    QUnit.test(`event - child delegation with HTMLElement${suffix}`, async function(assert) {
-      assert.expect(6);
+    QUnit.test(`event - with HTMLElement${suffix}`, async function(assert) {
+      assert.expect(9);
       let el, oneEl, oneChildEl, twoEl;
       @classDecorator
       class Test extends HTMLElement {
@@ -144,28 +125,8 @@ const elHTML = html`<h1>Test</h1>
           assert.equal(e.target, twoEl, 'target should be .two element');
           assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
         }
-      }
 
-      const tag = defineCE(Test);
-      el = await fixture(`<${tag}></${tag}>`);
-      oneEl = el.querySelector('.one');
-      oneChildEl = el.querySelector('.one-child');
-      twoEl = el.querySelector('.two');
-      oneChildEl.click();
-      twoEl.click();
-      el.click();
-    });
-
-    QUnit.test(`event - no delegation with HTMLElement${suffix}`, async function(assert) {
-      assert.expect(3);
-      let el;
-      @classDecorator
-      class Test extends HTMLElement {
-        connectedCallback() {
-          render(elHTML, this);
-        }
-
-        @Backbone.event('click')
+        @Backbone.event('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
@@ -175,7 +136,12 @@ const elHTML = html`<h1>Test</h1>
 
       const tag = defineCE(Test);
       el = await fixture(`<${tag}></${tag}>`);
-      el.click();
+      oneEl = el.querySelector('.one');
+      oneChildEl = el.querySelector('.one-child');
+      twoEl = el.querySelector('.two');
+      oneChildEl.click();
+      twoEl.click();
+      el.dispatchEvent(new CustomEvent('my-event'));
     });
 
     QUnit.test(`state${suffix}`, async function(assert) {
