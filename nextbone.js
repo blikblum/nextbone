@@ -1505,18 +1505,23 @@ const isClassDecorated = Symbol();
 // result of calling bound `listener` with the parameters given to the
 // handler.
 const delegate = function(el, eventName, selector, listener) {
-  const rootEl = el.renderRoot || el;
-  var handler = selector ? function(e) {
-    var node = e.target;
-    for (; node && node !== el; node = node.parentNode) {
-      if (node.matches(selector)) {
-        e.delegateTarget = node;
-        listener.call(el, e);
+  let handler, eventTarget;
+  if (selector) {
+    eventTarget = el.renderRoot || el;
+    handler = function(e) {
+      var node = e.target;
+      for (; node && node !== el; node = node.parentNode) {
+        if (node.matches && node.matches(selector)) {
+          e.delegateTarget = node;
+          listener.call(el, e);
+        }
       }
-    }
-  } : listener.bind(el);
-
-  rootEl.addEventListener(eventName, handler, false);
+    };
+  } else {
+    eventTarget = el;
+    handler = listener.bind(el);
+  }
+  eventTarget.addEventListener(eventName, handler, false);
   return handler;
 };
 

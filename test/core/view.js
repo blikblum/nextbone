@@ -81,6 +81,47 @@ const elHTML = html`<h1>Test</h1>
       el.click();
     });
 
+    QUnit.test(`event - with shadowDOM${suffix}`, async function(assert) {
+      assert.expect(9);
+      let el, oneEl, oneChildEl, twoEl;
+      @classDecorator
+      class Test extends LitElement {
+        render() {
+          return elHTML;
+        }
+
+        @Backbone.event('click', '.one')
+        oneClick(e) {
+          assert.equal(this, el, 'this should be the element instance');
+          assert.equal(e.target, oneChildEl, 'target should be .one-child element');
+          assert.equal(e.delegateTarget, oneEl, 'delegateTarget should be .one element');
+        }
+
+        @Backbone.event('click', '.two')
+        twoClick(e) {
+          assert.equal(this, el, 'this should be the element instance');
+          assert.equal(e.target, twoEl, 'target should be .two element');
+          assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
+        }
+
+        @Backbone.event('my-event')
+        selfClick(e) {
+          assert.equal(this, el, 'this should be the element instance');
+          assert.equal(e.target, el, 'target should be be the element instance');
+          assert.notOk(e.delegateTarget, 'delegateTarget should be undefined');
+        }
+      }
+
+      const tag = defineCE(Test);
+      el = await fixture(`<${tag}></${tag}>`);
+      oneEl = el.shadowRoot.querySelector('.one');
+      oneChildEl = el.shadowRoot.querySelector('.one-child');
+      twoEl = el.shadowRoot.querySelector('.two');
+      oneChildEl.click();
+      twoEl.click();
+      el.dispatchEvent(new CustomEvent('my-event'));
+    });
+
     QUnit.test(`event - child delegation with HTMLElement${suffix}`, async function(assert) {
       assert.expect(6);
       let el, oneEl, oneChildEl, twoEl;
