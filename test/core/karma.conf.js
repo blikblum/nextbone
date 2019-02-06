@@ -15,7 +15,7 @@ module.exports = function(config) {
     plugins: ['karma-qunit', 'karma-rollup-preprocessor', 'karma-chrome-launcher'],
 
     // list of files / patterns to load in the browser
-    files: [      
+    files: [
       '../../node_modules/underscore/underscore.js',
       'setup.js',
       '*.js'
@@ -32,11 +32,11 @@ module.exports = function(config) {
 			 * except that `input` is handled for you.
 			 */
       plugins: [babel({
-          exclude: ['node_modules/**']
-        }),
-        nodeResolve({
-          only: [/^(?!.*?underscore).*/]
-        })
+        exclude: ['node_modules/**']
+      }),
+      nodeResolve({
+        only: [/^(?!.*?underscore).*/]
+      })
       ],
 
       output: {
