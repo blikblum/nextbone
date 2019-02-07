@@ -80,7 +80,7 @@ const createClass = (ctor, options = {}) => {
       const prop = inputEl.name;
       if (!prop) return;
       const propType = inputEl.dataset.propType || inputEl.type;
-      const modelName = inputEl.dataset.modelName || this.modelName || 'model';
+      const modelName = inputEl.dataset.modelName || options.modelName || 'model';
       let model = inputEl.model;
       if (!model) {
         model = this[modelName];

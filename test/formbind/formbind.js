@@ -30,6 +30,22 @@ class TestDefaultInputs extends LitElement {
 
 const defaultsTag = defineCE(TestDefaultInputs)
 
+@formBind({modelName: 'otherModel'})
+class TestModelName extends LitElement {
+  createRenderRoot() {
+    return this
+  }
+
+  render() {
+    return html`
+      <input id="default" name="textProp"/>
+      <input id="other" data-model-name="yetAnotherModel" name="textProp"/>
+    `
+  }
+}
+
+const modelNameTag = defineCE(TestModelName)
+
 describe('formBind', function() {
   let myModel;
   let setSpy;
@@ -43,7 +59,7 @@ describe('formBind', function() {
     myModel = null;
   });
 
-  describe('with default inputs', function() {
+  describe('with default options', function() {
     let el
     beforeEach(async function () {
       el = await fixture(`<${defaultsTag}></${defaultsTag}>`);
@@ -114,8 +130,59 @@ describe('formBind', function() {
       inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
       assert.calledOnce(setSpy)
       assert.calledWith(setSpy, 'numberProp', 'a', match({validate: true, attributes: ['numberProp']}))
-    });    
+    });
+
+    it('should look for model in property defined by data-model-name', async function() {
+      let inputEl = el.renderRoot.querySelector('#data-number')
+      inputEl.value = '3'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.calledOnce(setSpy)
+      assert.calledWith(setSpy, 'numberProp', 3, match({validate: true, attributes: ['numberProp']}))
+
+      setSpy.resetHistory()
+
+      inputEl.value = 'a'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.calledOnce(setSpy)
+      assert.calledWith(setSpy, 'numberProp', 'a', match({validate: true, attributes: ['numberProp']}))
+    });
   });
+
+  describe('with custom model name', function() {
+    let el, otherModelSetSpy, yetAnotherModelSetSpy;
+    beforeEach(async function () {
+      el = await fixture(`<${modelNameTag}></${modelNameTag}>`);
+      el.model = myModel
+      el.otherModel = new Model()
+      el.yetAnotherModel = new Model()
+      otherModelSetSpy = spy(el.otherModel, 'set')
+      yetAnotherModelSetSpy = spy(el.yetAnotherModel, 'set')
+      await el.updateComplete
+    })
+
+    it('should update the model defined by modelName option by default', async function() {
+      const inputEl = el.renderRoot.querySelector('#default')
+      inputEl.value = 'zzz'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.notCalled(setSpy)
+      assert.notCalled(yetAnotherModelSetSpy)
+
+      assert.calledOnce(otherModelSetSpy)
+      assert.calledWith(otherModelSetSpy, 'textProp', 'zzz', match({validate: true, attributes: ['textProp']}))
+    });
+
+    it('should update the model defined by data-model-name', async function() {
+      const inputEl = el.renderRoot.querySelector('#other')
+      inputEl.value = 'zzz'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.notCalled(setSpy)
+      assert.notCalled(otherModelSetSpy)
+      
+      assert.calledOnce(yetAnotherModelSetSpy)
+      assert.calledWith(yetAnotherModelSetSpy, 'textProp', 'zzz', match({validate: true, attributes: ['textProp']}))
+    });    
+  });  
+
 });
 
 
