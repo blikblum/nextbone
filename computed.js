@@ -18,27 +18,48 @@ const getDependentValues = (depends, model) => {
 };
 
 const createFieldFromArray = arr => {
-  const depends = []
-  let get, set
+  const depends = [];
+  let get, set;
   arr.forEach(item => {
     switch (typeof item) {
       case 'string':
-        depends.push(item)
+        depends.push(item);
         break;
       case 'function':
         if (!get) {
-          get = item
+          get = item;
         } else {
-          set = item
-        } 
-        break;  
-    
+          set = item;
+        }
+        break;
+
       default:
         break;
     }
-  })
-  return {depends, get, set}
-}
+  });
+  return {depends, get, set};
+};
+
+const createNormalizedOptions = options => {
+  const excludeFromJSON = reduce(options, (result, def, key) => {
+    if (def.toJSON === false) {
+      result.push(key);
+    }
+    return result;
+  }, []);
+
+  const fields = [];
+  for (let key in options) {
+    const field = options[key];
+    if (Array.isArray(field)) {
+      fields.push({name: key, field: createFieldFromArray(field)});
+    } else if (field && (field.set || field.get)) {
+      fields.push({name: key, field: field});
+    }
+  }
+
+  return {excludeFromJSON, fields};
+};
 
 class ComputedFields {
   constructor(model, fields) {
@@ -92,31 +113,18 @@ class ComputedFields {
 }
 
 const createClass = (ModelClass, options) => {
-  const excludeFromJSON = reduce(options, (result, def, key) => {
-    if (def.toJSON === false) {
-      result.push(key);
-    }
-    return result;
-  }, []);
-
-  const fields = [];
-  for (let key in options) {
-    const field = options[key];
-    if (Array.isArray(field)) {
-      fields.push({name: key, field: createFieldFromArray(field)})
-    } else if (field && (field.set || field.get)) {
-      fields.push({name: key, field: field});
-    }
-  }
+  let normalizedOptions;
 
   return class extends ModelClass {
     constructor(...args) {
       super(...args);
-      this.computedFields = new ComputedFields(this, fields);
+      if (!normalizedOptions) normalizedOptions = createNormalizedOptions(options);
+      this.computedFields = new ComputedFields(this, normalizedOptions.fields);
     }
 
     toJSON(...args) {
       const result = super.toJSON(...args);
+      const {excludeFromJSON} = normalizedOptions;
       if (!excludeFromJSON.length || args[0] && args[0].computedFields) {
         return result;
       }
