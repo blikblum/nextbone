@@ -580,4 +580,97 @@ describe('nextbone/computed', function () {
 
   });
 
+  describe('when using shorthand syntax', function () {
+    describe('and dependent field is changed', function () {
+
+      let model;
+  
+      beforeEach(function () {
+        @computed({
+          grossPrice: ['netPrice', 'vatRate', function (fields) {
+            return fields.netPrice * (1 + fields.vatRate / 100);
+          }]
+        })
+        class TestModel extends Model {
+          defaults() {
+            return {
+              'netPrice': 0.0,
+              'vatRate': 0.0
+            }
+          }
+        }
+        model = new TestModel({ netPrice: 100, vatRate: 20 });
+      });
+  
+      describe('vatRate changed', function () {
+  
+        beforeEach(function () {
+          model.set({ vatRate: 5 });
+        });
+  
+        it('should calculate field value updated', function () {
+          expect(model.get('grossPrice')).to.equal(105);
+        });
+  
+        it('dependent field remains the same', function () {
+          expect(model.get('netPrice')).to.equal(100);
+        });
+  
+      });
+  
+      describe('netPrice changed', function () {
+  
+        beforeEach(function () {
+          model.set({ netPrice: 200 });
+        });
+  
+        it('should calculate field value updated', function () {
+          expect(model.get('grossPrice')).to.equal(240);
+        });
+  
+        it('dependent field remains the same', function () {
+          expect(model.get('vatRate')).to.equal(20);
+        });
+  
+      });
+  
+    });   
+    
+    describe('and calculated field is changed', function () {
+
+      var model;
+  
+      beforeEach(function () {
+        @computed({
+          grossPrice: ['netPrice', 'vatRate', function (fields) {
+            return fields.netPrice * (1 + fields.vatRate / 100);
+          }, function (value, fields) {
+            fields.netPrice = value / (1 + fields.vatRate / 100);
+          }]
+        })
+        class TestModel extends Model {
+          defaults() {
+            return {
+              'netPrice': 0.0,
+              'vatRate': 0.0
+            }
+          }
+        }
+  
+        model = new TestModel({ netPrice: 100, vatRate: 20 });
+  
+  
+        model.set({ grossPrice: 80 });
+      });
+  
+      it('should update dependent field', function () {
+        expect(model.get('netPrice')).to.equal(80 / (1 + 20 / 100));
+      });
+  
+    });    
+
+  })
+
+
+
 });

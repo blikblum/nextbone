@@ -17,6 +17,29 @@ const getDependentValues = (depends, model) => {
   }, {});
 };
 
+const createFieldFromArray = arr => {
+  const depends = []
+  let get, set
+  arr.forEach(item => {
+    switch (typeof item) {
+      case 'string':
+        depends.push(item)
+        break;
+      case 'function':
+        if (!get) {
+          get = item
+        } else {
+          set = item
+        } 
+        break;  
+    
+      default:
+        break;
+    }
+  })
+  return {depends, get, set}
+}
+
 class ComputedFields {
   constructor(model, fields) {
     this.model = model;
@@ -79,7 +102,9 @@ const createClass = (ModelClass, options) => {
   const fields = [];
   for (let key in options) {
     const field = options[key];
-    if (field && (field.set || field.get)) {
+    if (Array.isArray(field)) {
+      fields.push({name: key, field: createFieldFromArray(field)})
+    } else if (field && (field.set || field.get)) {
       fields.push({name: key, field: field});
     }
   }
