@@ -17,6 +17,7 @@ class TestDefaultInputs extends LitElement {
     return html`
       <input type="text" name="textProp"/>
       <input type="number" name="numberProp"/>
+      <input id="data-number" data-prop-type="number" name="numberProp"/>
       <input type="radio" name="radioProp" value="a"/>
       <input type="radio" name="radioProp" value="b" checked/>
       <select name="selectProp">
@@ -91,7 +92,29 @@ describe('formBind', function() {
       inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
       assert.calledOnce(setSpy)
       assert.calledWith(setSpy, 'numberProp', 3, match({validate: true, attributes: ['numberProp']}))
+
+      setSpy.resetHistory()
+
+      inputEl.value = 'a'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.calledOnce(setSpy)
+      assert.calledWith(setSpy, 'numberProp', null, match({validate: true, attributes: ['numberProp']}))
     });
+
+    it('should convert value to number for input with data-prop-type = "number"', async function() {
+      let inputEl = el.renderRoot.querySelector('#data-number')
+      inputEl.value = '3'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.calledOnce(setSpy)
+      assert.calledWith(setSpy, 'numberProp', 3, match({validate: true, attributes: ['numberProp']}))
+
+      setSpy.resetHistory()
+
+      inputEl.value = 'a'
+      inputEl.dispatchEvent(new InputEvent('input', {bubbles: true}))
+      assert.calledOnce(setSpy)
+      assert.calledWith(setSpy, 'numberProp', 'a', match({validate: true, attributes: ['numberProp']}))
+    });    
   });
 });
 
