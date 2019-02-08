@@ -579,7 +579,7 @@
   });
 
   QUnit.test('create with validate:true enforces validation', function(assert) {
-    assert.expect(3);
+    assert.expect(2);
     var ValidatingModel = class extends Backbone.Model {
       validate(attrs) {
         return 'fail';
@@ -591,7 +591,6 @@
     var collection = new ValidatingCollection();
     collection.on('invalid', function(coll, error, options) {
       assert.equal(error, 'fail');
-      assert.equal(options.validationError, 'fail');
     });
     assert.equal(collection.create({foo: 'bar'}, {validate: true}), false);
   });
