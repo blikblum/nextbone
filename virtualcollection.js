@@ -40,8 +40,8 @@ class VirtualCollection extends Collection {
     this._proxyParentEvents(['sync', 'request', 'error']);
   }
 
-  bindLifecycle(view, method_name) {
-    this.listenTo(view, method_name, this.stopListening);
+  bindLifecycle(view, methodName) {
+    this.listenTo(view, methodName, this.stopListening);
   }
 
   updateFilter(filter) {
@@ -115,18 +115,18 @@ class VirtualCollection extends Collection {
     if (!this.get(model)) return;
     this._changeCache.removed.push(model);
     var i = this._indexRemove(model)
-        , options_clone = _.clone(options);
-    options_clone.index = i;
+        , optionsClone = _.clone(options);
+    optionsClone.index = i;
     model.off('all', this._onAllEvent, this);
-    this.trigger('remove', model, this, options_clone);
+    this.trigger('remove', model, this, optionsClone);
   }
 
   _onChange(model, options) {
     if (!model || !options) return; // ignore malformed arguments coming from custom events
-    var already_here = this.get(model);
+    var alreadyHere = this.get(model);
 
     if (this.accepts(model, options.index)) {
-      if (already_here) {
+      if (alreadyHere) {
         if (!this._byId[model.id] && model.id) {
           this._byId[model.id] = model;
         }
@@ -134,11 +134,11 @@ class VirtualCollection extends Collection {
       } else {
         this._onAdd(model, this.collection, options);
       }
-    } else if (already_here) {
+    } else if (alreadyHere) {
       var i = this._indexRemove(model)
-          , options_clone = _.clone(options);
-      options_clone.index = i;
-      this.trigger('remove', model, this, options_clone);
+          , optionsClone = _.clone(options);
+      optionsClone.index = i;
+      this.trigger('remove', model, this, optionsClone);
     }
   }
 
@@ -209,12 +209,12 @@ class VirtualCollection extends Collection {
 }
 
 // methods that alter data should proxy to the parent collection
-_.each(['add', 'remove', 'set', 'reset', 'push', 'pop', 'unshift', 'shift', 'slice', 'sync', 'fetch', 'url'], function(method_name) {
-  VirtualCollection.prototype[method_name] = function() {
-    if (_.isFunction(this.collection[method_name])){
-      return this.collection[method_name].apply(this.collection, arguments);
+_.each(['add', 'remove', 'set', 'reset', 'push', 'pop', 'unshift', 'shift', 'slice', 'sync', 'fetch', 'url'], function(methodName) {
+  VirtualCollection.prototype[methodName] = function() {
+    if (_.isFunction(this.collection[methodName])){
+      return this.collection[methodName].apply(this.collection, arguments);
     }
-    return this.collection[method_name];
+    return this.collection[methodName];
 
   };
 });
