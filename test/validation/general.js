@@ -15,7 +15,12 @@ module.exports = {
                     }
                 }
             })
-            class Model extends Backbone.Model {}
+            class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError ? null : this
+              }
+            }
 
             this.model = new Model();
         },
@@ -69,8 +74,8 @@ module.exports = {
                         }, { validate: true }));
                     },
 
-                    "should not update the model": function () {
-                        refute.defined(this.model.get('age'));
+                    "should update the model": function () {
+                        assert.equals(this.model.get('age'), 0);
                     },
 
                     "model should be invalid": function () {
@@ -178,7 +183,12 @@ module.exports = {
                             msg: 'error'
                         }
                     })
-                    class Model extends Backbone.Model {}
+                    class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
                     this.model = new Model();                  
                 },
 
@@ -275,7 +285,12 @@ module.exports = {
                         }
                     }
                 })
-                class Model extends Backbone.Model {}
+                class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
                 this.model = new Model();
                 this.valid = sinon.spy();

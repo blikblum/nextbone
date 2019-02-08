@@ -9,7 +9,12 @@ module.exports = {
                     }
                 }
             })
-            class extends Backbone.Model {};
+            class extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            };
 
             this.model = new this.Model();
         },

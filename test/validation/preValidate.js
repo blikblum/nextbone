@@ -6,7 +6,12 @@ module.exports = {
     "when model has not defined any validation": {
       beforeEach: function () {
         @validation({})
-        class Model extends Backbone.Model {};
+        class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            };
         this.model = new Model;
       },
 
@@ -28,7 +33,12 @@ module.exports = {
             required: false
           }
         })
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
         this.model = new Model();
         
@@ -89,7 +99,12 @@ module.exports = {
               }
             }
           })
-          class Model extends Backbone.Model {}
+          class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
           Model.CARD_TYPES = CARD_TYPES;
           this.ModelDefinition = Model;

@@ -18,7 +18,12 @@ module.exports = {
           custom: 1
         }
       })
-      class Model extends Backbone.Model {}
+      class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
       this.model = new Model();
       
@@ -42,6 +47,11 @@ module.exports = {
       class Model extends Backbone.Model {
         validateAge(value, attr, computedState) {
           if (value != 1) return 'Age invalid'
+        }
+
+        set(...args) {
+          super.set(...args)
+          return this.validationError === null
         }
       }
 
@@ -78,6 +88,11 @@ module.exports = {
 
         validateNumber(value, attr, computedState) {
           if (typeof value !== 'number') return 'Not a number'
+        }
+
+        set(...args) {
+          super.set(...args)
+          return this.validationError === null
         }
       }
 
@@ -118,7 +133,12 @@ module.exports = {
           min: 1
         }
       })
-      class Model extends Backbone.Model {}
+      class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
       this.model = new Model();
       
@@ -156,7 +176,12 @@ module.exports = {
           custom: 'custom'
         }
       })
-      class Model extends Backbone.Model {}
+      class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
       this.model = new Model();
       
@@ -191,7 +216,12 @@ module.exports = {
           custom: 'custom'
         }
       })
-      class Model extends Backbone.Model {}
+      class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
       this.model = new Model();
       

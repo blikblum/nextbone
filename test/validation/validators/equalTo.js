@@ -11,7 +11,12 @@ module.exports = {"equalTo validator": {
                 equalTo: 'password'
             }
         })
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
         this.model = new Model();
         

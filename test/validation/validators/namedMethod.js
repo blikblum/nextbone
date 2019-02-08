@@ -9,7 +9,12 @@ module.exports = {
                     fn: 'validateName'
                 }
             })
-            class Model extends Backbone.Model {}
+            class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
             this.model = new Model();
         },
@@ -60,6 +65,11 @@ module.exports = {
                 if (val !== 'backbone') {
                     return 'Error';
                 }
+              }
+
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
               }
             }
             this.model = new Model();

@@ -16,7 +16,12 @@ module.exports = {
                     }
                 }
             })
-            class Model extends Backbone.Model {}
+            class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
             this.model = new Model();
             
@@ -73,7 +78,12 @@ module.exports = {
                     }
                 }
             })
-            class Model extends Backbone.Model {}
+            class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
             this.model = new Model();
             
@@ -123,7 +133,12 @@ module.exports = {
                     return Backbone.Validation.validators.length(val, attr, 4, this);
                 }
             })
-            class Model extends Backbone.Model {}
+            class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
             _.extend(Model.prototype, Backbone.Validation.mixin);
             this.model = new Model();

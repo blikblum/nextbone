@@ -12,7 +12,12 @@ module.exports = {
             msg: 'error'
           }
         })
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+            set(...args) {
+              super.set(...args)
+              return this.validationError === null
+            }
+          }
 
         this.model = new Model();
         
@@ -90,7 +95,12 @@ module.exports = {
             msg: 'error'
           }
         })
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
         this.model = new Model();
         
@@ -176,7 +186,12 @@ module.exports = {
             msg: 'error'
           }
         })
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
         this.model = new Model();
         
@@ -275,6 +290,11 @@ module.exports = {
             if (!value || !value.baz || !value.qux) {
               return "error";
             }
+          }
+
+          set(...args) {
+            super.set(...args)
+            return this.validationError === null
           }
         }
 
@@ -378,7 +398,12 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        class Model extends Backbone.Model {}
+        class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
         class Collection extends Backbone.Collection {}
 
         this.model = new Model();

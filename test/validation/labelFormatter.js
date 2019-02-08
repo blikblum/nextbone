@@ -56,7 +56,12 @@ module.exports = {
               required: true
             }
           })
-          class Model extends Backbone.Model {}
+          class Model extends Backbone.Model {
+              set(...args) {
+                super.set(...args)
+                return this.validationError === null
+              }
+            }
 
           var model = new Model();          
           assert.equals('Some attribute is required', model.preValidate('someAttribute', ''));
