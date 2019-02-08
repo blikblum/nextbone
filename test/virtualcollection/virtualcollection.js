@@ -34,12 +34,12 @@ describe('VirtualCollection', function () {
       assert.equal(vc.models.length, 2);
     });
 
-    it('should accept a destroy_with option and bind destroy event (Marionette)', function () {
+    it('should accept a destroyWith option and bind destroy event (Marionette)', function () {
       var vc, collection, event_emitter;
       collection = new Backbone.Collection([{id: 1, foo: 'bar'}]);
       event_emitter = new Backbone.Events;
       sinon.spy(VirtualCollection.prototype, 'stopListening');
-      vc = new VirtualCollection(collection, {destroy_with: event_emitter});
+      vc = new VirtualCollection(collection, {destroyWith: event_emitter});
 
       event_emitter.trigger('destroy');
       assert.equal(vc.stopListening.callCount, 1);
