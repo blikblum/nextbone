@@ -1,10 +1,3 @@
-//     Backbone.js 1.3.3
-
-//     (c) 2010-2017 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-//     Backbone may be freely distributed under the MIT license.
-//     For all details and documentation:
-//     http://backbonejs.org
-
 import {uniqueId, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
   invert, omit, pick, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
   last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy} from 'underscore';
@@ -55,9 +48,6 @@ var getClassProp = function(obj, prop) {
   var value = obj[prop];
   return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
 };
-
-// Current version of the library. Keep in sync with `package.json`.
-var VERSION = '1.3.3';
 
 
 // Backbone.Events
@@ -2181,6 +2171,5 @@ export {
   sync,
   ajax,
   Router,
-  History,
-  VERSION
+  History
 };
