@@ -150,21 +150,17 @@ var validateAttr = function(model, attr, value, computed, rules) {
 // as well as error messages.
 var validateModel = function(model, allAttrs, validatedAttrs, rules) {
   var error,
-      invalidAttrs = {},
-      isValid = true;
+      invalidAttrs = null;
 
-  _.each(validatedAttrs, function(val, attr) {
-    error = validateAttr(model, attr, val, allAttrs, rules);
+  for (var attr in validatedAttrs)  {
+    error = validateAttr(model, attr, validatedAttrs[attr], allAttrs, rules);
     if (error) {
+      invalidAttrs || (invalidAttrs = {})
       invalidAttrs[attr] = error;
-      isValid = false;
     }
-  });
+  }
 
-  return {
-    invalidAttrs: invalidAttrs,
-    isValid: isValid
-  };
+  return invalidAttrs;
 };
 
 
@@ -482,21 +478,21 @@ const createClass = (ModelClass, rules) => {
           allAttrs = _.extend({}, validatedAttrs, model.attributes, attrs),
           flattened = flatten(allAttrs),
           changedAttrs = attrs ? flatten(attrs) : flattened,
-          result = validateModel(model, allAttrs, _.pick(flattened, _.keys(validatedAttrs)), rules);
+          invalidAttrs = validateModel(model, allAttrs, _.pick(flattened, _.keys(validatedAttrs)), rules);
 
-      model._isValid = result.isValid;
+      model._isValid = invalidAttrs === null;
 
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
       _.each(validatedAttrs, function(val, attr){
-          var invalid = attr in result.invalidAttrs,
+          var invalid = invalidAttrs && attr in invalidAttrs,
             changed = attr in changedAttrs;
 
           if(!invalid){
             opt.valid(attr, model);
           }
           if(invalid && (changed || validateAll)){
-            opt.invalid(attr, result.invalidAttrs[attr], model);
+            opt.invalid(attr, invalidAttrs[attr], model);
           }
       });
 
@@ -504,12 +500,12 @@ const createClass = (ModelClass, rules) => {
       // Need to defer this so the model is actually updated before
       // the event is triggered.
       _.defer(function() {
-        model.trigger('validated', model, result.isValid ? null : result.invalidAttrs, setOptions);
+        model.trigger('validated', model, invalidAttrs, setOptions);
       });
 
       // Return any error messages to Nextbone.
-      if (hasCommonKeys(result.invalidAttrs, changedAttrs)) {
-        return result.invalidAttrs;
+      if (invalidAttrs && hasCommonKeys(invalidAttrs, changedAttrs)) {
+        return invalidAttrs;
       }
     }
   }
