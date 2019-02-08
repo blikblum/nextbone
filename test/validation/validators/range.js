@@ -21,7 +21,7 @@ module.exports = {
         },
 
         "has default error message": function (done) {
-            this.model.on('validated:invalid', function (model, error) {
+            this.model.on('validated', function (model, error) {
                 assert.equals({ age: 'Age must be between 1 and 10' }, error);
                 done();
             });

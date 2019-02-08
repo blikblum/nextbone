@@ -500,13 +500,11 @@ const createClass = (ModelClass, rules) => {
           }
       });
 
-
       // Trigger validated events.
       // Need to defer this so the model is actually updated before
       // the event is triggered.
       _.defer(function() {
-        model.trigger('validated', model._isValid, model, result.invalidAttrs);
-        model.trigger('validated:' + (model._isValid ? 'valid' : 'invalid'), model, result.invalidAttrs);
+        model.trigger('validated', model, result.isValid ? null : result.invalidAttrs, setOptions);
       });
 
       // Return any error messages to Nextbone.

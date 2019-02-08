@@ -21,7 +21,7 @@ module.exports = {
         },
 
         "has default error message for strings": function (done) {
-            this.model.on('validated:invalid', function (model, error) {
+            this.model.on('validated', function (model, error) {
                 assert.equals({ name: 'Name must be between 2 and 4 characters' }, error);
                 done();
             });

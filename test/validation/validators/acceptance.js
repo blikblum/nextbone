@@ -21,7 +21,7 @@ module.exports = {
         },
 
         "has default error message": function (done) {
-            this.model.on('validated:invalid', function (model, error) {
+            this.model.on('validated', function (model, error) {
                 assert.equals({ agree: 'Agree must be accepted' }, error);
                 done();
             });

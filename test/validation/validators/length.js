@@ -20,7 +20,7 @@ module.exports = {
         },
 
         "has default error message for string": function (done) {
-            this.model.on('validated:invalid', function (model, error) {
+            this.model.on('validated', function (model, error) {
                 assert.equals({ postalCode: 'Postal code must be 2 characters' }, error);
                 done();
             });

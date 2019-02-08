@@ -34,10 +34,6 @@ module.exports = {
                 assert.equals(1, this.model.get('age'));
             }, this);
 
-            this.model.on('validated:valid', function () {
-                assert.equals(1, this.model.get('age'));
-            }, this);
-
             this.model.set({
                 age: 1,
                 name: 'name'
@@ -45,21 +41,9 @@ module.exports = {
         },
 
         "when model is valid": {
-            "validated event is triggered with true and model": function (done) {
-                this.model.on('validated', function (valid, model) {
-                    assert(valid);
-                    assert.same(this.model, model);
-                    done();
-                }, this);
-
-                this.model.set({
-                    age: 1,
-                    name: 'name'
-                }, { validate: true });
-            },
-
-            "validated:valid event is triggered with model": function (done) {
-                this.model.on('validated:valid', function (model) {
+            "validated event is triggered with model and null as errors": function (done) {
+                this.model.on('validated', function (model, errors) {
+                    assert.same(null, errors);
                     assert.same(this.model, model);
                     done();
                 }, this);
@@ -72,9 +56,8 @@ module.exports = {
         },
 
         "when one invalid value is set": {
-            "validated event is triggered with false, model and an object with the names of the attributes with error": function (done) {
-                this.model.on('validated', function (valid, model, attr) {
-                    refute(valid);
+            "validated event is triggered with model and an object with the names of the attributes with error": function (done) {
+                this.model.on('validated', function (model, attr) {
                     assert.same(this.model, model);
                     assert.equals({ age: 'age', name: 'name' }, attr);
                     done();
@@ -82,16 +65,7 @@ module.exports = {
 
                 this.model.set({ age: 0 }, { validate: true });
             },
-
-            "validated:invalid event is triggered with model and an object with the names of the attributes with error": function (done) {
-                this.model.on('validated:invalid', function (model, attr) {
-                    assert.same(this.model, model);
-                    assert.equals({ age: 'age', name: 'name' }, attr);
-                    done();
-                }, this);
-
-                this.model.set({ age: 0 }, { validate: true });
-            },
+           
 
             "invalid event is triggered with model and an object with the names of the attributes with error": function (done) {
                 this.model.on('invalid', function (model, attr) {
@@ -105,21 +79,8 @@ module.exports = {
         },
 
         "when one valid value is set": {
-            "validated event is triggered with false, model and an object with the names of the attributes with error": function (done) {
-                this.model.on('validated', function (valid, model, attrs) {
-                    refute(valid);
-                    assert.same(this.model, model);
-                    assert.equals({ name: 'name' }, attrs);
-                    done();
-                }, this);
-
-                this.model.set({
-                    age: 1
-                }, { validate: true });
-            },
-
-            "validated:invalid event is triggered with model and an object with the names of the attributes with error": function (done) {
-                this.model.on('validated:invalid', function (model, attrs) {
+            "validated event is triggered with model and an object with the names of the attributes with error": function (done) {
+                this.model.on('validated', function (model, attrs) {
                     assert.same(this.model, model);
                     assert.equals({ name: 'name' }, attrs);
                     done();
