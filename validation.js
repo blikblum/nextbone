@@ -3,9 +3,7 @@ import _ from 'underscore';
 // Default options
 // ---------------
 
-var options = {
-  forceUpdate: false,
-  setInvalidAttrs: false,
+var options = {  
   labelFormatter: 'sentenceCase',
   valid: Function.prototype,
   invalid: Function.prototype
@@ -496,8 +494,6 @@ const createClass = (ModelClass, rules) => {
       });
 
 
-      if (options.setInvalidAttrs) model.invalidAttrs = result.invalidAttrs;
-
       // Trigger validated events.
       // Need to defer this so the model is actually updated before
       // the event is triggered.
@@ -506,10 +502,8 @@ const createClass = (ModelClass, rules) => {
         model.trigger('validated:' + (model._isValid ? 'valid' : 'invalid'), model, result.invalidAttrs);
       });
 
-      // Return any error messages to Backbone, unless the forceUpdate flag is set.
-      // Then we do not return anything and fools Backbone to believe the validation was
-      // a success. That way Backbone will update the model regardless.
-      if (!opt.forceUpdate && _.intersection(_.keys(result.invalidAttrs), _.keys(changedAttrs)).length > 0) {
+      // Return any error messages to Nextbone.
+      if (_.intersection(_.keys(result.invalidAttrs), _.keys(changedAttrs)).length > 0) {
         return result.invalidAttrs;
       }
     }

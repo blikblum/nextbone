@@ -41,24 +41,6 @@ module.exports = {
             assert(this.model.set({ name: 'name' }, { validate: true }));
         },
 
-        "when forcing update succeeds setting invalid value": function () {
-            assert(this.model.set({ name: '' }, { forceUpdate: true, validate: true }));
-        },
-
-        "when forcing update globally": {
-            beforeEach: function () {
-                Backbone.Validation.options.forceUpdate = true;
-            },
-
-            afterEach: function () {
-                Backbone.Validation.options.forceUpdate = false;
-            },
-
-            "succeeds setting invalid value when forcing update globally": function () {
-                assert(this.model.set({ name: '' }, { validate: true }));
-            }
-        },
-
         "when setting attribute on model without validation": {
             beforeEach: function () {
                 this.model = new Backbone.Model();
