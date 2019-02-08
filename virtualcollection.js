@@ -24,7 +24,6 @@ class VirtualCollection extends Collection {
     super(null, options);
     this.collection = collection;
 
-    if (options.close_with) this.bindLifecycle(options.close_with, 'close'); // Marionette 1.*
     if (options.destroy_with) this.bindLifecycle(options.destroy_with, 'destroy'); // Marionette 2.*
     if (collection.constructor.model) this.model = collection.constructor.model;
     this._clearChangesCache();
