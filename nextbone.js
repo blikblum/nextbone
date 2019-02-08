@@ -485,7 +485,7 @@ class Model extends Events {
     options || (options = {});
 
     // Run validation.
-    if (!this._validate(attrs, options)) return false;
+    this._validate(attrs, options);
 
     // Extract attributes and options.
     var unset      = options.unset;
@@ -642,7 +642,8 @@ class Model extends Events {
     // `set(attr).save(null, opts)` with validation. Otherwise, check if
     // the model will be valid when the attributes, if any, are set.
     if (attrs && !wait) {
-      if (!this.set(attrs, options)) return false;
+      this.set(attrs, options);
+      if (this.validationError) return false;
     } else if (!this._validate(attrs, options)) {
       return false;
     }

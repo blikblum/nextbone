@@ -331,7 +331,7 @@
     model.on('change', function() { main++; });
     model.set({x: 2}, {validate: true});
     model.set({x: 1}, {validate: true});
-    assert.deepEqual([attr, main, error], [1, 1, 1]);
+    assert.deepEqual([attr, main, error], [2, 2, 1]);
   });
 
   QUnit.test('set triggers changes in the correct order', function(assert) {
@@ -817,8 +817,9 @@
     assert.equal(model.get('admin'), true);
     result = model.set({a: 200, admin: false}, {validate: true});
     assert.equal(lastError, "Can't change admin status.");
-    assert.equal(result, false);
-    assert.equal(model.get('a'), 100);
+    assert.equal(model.validationError, "Can't change admin status.");
+    assert.equal(result, model);
+    assert.equal(model.get('a'), 200);
   });
 
   QUnit.test('validate on unset and clear', function(assert) {
@@ -836,9 +837,10 @@
     assert.equal(error, undefined);
     model.unset('name', {validate: true});
     assert.equal(error, true);
-    assert.equal(model.get('name'), 'Two');
+    assert.equal(model.get('name'), undefined);
+    model.set({name: 'Two'});
     model.clear({validate: true});
-    assert.equal(model.get('name'), 'Two');
+    assert.equal(model.get('name'), undefined);
     delete model.validate;
     model.clear();
     assert.equal(model.get('name'), undefined);
@@ -860,8 +862,8 @@
     assert.equal(model.validationError, null);
     assert.equal(boundError, undefined);
     result = model.set({a: 200, admin: true}, {validate: true});
-    assert.equal(result, false);
-    assert.equal(model.get('a'), 100);
+    assert.equal(result, model);
+    assert.equal(model.get('a'), 200);
     assert.equal(model.validationError, "Can't change admin status.");
     assert.equal(boundError, true);
   });
@@ -1023,11 +1025,12 @@
     assert.ok(this.syncArgs.model === model);
   });
 
-  QUnit.test("save without `wait` doesn't set invalid attributes", function(assert) {
+  QUnit.test('save without `wait` set invalid attributes but returns false', function(assert) {
     var model = new Backbone.Model();
     model.validate = function() { return 1; };
-    model.save({a: 1});
-    assert.equal(model.get('a'), void 0);
+    var result = model.save({a: 1});
+    assert.equal(result, false);
+    assert.equal(model.get('a'), 1);
   });
 
   QUnit.test("save doesn't validate twice", function(assert) {
@@ -1413,11 +1416,8 @@
       if (!attrs.valid) return 'invalid';
     };
     assert.equal(model.isValid(), true);
-    assert.equal(model.set({valid: false}, {validate: true}), false);
-    assert.equal(model.isValid(), true);
     model.set({valid: false});
     assert.equal(model.isValid(), false);
-    assert.ok(!model.set('valid', false, {validate: true}));
   });
 
   QUnit.test('#1179 - isValid returns true in the absence of validate.', function(assert) {
