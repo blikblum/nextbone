@@ -12,7 +12,7 @@
     "client",
     "browser"
   ],
-  "author": "Jeremy Ashkenas",
+  "author": "Luiz Américo Pereira Câmara",
   "dependencies": {
     "underscore": ">=1.8.3"
   },
