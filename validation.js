@@ -69,6 +69,13 @@ var hasValue = function(value) {
   return !(value == null || (_.isString(value) && value.trim() === '') || (_.isArray(value) && value.length === 0));
 };
 
+// Determines if two objects have at least on key in common
+var hasCommonKeys = function(obj1, obj2) {
+  for (let key in obj1) {
+    if (key in obj2) return true
+  }
+  return false
+}
 
 // Returns an object with undefined properties for all
 // attributes on the model that has defined one or more
@@ -503,7 +510,7 @@ const createClass = (ModelClass, rules) => {
       });
 
       // Return any error messages to Nextbone.
-      if (_.intersection(_.keys(result.invalidAttrs), _.keys(changedAttrs)).length > 0) {
+      if (hasCommonKeys(result.invalidAttrs, changedAttrs)) {
         return result.invalidAttrs;
       }
     }
