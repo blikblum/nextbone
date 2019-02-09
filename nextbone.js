@@ -1495,7 +1495,10 @@ const isClassDecorated = Symbol();
 // the event's `delegateTarget` property is set to it and the return the
 // result of calling bound `listener` with the parameters given to the
 // handler.
+
 const delegate = function(el, eventName, selector, listener) {
+  if (delegate.$) return $delegate(el, eventName, selector, listener, delegate.$);
+
   let handler, eventTarget;
   if (selector) {
     eventTarget = el.renderRoot || el;
@@ -1513,6 +1516,17 @@ const delegate = function(el, eventName, selector, listener) {
     handler = listener.bind(el);
   }
   eventTarget.addEventListener(eventName, handler, false);
+  return handler;
+};
+
+// jquery version of delegate
+const $delegate = function(el, eventName, selector, listener, $) {
+  const handler = listener.bind(el);
+  if (selector) {
+    $(el.renderRoot || el).on(eventName, selector, handler);
+  } else {
+    $(el).on(eventName, handler);
+  }
   return handler;
 };
 
