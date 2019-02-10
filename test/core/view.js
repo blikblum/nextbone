@@ -34,21 +34,21 @@ const elHTML = html`<h1>Test</h1>
         oneClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-          assert.equal(e.delegateTarget, oneEl, 'delegateTarget should be .one element');
+          assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
         }
 
         @Backbone.event('click', '.two')
         twoClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, twoEl, 'target should be .two element');
-          assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
+          assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
         }
 
         @Backbone.event('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
-          assert.notOk(e.delegateTarget, 'delegateTarget should be undefined');
+          assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
         }
       }
 
@@ -75,21 +75,21 @@ const elHTML = html`<h1>Test</h1>
         oneClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-          assert.equal(e.delegateTarget, oneEl, 'delegateTarget should be .one element');
+          assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
         }
 
         @Backbone.event('click', '.two')
         twoClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, twoEl, 'target should be .two element');
-          assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
+          assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
         }
 
         @Backbone.event('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
-          assert.notOk(e.delegateTarget, 'delegateTarget should be undefined');
+          assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
         }
       }
 
@@ -116,21 +116,21 @@ const elHTML = html`<h1>Test</h1>
         oneClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-          assert.equal(e.delegateTarget, oneEl, 'delegateTarget should be .one element');
+          assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
         }
 
         @Backbone.event('click', '.two')
         twoClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, twoEl, 'target should be .two element');
-          assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
+          assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
         }
 
         @Backbone.event('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
-          assert.notOk(e.delegateTarget, 'delegateTarget should be undefined');
+          assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
         }
       }
 

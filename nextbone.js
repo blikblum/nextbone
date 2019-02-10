@@ -1506,7 +1506,7 @@ const delegate = function(el, eventName, selector, listener) {
       var node = e.target;
       for (; node && node !== el; node = node.parentNode) {
         if (node.matches && node.matches(selector)) {
-          e.delegateTarget = node;
+          e.selectorTarget = node;
           listener.call(el, e);
         }
       }
@@ -1521,10 +1521,15 @@ const delegate = function(el, eventName, selector, listener) {
 
 // jquery version of delegate
 const $delegate = function(el, eventName, selector, listener, $) {
-  const handler = listener.bind(el);
+  let handler;
   if (selector) {
+    handler = function(e) {
+      e.selectorTarget = e.currentTarget;
+      listener.call(el, e);
+    };
     $(el.renderRoot || el).on(eventName, selector, handler);
   } else {
+    handler = listener.bind(el);
     $(el).on(eventName, handler);
   }
   return handler;

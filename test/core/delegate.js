@@ -50,31 +50,19 @@ const elHTML = `
           oneClick(e) {
             assert.equal(this, el, 'this should be the element instance');
             assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-            if (delegateType === 'jquery') {
-              assert.equal(e.currentTarget, oneEl, 'currentTarget should be .one element');
-            } else {
-              assert.equal(e.delegateTarget, oneEl, 'delegateTarget should be .one element');
-            }
+            assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
           }
 
           twoClick(e) {
             assert.equal(this, el, 'this should be the element instance');
             assert.equal(e.target, twoEl, 'target should be .two element');
-            if (delegateType === 'jquery') {
-              assert.equal(e.currentTarget, twoEl, 'currentTarget should be .two element');
-            } else {
-              assert.equal(e.delegateTarget, twoEl, 'delegateTarget should be .two element');
-            }
+            assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
           }
 
           selfClick(e) {
             assert.equal(this, el, 'this should be the element instance');
             assert.equal(e.target, el, 'target should be be the element instance');
-            if (delegateType === 'jquery') {
-              assert.ok(e.delegateTarget, 'delegateTarget should be defined');
-            } else {
-              assert.notOk(e.delegateTarget, 'delegateTarget should be undefined');
-            }
+            assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
           }
         }
 
