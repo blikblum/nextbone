@@ -1535,6 +1535,15 @@ const $delegate = function(el, eventName, selector, listener, $) {
   return handler;
 };
 
+const undelegate = function(el, eventName, handler) {
+  const eventTarget = el.renderRoot || el
+  if (!delegate.$) {
+    eventTarget.removeEventListener(eventName, handler, false);
+  } else {
+    delegate.$(eventTarget).off(eventName, handler);
+  }
+};
+
 const bindViewState = (el, value) => {
   if (value instanceof Model) {
     el.listenTo(value, 'change', () => el.requestUpdate());
@@ -2183,6 +2192,7 @@ export {
   Collection,
   Events,
   delegate,
+  undelegate,
   view,
   event,
   state,

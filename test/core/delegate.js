@@ -71,15 +71,23 @@ const elHTML = `
 
         Backbone.delegate.$ = jqueryInstance;
 
-        Backbone.delegate(el, 'click', '.one', events.oneClick);
-        Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
-        Backbone.delegate(el, 'click', '.two', events.twoClick);
-        Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
-        Backbone.delegate(el, 'my-event', undefined, events.selfClick);
+        const handler1 = Backbone.delegate(el, 'click', '.one', events.oneClick);
+        const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
+        const handler3 = Backbone.delegate(el, 'click', '.two', events.twoClick);
+        const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
+        const handler5 = Backbone.delegate(el, 'my-event', undefined, events.selfClick);
 
         oneEl = el.querySelector('.one');
         oneChildEl = el.querySelector('.one-child');
         twoEl = el.querySelector('.two');
+
+        triggerCallback(el, oneChildEl, twoEl);
+
+        Backbone.undelegate(el, 'click', handler1);
+        Backbone.undelegate(el, 'my-delegated-event', handler2);
+        Backbone.undelegate(el, 'click', handler3);
+        Backbone.undelegate(el, 'my-delegated-event', handler4);
+        Backbone.undelegate(el, 'my-event', handler5);
 
         triggerCallback(el, oneChildEl, twoEl);
       });
