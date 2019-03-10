@@ -96,12 +96,12 @@ class TestShadowDOM extends HTMLElement {
 
           triggerCallback(el, oneChildEl, twoEl);
 
-          Backbone.undelegate(el, 'click', handler1);
-          Backbone.undelegate(el, 'my-delegated-event', handler2);
+          Backbone.undelegate(el, handler1);
+          Backbone.undelegate(el, handler2);
           // the below handlers should fire again
-          // Backbone.undelegate(el, 'click', handler3);
-          // Backbone.undelegate(el, 'my-delegated-event', handler4);
-          Backbone.undelegate(el, 'my-event', handler5);
+          // Backbone.undelegate(el, handler3);
+          // Backbone.undelegate(el, handler4);
+          Backbone.undelegate(el, handler5);
 
           triggerCallback(el, oneChildEl, twoEl);
         }
@@ -220,12 +220,12 @@ class TestShadowDOM extends HTMLElement {
 
           triggerCallback(el, oneChildEl, twoEl);
 
-          Backbone.undelegate(el.shadowRoot, 'click', handler1);
-          Backbone.undelegate(el.shadowRoot, 'my-delegated-event', handler2);
+          Backbone.undelegate(el.shadowRoot, handler1);
+          Backbone.undelegate(el.shadowRoot, handler2);
           // the below handlers should fire again
-          // Backbone.undelegate(el, 'click', handler3);
-          // Backbone.undelegate(el, 'my-delegated-event', handler4);
-          Backbone.undelegate(el, 'my-event', handler5);
+          // Backbone.undelegate(el, handler3);
+          // Backbone.undelegate(el, handler4);
+          Backbone.undelegate(el, handler5);
 
           triggerCallback(el, oneChildEl, twoEl);
         }

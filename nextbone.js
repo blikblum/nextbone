@@ -1576,6 +1576,7 @@ const delegate = function(el, eventName, selector, listener, context = el) {
       }
     : listener.bind(context);
 
+  handler.eventName = eventName;
   el.addEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
   return handler;
 };
@@ -1593,15 +1594,16 @@ const $delegate = function(el, eventName, selector, listener, context, $) {
     handler = listener.bind(context);
     $(el).on(eventName, handler);
   }
+  handler.eventName = eventName;
   return handler;
 };
 
-const undelegate = function(el, eventName, handler) {
-  const eventTarget = !(handler.name === 'handler') ? el : el.renderRoot || el;
+const undelegate = function(el, handler) {
+  const eventName = handler.eventName;
   if (!delegate.$) {
-    eventTarget.removeEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
+    el.removeEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
   } else {
-    delegate.$(eventTarget).off(eventName, handler);
+    delegate.$(el).off(eventName, handler);
   }
 };
 
