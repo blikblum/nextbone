@@ -177,6 +177,44 @@ describe('formBind', function() {
       );
     });
 
+    it('should validate all previously validated properties', async function() {
+      const inputEl = el.renderRoot.querySelector('input[type="text"]');
+      inputEl.value = 'zzz';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(
+        setSpy,
+        'textProp',
+        'zzz',
+        match({ validate: true, attributes: ['textProp'] })
+      );
+
+      setSpy.resetHistory();
+
+      const inputNumberEl = el.renderRoot.querySelector('input[type="number"]');
+      inputNumberEl.value = '3';
+      inputNumberEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(
+        setSpy,
+        'numberProp',
+        3,
+        match({ validate: true, attributes: ['textProp', 'numberProp'] })
+      );
+
+      setSpy.resetHistory();
+
+      const inputRadioEl = el.renderRoot.querySelector('input[type="radio"][checked]');
+      inputRadioEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(
+        setSpy,
+        'radioProp',
+        'b',
+        match({ validate: true, attributes: ['textProp', 'numberProp', 'radioProp'] })
+      );
+    });
+
     it('should look for model in property defined by data-model-name', async function() {
       let inputEl = el.renderRoot.querySelector('#data-number');
       inputEl.value = '3';

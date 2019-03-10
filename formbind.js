@@ -55,6 +55,20 @@ function parseNumber(value) {
   return isNumeric ? n : toNull(value);
 }
 
+// todo: evaluate storing the value in an el propperty using a symbol
+const elAttributesMap = new WeakMap();
+
+function getValidatingAttributes(el, attr) {
+  let attrs = elAttributesMap.get(el);
+  if (!attrs) {
+    elAttributesMap.set(el, (attrs = []));
+  }
+  if (attrs.indexOf(attr) === -1) {
+    attrs.push(attr);
+  }
+  return attrs;
+}
+
 const defaultInputs = {
   select: ['input'],
   input: ['input'],
@@ -104,13 +118,14 @@ const createClass = (ctor, options = {}) => {
           value = parseNumber(inputEl.value);
           break;
       }
+      const attributes = getValidatingAttributes(this, prop);
       // handle nested attributes
       if (prop.indexOf('.') !== -1) {
         const attrs = _.clone(model.attributes);
         setPath(attrs, prop, value);
-        model.set(attrs, { validate: true, attributes: [prop] });
+        model.set(attrs, { validate: true, attributes });
       } else {
-        model.set(prop, value, { validate: true, attributes: [prop] });
+        model.set(prop, value, { validate: true, attributes });
       }
     }
   }
