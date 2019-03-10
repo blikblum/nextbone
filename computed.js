@@ -1,4 +1,4 @@
-import {isEmpty, reduce, omit} from 'underscore';
+import { isEmpty, reduce, omit } from 'underscore';
 
 const computeFieldValue = (computedField, model) => {
   if (computedField && computedField.get) {
@@ -37,28 +37,32 @@ const createFieldFromArray = arr => {
         break;
     }
   });
-  return {depends, get, set};
+  return { depends, get, set };
 };
 
 const createNormalizedOptions = options => {
-  const excludeFromJSON = reduce(options, (result, def, key) => {
-    if (def.toJSON === false) {
-      result.push(key);
-    }
-    return result;
-  }, []);
+  const excludeFromJSON = reduce(
+    options,
+    (result, def, key) => {
+      if (def.toJSON === false) {
+        result.push(key);
+      }
+      return result;
+    },
+    []
+  );
 
   const fields = [];
   for (let key in options) {
     const field = options[key];
     if (Array.isArray(field)) {
-      fields.push({name: key, field: createFieldFromArray(field)});
+      fields.push({ name: key, field: createFieldFromArray(field) });
     } else if (field && (field.set || field.get)) {
-      fields.push({name: key, field: field});
+      fields.push({ name: key, field: field });
     }
   }
 
-  return {excludeFromJSON, fields};
+  return { excludeFromJSON, fields };
 };
 
 class ComputedFields {
@@ -74,7 +78,7 @@ class ComputedFields {
 
       const updateComputed = () => {
         var value = computeFieldValue(field, this.model);
-        this.model.set(fieldName, value, {__computedSkip: true});
+        this.model.set(fieldName, value, { __computedSkip: true });
       };
 
       const updateDependent = (model, value, options) => {
@@ -124,8 +128,8 @@ const createClass = (ModelClass, options) => {
 
     toJSON(...args) {
       const result = super.toJSON(...args);
-      const {excludeFromJSON} = normalizedOptions;
-      if (!excludeFromJSON.length || args[0] && args[0].computedFields) {
+      const { excludeFromJSON } = normalizedOptions;
+      if (!excludeFromJSON.length || (args[0] && args[0].computedFields)) {
         return result;
       }
       return omit(result, excludeFromJSON);
@@ -137,7 +141,7 @@ const computed = options => ctorOrDescriptor => {
   if (typeof ctorOrDescriptor === 'function') {
     return createClass(ctorOrDescriptor, options);
   }
-  const {kind, elements} = ctorOrDescriptor;
+  const { kind, elements } = ctorOrDescriptor;
   return {
     kind,
     elements,
@@ -147,7 +151,4 @@ const computed = options => ctorOrDescriptor => {
   };
 };
 
-
-export {
-  computed
-};
+export { computed };

@@ -28,6 +28,7 @@
     "cross-env": "^5.2.0",
     "docco": "0.8.0",
     "eslint": "^5.15.1",
+    "eslint-config-prettier": "^4.1.0",
     "jquery": "^3.3.1",
     "karma": "^4.0.1",
     "karma-chrome-launcher": "^2.2.0",
@@ -37,6 +38,7 @@
     "lit-element": "^2.0.1",
     "lit-html": "^1.0.0",
     "mocha": "^6.0.2",
+    "prettier": "^1.16.4",
     "qunit": "^2.9.2",
     "rollup": "1.6.0",
     "rollup-plugin-babel": "^4.3.2",
@@ -55,7 +57,8 @@
     "test:formbind": "karma start test/formbind/karma.conf.js",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
-    "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js formbind.js test/core/*.js"
+    "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js formbind.js test/core/*.js",
+    "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js formbind.js test/**/*.js --write"
   },
   "sideEffects": false,
   "main": "nextbone.js",

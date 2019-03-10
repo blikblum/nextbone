@@ -1,7 +1,6 @@
-
 module.exports = {
   'Extending Backbone.Validation with custom pattern': {
-    beforeEach: function () {
+    beforeEach: function() {
       _.extend(Backbone.Validation.patterns, {
         custom: /^test/
       });
@@ -12,28 +11,37 @@ module.exports = {
         }
       })
       class Model extends Backbone.Model {
-              set(...args) {
-                super.set(...args)
-                return this.validationError === null
-              }
-            }
+        set(...args) {
+          super.set(...args);
+          return this.validationError === null;
+        }
+      }
 
       this.model = new Model();
-      
     },
 
-    "should execute the custom pattern validator": function () {
-      assert(this.model.set({
-        name: 'test'
-      }, { validate: true }));
-      refute(this.model.set({
-        name: 'aa'
-      }, { validate: true }));
+    'should execute the custom pattern validator': function() {
+      assert(
+        this.model.set(
+          {
+            name: 'test'
+          },
+          { validate: true }
+        )
+      );
+      refute(
+        this.model.set(
+          {
+            name: 'aa'
+          },
+          { validate: true }
+        )
+      );
     }
   },
 
   'Overriding builtin pattern in Backbone.Validation': {
-    beforeEach: function () {
+    beforeEach: function() {
       this.builtinEmail = Backbone.Validation.patterns.email;
 
       _.extend(Backbone.Validation.patterns, {
@@ -46,31 +54,36 @@ module.exports = {
         }
       })
       class Model extends Backbone.Model {
-              set(...args) {
-                super.set(...args)
-                return this.validationError === null
-              }
-            }
+        set(...args) {
+          super.set(...args);
+          return this.validationError === null;
+        }
+      }
 
       this.model = new Model();
-      
     },
 
-    afterEach: function () {
+    afterEach: function() {
       Backbone.Validation.patterns.email = this.builtinEmail;
     },
 
-    "should execute the custom pattern validator": function () {
-      assert(this.model.set({
-        name: 'test'
-      }, { validate: true }));
-      refute(this.model.set({
-        name: 'aa'
-      }, { validate: true }));
+    'should execute the custom pattern validator': function() {
+      assert(
+        this.model.set(
+          {
+            name: 'test'
+          },
+          { validate: true }
+        )
+      );
+      refute(
+        this.model.set(
+          {
+            name: 'aa'
+          },
+          { validate: true }
+        )
+      );
     }
   }
-
-}
-
-
-
+};

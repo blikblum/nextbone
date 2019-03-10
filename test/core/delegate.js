@@ -1,4 +1,4 @@
-import {fixture, defineCE} from '@open-wc/testing-helpers';
+import { fixture, defineCE } from '@open-wc/testing-helpers';
 
 const elHTML = `
 <div id="container">
@@ -15,7 +15,7 @@ const elHTML = `
 class TestShadowDOM extends HTMLElement {
   constructor() {
     super();
-    this.renderRoot = this.attachShadow({mode: 'open'});
+    this.renderRoot = this.attachShadow({ mode: 'open' });
   }
 
   connectedCallback() {
@@ -43,9 +43,9 @@ class TestShadowDOM extends HTMLElement {
 
   const triggerNative = (el, oneChildEl, twoEl) => {
     oneChildEl.click();
-    oneChildEl.dispatchEvent(new CustomEvent('my-delegated-event', {bubbles: true}));
+    oneChildEl.dispatchEvent(new CustomEvent('my-delegated-event', { bubbles: true }));
     twoEl.click();
-    twoEl.dispatchEvent(new CustomEvent('my-delegated-event', {bubbles: true}));
+    twoEl.dispatchEvent(new CustomEvent('my-delegated-event', { bubbles: true }));
     el.dispatchEvent(new CustomEvent('my-event'));
   };
 
@@ -56,62 +56,119 @@ class TestShadowDOM extends HTMLElement {
       const delegateType = jqueryInstance ? 'jquery' : 'native';
       // when delegated by native jquery events cannot be handled
       if (triggerType === 'jquery' && delegateType === 'native') return;
-      QUnit.test(`events triggered by ${triggerType} and delegated by ${delegateType}`, async function(assert) {
-        assert.expect(21);
-        let el, oneEl, oneChildEl, twoEl;
+      QUnit.test(
+        `events triggered by ${triggerType} and delegated by ${delegateType}`,
+        async function(assert) {
+          assert.expect(21);
+          let el, oneEl, oneChildEl, twoEl;
 
-        class TestEvents {
-          oneClick(e) {
-            assert.equal(this, el, 'this should be the element instance');
-            assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-            assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
+          class TestEvents {
+            oneClick(e) {
+              assert.equal(this, el, 'this should be the element instance');
+              assert.equal(e.target, oneChildEl, 'target should be .one-child element');
+              assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
+            }
+
+            twoClick(e) {
+              assert.equal(this, el, 'this should be the element instance');
+              assert.equal(e.target, twoEl, 'target should be .two element');
+              assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
+            }
+
+            selfClick(e) {
+              assert.equal(this, el, 'this should be the element instance');
+              assert.equal(e.target, el, 'target should be be the element instance');
+              assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
+            }
           }
 
-          twoClick(e) {
-            assert.equal(this, el, 'this should be the element instance');
-            assert.equal(e.target, twoEl, 'target should be .two element');
-            assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
-          }
+          const events = new TestEvents();
+          el = await fixture(elHTML);
 
-          selfClick(e) {
-            assert.equal(this, el, 'this should be the element instance');
-            assert.equal(e.target, el, 'target should be be the element instance');
-            assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
-          }
+          Backbone.delegate.$ = jqueryInstance;
+
+          const handler1 = Backbone.delegate(el, 'click', '.one', events.oneClick);
+          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
+          const handler3 = Backbone.delegate(el, 'click', '.two', events.twoClick);
+          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
+          const handler5 = Backbone.delegate(el, 'my-event', undefined, events.selfClick);
+
+          oneEl = el.querySelector('.one');
+          oneChildEl = el.querySelector('.one-child');
+          twoEl = el.querySelector('.two');
+
+          triggerCallback(el, oneChildEl, twoEl);
+
+          Backbone.undelegate(el, 'click', handler1);
+          Backbone.undelegate(el, 'my-delegated-event', handler2);
+          // the below handlers should fire again
+          // Backbone.undelegate(el, 'click', handler3);
+          // Backbone.undelegate(el, 'my-delegated-event', handler4);
+          Backbone.undelegate(el, 'my-event', handler5);
+
+          triggerCallback(el, oneChildEl, twoEl);
         }
-
-        const events = new TestEvents();
-        el = await fixture(elHTML);
-
-        Backbone.delegate.$ = jqueryInstance;
-
-        const handler1 = Backbone.delegate(el, 'click', '.one', events.oneClick);
-        const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
-        const handler3 = Backbone.delegate(el, 'click', '.two', events.twoClick);
-        const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
-        const handler5 = Backbone.delegate(el, 'my-event', undefined, events.selfClick);
-
-        oneEl = el.querySelector('.one');
-        oneChildEl = el.querySelector('.one-child');
-        twoEl = el.querySelector('.two');
-
-        triggerCallback(el, oneChildEl, twoEl);
-
-        Backbone.undelegate(el, 'click', handler1);
-        Backbone.undelegate(el, 'my-delegated-event', handler2);
-        // the below handlers should fire again
-        // Backbone.undelegate(el, 'click', handler3);
-        // Backbone.undelegate(el, 'my-delegated-event', handler4);
-        Backbone.undelegate(el, 'my-event', handler5);
-
-        triggerCallback(el, oneChildEl, twoEl);
-      });
+      );
 
       // jquery does not support listening events to in ShadowRoot elements
       // https://github.com/jquery/jquery/issues/4317
       if (delegateType === 'jquery') return;
 
-      QUnit.test(`events triggered by ${triggerType} and delegated by ${delegateType} in a element with shadowDOM`, async function(assert) {
+      QUnit.test(
+        `events triggered by ${triggerType} and delegated by ${delegateType} in a element with shadowDOM`,
+        async function(assert) {
+          assert.expect(21);
+          let el, oneEl, oneChildEl, twoEl;
+
+          class TestEvents {
+            oneClick(e) {
+              assert.equal(this, el, 'this should be the element instance');
+              assert.equal(e.target, oneChildEl, 'target should be .one-child element');
+              assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
+            }
+
+            twoClick(e) {
+              assert.equal(this, el, 'this should be the element instance');
+              assert.equal(e.target, twoEl, 'target should be .two element');
+              assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
+            }
+
+            selfClick(e) {
+              assert.equal(this, el, 'this should be the element instance');
+              assert.equal(e.target, el, 'target should be be the element instance');
+              assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
+            }
+          }
+
+          const events = new TestEvents();
+          el = await fixture(`<${elShadowTag}></${elShadowTag}>`);
+
+          Backbone.delegate.$ = jqueryInstance;
+
+          const handler1 = Backbone.delegate(el, 'click', '.one', events.oneClick);
+          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
+          const handler3 = Backbone.delegate(el, 'click', '.two', events.twoClick);
+          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
+          const handler5 = Backbone.delegate(el, 'my-event', undefined, events.selfClick);
+
+          oneEl = el.renderRoot.querySelector('.one');
+          oneChildEl = el.renderRoot.querySelector('.one-child');
+          twoEl = el.renderRoot.querySelector('.two');
+
+          triggerCallback(el, oneChildEl, twoEl);
+
+          Backbone.undelegate(el, 'click', handler1);
+          Backbone.undelegate(el, 'my-delegated-event', handler2);
+          // the below handlers should fire again
+          // Backbone.undelegate(el, 'click', handler3);
+          // Backbone.undelegate(el, 'my-delegated-event', handler4);
+          Backbone.undelegate(el, 'my-event', handler5);
+
+          triggerCallback(el, oneChildEl, twoEl);
+        }
+      );
+
+      QUnit.test(`context option`, async function(assert) {
         assert.expect(21);
         let el, oneEl, oneChildEl, twoEl;
 
@@ -163,6 +220,4 @@ class TestShadowDOM extends HTMLElement {
       });
     });
   });
-
-
 })(QUnit);

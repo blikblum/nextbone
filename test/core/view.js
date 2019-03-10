@@ -1,15 +1,15 @@
-import {fixture, defineCE} from '@open-wc/testing-helpers';
-import {LitElement, html} from 'lit-element';
-import {render} from 'lit-html';
+import { fixture, defineCE } from '@open-wc/testing-helpers';
+import { LitElement, html } from 'lit-element';
+import { render } from 'lit-html';
 
-
-const elHTML = html`<h1>Test</h1>        
-<div class="one">
-  <div class="one-child">          
+const elHTML = html`
+  <h1>Test</h1>
+  <div class="one">
+    <div class="one-child"></div>
   </div>
-</div>
-<div class="two"></div>
-<div class="one"></div>`;
+  <div class="two"></div>
+  <div class="one"></div>
+`;
 
 (function(QUnit) {
   QUnit.module('Backbone.view');
@@ -205,14 +205,14 @@ const elHTML = html`<h1>Test</h1>
       // when disconnected no update should be triggered
       el.remove();
       el.model.set('test', 4);
-      el.collection.reset([{test: 'x'}]);
+      el.collection.reset([{ test: 'x' }]);
       assert.equal(enqueueUpdateCount, 4);
       await el.updateComplete;
 
       // when reconnected should be trigger element update
       parentEl.appendChild(el);
       el.model.set('test', 5);
-      el.collection.reset([{test: 4}]);
+      el.collection.reset([{ test: 4 }]);
       assert.equal(enqueueUpdateCount, 5);
       await el.updateComplete;
 

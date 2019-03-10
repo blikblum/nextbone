@@ -17,25 +17,25 @@ const attributes = {
 class SavedModel extends Model {
   urlRoot = '/test/';
   defaults() {
-    return attributes
+    return attributes;
   }
-};
+}
 
 class AjaxModel extends Model {
   defaults() {
-    return attributes
+    return attributes;
   }
-};
+}
 
 @localStorage('SavedCollection')
 class SavedCollection extends Collection {
   static model = AjaxModel;
-};
+}
 
 @localStorage('DifferentId')
 class DifferentIdAttribute extends Model {
-  static idAttribute = 'number'
-};
+  static idAttribute = 'number';
+}
 
 describe('LocalStorage Model', function() {
   let mySavedModel;
@@ -120,7 +120,8 @@ describe('LocalStorage Model', function() {
       });
 
       expect(mySavedModel.pick('string', 'number2')).to.eql({
-        string: 'New String', 'number2': 1234
+        string: 'New String',
+        number2: 1234
       });
     });
 
@@ -146,10 +147,13 @@ describe('LocalStorage Model', function() {
     });
 
     it('saves to localStorage with patch', function() {
-      mySavedModel.save({
-        string: 'New String',
-        number2: 1234
-      }, { patch: true });
+      mySavedModel.save(
+        {
+          string: 'New String',
+          number2: 1234
+        },
+        { patch: true }
+      );
 
       const item = root.localStorage.getItem(`SavedModel-${mySavedModel.id}`);
 
@@ -234,7 +238,6 @@ describe('LocalStorage Model', function() {
   });
 });
 
-
 describe('Model with different idAttribute', function() {
   let mySavedModel;
 
@@ -267,7 +270,6 @@ describe('Model with different idAttribute', function() {
   });
 });
 
-
 describe('New localStorage model', function() {
   let mySavedModel;
 
@@ -293,7 +295,6 @@ describe('New localStorage model', function() {
     expect(parsed).to.eql(mySavedModel.attributes);
   });
 });
-
 
 describe('LocalStorage Collection', function() {
   let mySavedCollection;
@@ -327,7 +328,6 @@ describe('LocalStorage Collection', function() {
     const records = newCollection.localStorage.records;
     expect(uniq(records)).to.eql(records);
   });
-
 
   describe('pulling from localStorage', function() {
     let model;
@@ -406,16 +406,16 @@ describe('LocalStorage Collection', function() {
       newAttributes = clone(attributes);
       newAttributes.number = 1339;
       newCollection.create(newAttributes);
-      
+
       mySavedCollection.fetch();
       newCollection.fetch();
 
       expect(mySavedCollection.length).to.equal(3);
       expect(newCollection.length).to.equal(3);
-      expect(mySavedCollection.find({number: 1338})).to.be.a('object');
-      expect(mySavedCollection.find({number: 1339})).to.be.a('object');
-      expect(newCollection.find({number: 1338})).to.be.a('object');
-      expect(newCollection.find({number: 1339})).to.be.a('object');      
+      expect(mySavedCollection.find({ number: 1338 })).to.be.a('object');
+      expect(mySavedCollection.find({ number: 1339 })).to.be.a('object');
+      expect(newCollection.find({ number: 1338 })).to.be.a('object');
+      expect(newCollection.find({ number: 1339 })).to.be.a('object');
     });
   });
 });

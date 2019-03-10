@@ -40,7 +40,7 @@ describe('backbone.fetch', function() {
       ajax({
         url: 'test',
         type: 'GET',
-        data: {a: 1, b: 2}
+        data: { a: 1, b: 2 }
       });
       sinon.assert.calledWith(fetch, 'test?a=1&b=2');
     });
@@ -49,7 +49,7 @@ describe('backbone.fetch', function() {
       ajax({
         url: 'test?foo=bar',
         type: 'GET',
-        data: {a: 1, b: 2}
+        data: { a: 1, b: 2 }
       });
       sinon.assert.calledWith(fetch, 'test?foo=bar&a=1&b=2');
     });
@@ -58,7 +58,7 @@ describe('backbone.fetch', function() {
       ajax({
         url: 'test',
         type: 'POST',
-        data: JSON.stringify({a: 1, b: 2})
+        data: JSON.stringify({ a: 1, b: 2 })
       });
 
       sinon.assert.calledWith(fetch, 'test', sinon.match.has('method', 'POST'));
@@ -68,10 +68,17 @@ describe('backbone.fetch', function() {
 
   describe('headers', function() {
     it('should set headers if none passed in', function() {
-      ajax({url: 'test', type: 'GET'});
-      sinon.assert.calledWith(fetch, 'test', sinon.match({headers: {
-        Accept: "application/json", 'Content-Type': "application/json"
-      }}));
+      ajax({ url: 'test', type: 'GET' });
+      sinon.assert.calledWith(
+        fetch,
+        'test',
+        sinon.match({
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
+      );
     });
 
     it('should use headers if passed in', function() {
@@ -83,9 +90,17 @@ describe('backbone.fetch', function() {
         }
       });
 
-      sinon.assert.calledWith(fetch, 'test', sinon.match({headers: {
-        Accept: "application/json", 'Content-Type': "application/json", "X-MyApp-Header": 'present'
-      }}));
+      sinon.assert.calledWith(
+        fetch,
+        'test',
+        sinon.match({
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'X-MyApp-Header': 'present'
+          }
+        })
+      );
     });
 
     it('allows Accept and Content-Type headers to be overwritten', function() {
@@ -93,13 +108,23 @@ describe('backbone.fetch', function() {
         url: 'test',
         type: 'GET',
         headers: {
-          Accept: "custom", 'Content-Type': "custom", "X-MyApp-Header": 'present'
+          Accept: 'custom',
+          'Content-Type': 'custom',
+          'X-MyApp-Header': 'present'
         }
       });
 
-      sinon.assert.calledWith(fetch, 'test', sinon.match({headers: {
-        Accept: "custom", 'Content-Type': "custom", "X-MyApp-Header": 'present'
-      }}));
+      sinon.assert.calledWith(
+        fetch,
+        'test',
+        sinon.match({
+          headers: {
+            Accept: 'custom',
+            'Content-Type': 'custom',
+            'X-MyApp-Header': 'present'
+          }
+        })
+      );
     });
   });
 
@@ -122,10 +147,10 @@ describe('backbone.fetch', function() {
         dataType: 'json',
         type: 'GET',
         success: function(response) {
-          expect(response).to.deep.equal({status: 'ok'});
+          expect(response).to.deep.equal({ status: 'ok' });
         }
       }).then(function(response) {
-        expect(response).to.deep.equal({status: 'ok'});
+        expect(response).to.deep.equal({ status: 'ok' });
       });
       server.respond('{"status": "ok"}');
       return promise;
@@ -143,14 +168,17 @@ describe('backbone.fetch', function() {
         }
       });
 
-      promise.then(function() {
-        throw new Error('this request should fail');
-      }).catch(function(error) {
-        expect(error.response.status).to.equal(400);
-        done();
-      }).catch(function(error) {
-        done(error);
-      });
+      promise
+        .then(function() {
+          throw new Error('this request should fail');
+        })
+        .catch(function(error) {
+          expect(error.response.status).to.equal(400);
+          done();
+        })
+        .catch(function(error) {
+          done(error);
+        });
 
       server.respond([400, {}, 'Server error']);
     });
@@ -164,52 +192,61 @@ describe('backbone.fetch', function() {
         }
       });
 
-      promise.then(function() {
-        throw new Error('this request should fail');
-      }).catch(function(error) {
-        expect(error.response.status).to.equal(400);
-        done();
-      }).catch(function(error) {
-        done(error);
-      });
+      promise
+        .then(function() {
+          throw new Error('this request should fail');
+        })
+        .catch(function(error) {
+          expect(error.response.status).to.equal(400);
+          done();
+        })
+        .catch(function(error) {
+          done(error);
+        });
 
       server.respond([400, {}, 'Server error']);
     });
 
     it('should parse json as property of Error on failing request', function(done) {
       var promise = ajax({
-          dataType: 'json',
-          url: 'test',
-          type: 'GET',
+        dataType: 'json',
+        url: 'test',
+        type: 'GET'
       });
 
-      promise.then(function() {
+      promise
+        .then(function() {
           throw new Error('this request should fail');
-      }).catch(function(error) {
+        })
+        .catch(function(error) {
           expect(error.responseData).to.deep.equal({ code: 'INVALID_HORSE' });
           done();
-      }).catch(function(error) {
+        })
+        .catch(function(error) {
           done(error);
-      });
+        });
 
       server.respond([400, {}, JSON.stringify({ code: 'INVALID_HORSE' })]);
     });
 
     it('should parse text as property of Error on failing request', function(done) {
       var promise = ajax({
-          dataType: 'text',
-          url: 'test',
-          type: 'GET',
+        dataType: 'text',
+        url: 'test',
+        type: 'GET'
       });
 
-      promise.then(function() {
+      promise
+        .then(function() {
           throw new Error('this request should fail');
-      }).catch(function(error) {
+        })
+        .catch(function(error) {
           expect(error.responseData).to.equal('Nope');
           done();
-      }).catch(function(error) {
+        })
+        .catch(function(error) {
           done(error);
-      });
+        });
 
       server.respond([400, {}, 'Nope']);
     });
@@ -217,22 +254,25 @@ describe('backbone.fetch', function() {
 
   it.skip('should pass through network errors', function(done) {
     var promise = ajax({
-        dataType: 'text',
-        url: 'test',
-        type: 'GET',
+      dataType: 'text',
+      url: 'test',
+      type: 'GET'
     });
 
-    promise.then(function() {
+    promise
+      .then(function() {
         throw new Error('this request should fail');
-    }).catch(function(error) {
-        console.log(error)
+      })
+      .catch(function(error) {
+        console.log(error);
         expect(error).to.be.an.instanceof(TypeError);
         expect(error).not.to.have.property('response');
         expect(error.message).to.equal('Network request failed');
         done();
-    }).catch(function(error) {
+      })
+      .catch(function(error) {
         done(error);
-    });
+      });
 
     server.respond([600, {}, 'Network error']);
     return promise;
@@ -240,7 +280,7 @@ describe('backbone.fetch', function() {
 
   describe('Promise', function() {
     it('should return a Promise', function() {
-      var xhr = ajax({url: 'test', type: 'GET'});
+      var xhr = ajax({ url: 'test', type: 'GET' });
       expect(xhr).to.be.an.instanceof(Promise);
     });
   });

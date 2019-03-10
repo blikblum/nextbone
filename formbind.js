@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import {delegate} from './nextbone';
+import { delegate } from './nextbone';
 
 function getPathSegments(path) {
   const pathArr = path.split('.');
@@ -46,7 +46,7 @@ function setPath(obj, path, value) {
 }
 
 function toNull(value) {
-  return typeof value === 'string' && value.trim() === '' || value == null ? null : value;
+  return (typeof value === 'string' && value.trim() === '') || value == null ? null : value;
 }
 
 function parseNumber(value) {
@@ -55,24 +55,23 @@ function parseNumber(value) {
   return isNumeric ? n : toNull(value);
 }
 
-
 const defaultInputs = {
-  'select': ['input'],
-  'input': ['input'],
+  select: ['input'],
+  input: ['input'],
   'input[type=radio]': ['change']
 };
 
 const createClass = (ctor, options = {}) => {
   const inputs = options.inputs ? Object.assign({}, defaultInputs, options.inputs) : defaultInputs;
   const events = Object.keys(inputs).reduce((result, selector) => {
-    inputs[selector].forEach(event => result.push({event, selector}));
+    inputs[selector].forEach(event => result.push({ event, selector }));
     return result;
   }, []);
 
   class FormBindMixin extends ctor {
     constructor() {
       super();
-      events.forEach(({event, selector}) => delegate(this, event, selector, this.updateModel));
+      events.forEach(({ event, selector }) => delegate(this, event, selector, this.updateModel));
     }
 
     updateModel(e) {
@@ -107,15 +106,14 @@ const createClass = (ctor, options = {}) => {
       if (prop.indexOf('.') !== -1) {
         const attrs = _.clone(model.attributes);
         setPath(attrs, prop, value);
-        model.set(attrs, {validate: true, attributes: [prop]});
+        model.set(attrs, { validate: true, attributes: [prop] });
       } else {
-        model.set(prop, value, {validate: true, attributes: [prop]});
+        model.set(prop, value, { validate: true, attributes: [prop] });
       }
     }
   }
   return FormBindMixin;
 };
-
 
 export const formBind = (optionsOrCtorOrDescriptor, options) => {
   // current state of decorators sucks. Lets abuse of duck typing
@@ -125,7 +123,7 @@ export const formBind = (optionsOrCtorOrDescriptor, options) => {
   }
   if (optionsOrCtorOrDescriptor.kind === 'class') {
     // descriptor -> spec decorator
-    const {kind, elements} = optionsOrCtorOrDescriptor;
+    const { kind, elements } = optionsOrCtorOrDescriptor;
     return {
       kind,
       elements,
@@ -135,7 +133,7 @@ export const formBind = (optionsOrCtorOrDescriptor, options) => {
     };
   }
   // optionsOrCtorOrDescriptor === options
-  return (ctorOrDescriptor) => {
+  return ctorOrDescriptor => {
     return formBind(ctorOrDescriptor, optionsOrCtorOrDescriptor);
   };
 };

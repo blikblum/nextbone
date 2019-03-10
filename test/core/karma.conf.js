@@ -29,21 +29,22 @@ module.exports = function(config) {
 
     rollupPreprocessor: {
       /**
-			 * This is just a normal Rollup config object,
-			 * except that `input` is handled for you.
-			 */
-      plugins: [babel({
-        exclude: ['node_modules/**']
-      }),
-      nodeResolve({
-        only: [/^(?!.*?underscore).*/]
-      })
+       * This is just a normal Rollup config object,
+       * except that `input` is handled for you.
+       */
+      plugins: [
+        babel({
+          exclude: ['node_modules/**']
+        }),
+        nodeResolve({
+          only: [/^(?!.*?underscore).*/]
+        })
       ],
 
       output: {
-        format: 'iife',            // Helps prevent naming collisions.
-        name: 'nextboneTests',    // Required for 'iife' format.
-        sourcemap: 'inline',      // Sensible for testing.
+        format: 'iife', // Helps prevent naming collisions.
+        name: 'nextboneTests', // Required for 'iife' format.
+        sourcemap: 'inline', // Sensible for testing.
         globals: {
           underscore: '_'
         }

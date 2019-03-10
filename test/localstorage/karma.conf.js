@@ -7,7 +7,7 @@ const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
 
-const isDebug = process.argv.includes('--debug')
+const isDebug = process.argv.includes('--debug');
 
 module.exports = function(config) {
   config.set({
@@ -16,10 +16,7 @@ module.exports = function(config) {
     plugins: ['karma-mocha', 'karma-rollup-preprocessor', 'karma-chrome-launcher'],
 
     // list of files / patterns to load in the browser
-    files: [
-      '../../node_modules/underscore/underscore.js',
-      '*.js'
-    ],
+    files: ['../../node_modules/underscore/underscore.js', '*.js'],
 
     preprocessors: {
       './*.js': ['rollup']
@@ -27,26 +24,27 @@ module.exports = function(config) {
 
     rollupPreprocessor: {
       /**
-			 * This is just a normal Rollup config object,
-			 * except that `input` is handled for you.
-			 */
-      plugins: [babel({
+       * This is just a normal Rollup config object,
+       * except that `input` is handled for you.
+       */
+      plugins: [
+        babel({
           exclude: ['node_modules/**']
-        }), 
+        }),
         commonjs({
           namedExports: {
             chai: ['expect']
           }
-        }), 
+        }),
         nodeResolve({
           only: [/^(?!.*?underscore).*/]
         })
       ],
 
       output: {
-        format: 'iife',            // Helps prevent naming collisions.
-        name: 'localstorageTests',    // Required for 'iife' format.
-        sourcemap: 'inline',       // Sensible for testing.
+        format: 'iife', // Helps prevent naming collisions.
+        name: 'localstorageTests', // Required for 'iife' format.
+        sourcemap: 'inline', // Sensible for testing.
         globals: {
           underscore: '_'
         }

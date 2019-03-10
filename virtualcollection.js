@@ -1,9 +1,7 @@
-import {Collection} from './nextbone';
+import { Collection } from './nextbone';
 import _ from 'underscore';
 
-
 class VirtualCollection extends Collection {
-
   static buildFilter(options) {
     if (!options) {
       return function() {
@@ -33,10 +31,10 @@ class VirtualCollection extends Collection {
     this.listenTo(this.collection, 'add', this._onAdd);
     this.listenTo(this.collection, 'remove', this._onRemove);
     this.listenTo(this.collection, 'change', this._onChange);
-    this.listenTo(this.collection, 'reset',  this._onReset);
-    this.listenTo(this.collection, 'filter',  this._onFilter);
-    this.listenTo(this.collection, 'sort',  this._onSort);
-    this.listenTo(this.collection, 'update',  this._onUpdate);
+    this.listenTo(this.collection, 'reset', this._onReset);
+    this.listenTo(this.collection, 'filter', this._onFilter);
+    this.listenTo(this.collection, 'sort', this._onSort);
+    this.listenTo(this.collection, 'update', this._onUpdate);
     this._proxyParentEvents(['sync', 'request', 'error']);
   }
 
@@ -55,23 +53,27 @@ class VirtualCollection extends Collection {
   _rebuildIndex() {
     _.invoke(this.models, 'off', 'all', this._onAllEvent, this);
     this._reset();
-    this.collection.each(_.bind(function(model, i) {
-      if (this.accepts(model, i)) {
-        this.listenTo(model, 'all', this._onAllEvent);
-        this.models.push(model);
-        this._byId[model.cid] = model;
-        if (model.id) this._byId[model.id] = model;
-      }
-    }, this));
+    this.collection.each(
+      _.bind(function(model, i) {
+        if (this.accepts(model, i)) {
+          this.listenTo(model, 'all', this._onAllEvent);
+          this.models.push(model);
+          this._byId[model.cid] = model;
+          if (model.id) this._byId[model.id] = model;
+        }
+      }, this)
+    );
     this.length = this.models.length;
 
-    if (this.comparator) this.sort({silent: true});
+    if (this.comparator) this.sort({ silent: true });
   }
 
   orderViaParent(options) {
-    this.models = this.collection.filter(_.bind(function(model) {
-      return this._byId[model.cid] !== undefined;
-    }, this));
+    this.models = this.collection.filter(
+      _.bind(function(model) {
+        return this._byId[model.cid] !== undefined;
+      }, this)
+    );
     if (!options.silent) this.trigger('sort', this, options);
   }
 
@@ -81,9 +83,12 @@ class VirtualCollection extends Collection {
   }
 
   _proxyParentEvents(events) {
-    _.each(events, _.bind(function(eventName) {
-      this.listenTo(this.collection, eventName, _.partial(this.trigger, eventName));
-    }, this));
+    _.each(
+      events,
+      _.bind(function(eventName) {
+        this.listenTo(this.collection, eventName, _.partial(this.trigger, eventName));
+      }, this)
+    );
   }
 
   _clearChangesCache() {
@@ -95,7 +100,7 @@ class VirtualCollection extends Collection {
   }
 
   _onUpdate(collection, options) {
-    var newOptions = _.extend({}, options, {changes: this._changeCache});
+    var newOptions = _.extend({}, options, { changes: this._changeCache });
     this.trigger('update', this, newOptions);
     this._clearChangesCache();
   }
@@ -114,8 +119,8 @@ class VirtualCollection extends Collection {
   _onRemove(model, collection, options) {
     if (!this.get(model)) return;
     this._changeCache.removed.push(model);
-    var i = this._indexRemove(model)
-        , optionsClone = _.clone(options);
+    var i = this._indexRemove(model),
+      optionsClone = _.clone(options);
     optionsClone.index = i;
     model.off('all', this._onAllEvent, this);
     this.trigger('remove', model, this, optionsClone);
@@ -135,8 +140,8 @@ class VirtualCollection extends Collection {
         this._onAdd(model, this.collection, options);
       }
     } else if (alreadyHere) {
-      var i = this._indexRemove(model)
-          , optionsClone = _.clone(options);
+      var i = this._indexRemove(model),
+        optionsClone = _.clone(options);
       optionsClone.index = i;
       this.trigger('remove', model, this, optionsClone);
     }
@@ -153,15 +158,16 @@ class VirtualCollection extends Collection {
   }
 
   sortedIndex(model, value, context) {
-    var iterator = _.isFunction(value) ? value : function(target) {
-      return target.get(value);
-    };
+    var iterator = _.isFunction(value)
+      ? value
+      : function(target) {
+          return target.get(value);
+        };
 
     if (iterator.length === 1) {
       return _.sortedIndex(this.models, model, _.bind(iterator, context));
     }
     return sortedIndexTwo(this.models, model, iterator, context);
-
   }
 
   _indexAdd(model) {
@@ -171,10 +177,14 @@ class VirtualCollection extends Collection {
     if (this.comparator) {
       i = this.sortedIndex(model, this.comparator, this);
     } else if (this.comparator === undefined) {
-      i = this.sortedIndex(model, function(target) {
-        //TODO: indexOf traverses the array every time the iterator is called
-        return this.collection.indexOf(target);
-      }, this);
+      i = this.sortedIndex(
+        model,
+        function(target) {
+          //TODO: indexOf traverses the array every time the iterator is called
+          return this.collection.indexOf(target);
+        },
+        this
+      );
     } else {
       i = this.length;
     }
@@ -205,19 +215,33 @@ class VirtualCollection extends Collection {
   clone() {
     return new this.collection.constructor(this.models);
   }
-
 }
 
 // methods that alter data should proxy to the parent collection
-_.each(['add', 'remove', 'set', 'reset', 'push', 'pop', 'unshift', 'shift', 'slice', 'sync', 'fetch', 'url'], function(methodName) {
-  VirtualCollection.prototype[methodName] = function() {
-    if (_.isFunction(this.collection[methodName])){
-      return this.collection[methodName].apply(this.collection, arguments);
-    }
-    return this.collection[methodName];
-
-  };
-});
+_.each(
+  [
+    'add',
+    'remove',
+    'set',
+    'reset',
+    'push',
+    'pop',
+    'unshift',
+    'shift',
+    'slice',
+    'sync',
+    'fetch',
+    'url'
+  ],
+  function(methodName) {
+    VirtualCollection.prototype[methodName] = function() {
+      if (_.isFunction(this.collection[methodName])) {
+        return this.collection[methodName].apply(this.collection, arguments);
+      }
+      return this.collection[methodName];
+    };
+  }
+);
 
 /**
 
@@ -225,14 +249,13 @@ Equivalent to _.sortedIndex, but for comparators with two arguments
 
 **/
 function sortedIndexTwo(array, obj, iterator, context) {
-  var low = 0, high = array.length;
+  var low = 0,
+    high = array.length;
   while (low < high) {
-    var mid = low + high >>> 1;
-    iterator.call(context, obj, array[mid]) > 0 ? low = mid + 1 : high = mid;
+    var mid = (low + high) >>> 1;
+    iterator.call(context, obj, array[mid]) > 0 ? (low = mid + 1) : (high = mid);
   }
   return low;
 }
 
-export {
-  VirtualCollection
-};
+export { VirtualCollection };

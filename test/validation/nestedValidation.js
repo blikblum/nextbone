@@ -1,8 +1,7 @@
-
 module.exports = {
   'Nested validation': {
-    "one level": {
-      beforeEach: function () {
+    'one level': {
+      beforeEach: function() {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
@@ -13,79 +12,84 @@ module.exports = {
           }
         })
         class Model extends Backbone.Model {
-            set(...args) {
-              super.set(...args)
-              return this.validationError === null
-            }
+          set(...args) {
+            super.set(...args);
+            return this.validationError === null;
           }
+        }
 
         this.model = new Model();
-        
       },
 
-      "invalid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            address: {
-              street: ''
-            }
-          }, { validate: true, invalid: this.invalid });
+      invalid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
+              address: {
+                street: ''
+              }
+            },
+            { validate: true, invalid: this.invalid }
+          );
         },
 
-        "refutes setting invalid values": function () {
+        'refutes setting invalid values': function() {
           refute(this.result);
         },
 
-        "calls the invalid callback": function () {
+        'calls the invalid callback': function() {
           assert.calledWith(this.invalid, 'address.street', 'error');
         },
 
-        "is valid returns false for the specified attribute name": function () {
+        'is valid returns false for the specified attribute name': function() {
           refute(this.model.isValid('address.street'));
         },
 
-        "is valid returns false for the specified attribute names": function () {
+        'is valid returns false for the specified attribute names': function() {
           refute(this.model.isValid(['address.street', 'address.street']));
         },
 
-        "pre validate returns error message for the specified attribute name": function () {
+        'pre validate returns error message for the specified attribute name': function() {
           assert(this.model.preValidate('address.street', ''));
         }
       },
 
-      "valid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            address: {
-              street: 'name'
-            }
-          }, { validate: true, valid: this.valid });
+      valid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
+              address: {
+                street: 'name'
+              }
+            },
+            { validate: true, valid: this.valid }
+          );
         },
 
-        "sets the value": function () {
+        'sets the value': function() {
           assert(this.result);
         },
 
-        "calls the valid callback": function () {
+        'calls the valid callback': function() {
           assert.calledWith(this.valid, 'address.street');
         },
 
-        "is valid returns true for the specified attribute name": function () {
+        'is valid returns true for the specified attribute name': function() {
           assert(this.model.isValid('address.street'));
         },
 
-        "is valid returns true for the specified attribute names": function () {
+        'is valid returns true for the specified attribute names': function() {
           assert(this.model.isValid(['address.street', 'address.street']));
         },
 
-        "pre validate returns no error message for the specified attribute name": function () {
+        'pre validate returns no error message for the specified attribute name': function() {
           refute(this.model.preValidate('address.street', 'street'));
         }
       }
     },
 
-    "two levels": {
-      beforeEach: function () {
+    'two levels': {
+      beforeEach: function() {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
@@ -96,83 +100,88 @@ module.exports = {
           }
         })
         class Model extends Backbone.Model {
-              set(...args) {
-                super.set(...args)
-                return this.validationError === null
-              }
-            }
+          set(...args) {
+            super.set(...args);
+            return this.validationError === null;
+          }
+        }
 
         this.model = new Model();
-        
       },
 
-      "invalid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            foo: {
-              bar: {
-                baz: ''
+      invalid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
+              foo: {
+                bar: {
+                  baz: ''
+                }
               }
-            }
-          }, { validate: true, invalid: this.invalid, valid: this.valid });
+            },
+            { validate: true, invalid: this.invalid, valid: this.valid }
+          );
         },
 
-        "refutes setting invalid values": function () {
+        'refutes setting invalid values': function() {
           refute(this.result);
         },
 
-        "calls the invalid callback": function () {
+        'calls the invalid callback': function() {
           assert.calledWith(this.invalid, 'foo.bar.baz', 'error');
         },
 
-        "is valid returns false for the specified attribute name": function () {
+        'is valid returns false for the specified attribute name': function() {
           refute(this.model.isValid('foo.bar.baz'));
         },
 
-        "is valid returns false for the specified attribute names": function () {
+        'is valid returns false for the specified attribute names': function() {
           refute(this.model.isValid(['foo.bar.baz', 'foo.bar.baz']));
         },
 
-        "pre validate returns error message for the specified attribute name": function () {
+        'pre validate returns error message for the specified attribute name': function() {
           assert(this.model.preValidate('foo.bar.baz', ''));
         }
       },
 
-      "valid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            foo: {
-              bar: {
-                baz: 'val'
+      valid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
+              foo: {
+                bar: {
+                  baz: 'val'
+                }
               }
-            }
-          }, { validate: true, invalid: this.invalid, valid: this.valid });
+            },
+            { validate: true, invalid: this.invalid, valid: this.valid }
+          );
         },
 
-        "sets the value": function () {
+        'sets the value': function() {
           assert(this.result);
         },
 
-        "calls the valid callback": function () {
+        'calls the valid callback': function() {
           assert.calledWith(this.valid, 'foo.bar.baz');
         },
 
-        "is valid returns true for the specified attribute name": function () {
+        'is valid returns true for the specified attribute name': function() {
           assert(this.model.isValid('foo.bar.baz'));
         },
 
-        "is valid returns true for the specified attribute names": function () {
+        'is valid returns true for the specified attribute names': function() {
           assert(this.model.isValid(['foo.bar.baz', 'foo.bar.baz']));
         },
 
-        "pre validate returns no error message for the specified attribute name": function () {
+        'pre validate returns no error message for the specified attribute name': function() {
           refute(this.model.preValidate('foo.bar.baz', 'val'));
         }
       }
     },
 
-    "complex nesting": {
-      beforeEach: function () {
+    'complex nesting': {
+      beforeEach: function() {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
@@ -187,91 +196,96 @@ module.exports = {
           }
         })
         class Model extends Backbone.Model {
-              set(...args) {
-                super.set(...args)
-                return this.validationError === null
-              }
-            }
+          set(...args) {
+            super.set(...args);
+            return this.validationError === null;
+          }
+        }
 
         this.model = new Model();
-        
       },
 
-      "invalid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            foo: {
-              foo: '',
-              bar: {
-                baz: ''
+      invalid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
+              foo: {
+                foo: '',
+                bar: {
+                  baz: ''
+                }
               }
-            }
-          }, { validate: true, invalid: this.invalid, valid: this.valid });
+            },
+            { validate: true, invalid: this.invalid, valid: this.valid }
+          );
         },
 
-        "refutes setting invalid values": function () {
+        'refutes setting invalid values': function() {
           refute(this.result);
         },
 
-        "calls the invalid callback": function () {
+        'calls the invalid callback': function() {
           assert.calledWith(this.invalid, 'foo.bar.baz', 'error');
           assert.calledWith(this.invalid, 'foo.foo', 'error');
         },
 
-        "is valid returns false for the specified attribute name": function () {
+        'is valid returns false for the specified attribute name': function() {
           refute(this.model.isValid('foo.bar.baz'));
           refute(this.model.isValid('foo.foo'));
         },
 
-        "is valid returns false for the specified attribute names": function () {
+        'is valid returns false for the specified attribute names': function() {
           refute(this.model.isValid(['foo.foo', 'foo.bar.baz']));
         },
 
-        "pre validate returns error message for the specified attribute name": function () {
+        'pre validate returns error message for the specified attribute name': function() {
           assert(this.model.preValidate('foo.bar.baz', ''));
           assert(this.model.preValidate('foo.foo', ''));
         }
       },
 
-      "valid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            foo: {
-              foo: 'val',
-              bar: {
-                baz: 'val'
+      valid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
+              foo: {
+                foo: 'val',
+                bar: {
+                  baz: 'val'
+                }
               }
-            }
-          }, { validate: true, invalid: this.invalid, valid: this.valid });
+            },
+            { validate: true, invalid: this.invalid, valid: this.valid }
+          );
         },
 
-        "sets the value": function () {
+        'sets the value': function() {
           assert(this.result);
         },
 
-        "calls the valid callback": function () {
+        'calls the valid callback': function() {
           assert.calledWith(this.valid, 'foo.bar.baz');
           assert.calledWith(this.valid, 'foo.foo');
         },
 
-        "is valid returns true for the specified attribute name": function () {
+        'is valid returns true for the specified attribute name': function() {
           assert(this.model.isValid('foo.bar.baz'));
           assert(this.model.isValid('foo.foo'));
         },
 
-        "is valid returns true for the specified attribute names": function () {
+        'is valid returns true for the specified attribute names': function() {
           assert(this.model.isValid(['foo.bar.baz', 'foo.foo']));
         },
 
-        "pre validate returns no error message for the specified attribute name": function () {
+        'pre validate returns no error message for the specified attribute name': function() {
           refute(this.model.preValidate('foo.bar.baz', 'val'));
           refute(this.model.preValidate('foo.foo', 'val'));
         }
       }
     },
 
-    "complex nesting with intermediate-level validators": {
-      beforeEach: function () {
+    'complex nesting with intermediate-level validators': {
+      beforeEach: function() {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
@@ -286,124 +300,129 @@ module.exports = {
           }
         })
         class Model extends Backbone.Model {
-          validateBazAndQux (value, attr, computedState) {
+          validateBazAndQux(value, attr, computedState) {
             if (!value || !value.baz || !value.qux) {
-              return "error";
+              return 'error';
             }
           }
 
           set(...args) {
-            super.set(...args)
-            return this.validationError === null
+            super.set(...args);
+            return this.validationError === null;
           }
         }
 
         this.model = new Model();
-        
       },
 
-      "invalid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            foo: {
-              bar: {
-                baz: '',
-                qux: 'qux'
-              },
+      invalid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
               foo: {
-                baz: 'baz',
-                qux: ''
+                bar: {
+                  baz: '',
+                  qux: 'qux'
+                },
+                foo: {
+                  baz: 'baz',
+                  qux: ''
+                }
               }
-            }
-          }, { validate: true, invalid: this.invalid, valid: this.valid });
+            },
+            { validate: true, invalid: this.invalid, valid: this.valid }
+          );
         },
 
-        "refutes setting invalid values": function () {
+        'refutes setting invalid values': function() {
           refute(this.result);
         },
 
-        "calls the invalid callback": function () {
+        'calls the invalid callback': function() {
           assert.calledWith(this.invalid, 'foo.bar', 'bazQuxError1');
           assert.calledWith(this.invalid, 'foo.foo', 'bazQuxError2');
         },
 
-        "isValid returns false for the specified attribute name": function () {
+        'isValid returns false for the specified attribute name': function() {
           refute(this.model.isValid('foo.bar'));
           refute(this.model.isValid('foo.foo'));
         },
 
-        "isValid returns false for the specified attribute names": function () {
+        'isValid returns false for the specified attribute names': function() {
           refute(this.model.isValid(['foo.foo', 'foo.bar']));
         },
 
-        "preValidate returns error message for the specified attribute name": function () {
+        'preValidate returns error message for the specified attribute name': function() {
           assert(this.model.preValidate('foo.bar', ''));
           assert(this.model.preValidate('foo.foo', ''));
         },
 
-        "preValidate does not return error message if new nested values validate": function () {
+        'preValidate does not return error message if new nested values validate': function() {
           refute(this.model.preValidate('foo.bar', { baz: 1, qux: 1 }));
           refute(this.model.preValidate('foo.foo', { baz: 1, qux: 1 }));
         }
       },
 
-      "valid": {
-        beforeEach: function () {
-          this.result = this.model.set({
-            foo: {
-              bar: {
-                baz: 'val',
-                qux: 'val'
-              },
+      valid: {
+        beforeEach: function() {
+          this.result = this.model.set(
+            {
               foo: {
-                baz: 'val',
-                qux: 'val'
+                bar: {
+                  baz: 'val',
+                  qux: 'val'
+                },
+                foo: {
+                  baz: 'val',
+                  qux: 'val'
+                }
               }
-            }
-          }, { validate: true, invalid: this.invalid, valid: this.valid });
+            },
+            { validate: true, invalid: this.invalid, valid: this.valid }
+          );
         },
 
-        "sets the value": function () {
+        'sets the value': function() {
           assert(this.result);
         },
 
-        "calls the valid callback": function () {
+        'calls the valid callback': function() {
           assert.calledWith(this.valid, 'foo.bar');
           assert.calledWith(this.valid, 'foo.foo');
         },
 
-        "isValid returns true for the specified attribute name": function () {
+        'isValid returns true for the specified attribute name': function() {
           assert(this.model.isValid('foo.bar'));
           assert(this.model.isValid('foo.foo'));
         },
 
-        "isValid returns true for the specified attribute names": function () {
+        'isValid returns true for the specified attribute names': function() {
           assert(this.model.isValid(['foo.bar', 'foo.foo']));
         },
 
-        "preValidate returns no error message for the specified attribute name": function () {
+        'preValidate returns no error message for the specified attribute name': function() {
           refute(this.model.preValidate('foo.bar', { baz: 1, qux: 1 }));
           refute(this.model.preValidate('foo.foo', { baz: 1, qux: 1 }));
         },
 
-        "preValidate returns error message if new nested values do not validate": function () {
+        'preValidate returns error message if new nested values do not validate': function() {
           assert.equals(this.model.preValidate('foo.bar', { baz: '', qux: '' }), 'bazQuxError1');
           assert.equals(this.model.preValidate('foo.foo', { baz: '', qux: '' }), 'bazQuxError2');
         }
       }
     },
 
-    "nested models and collections": {
-      beforeEach: function () {
+    'nested models and collections': {
+      beforeEach: function() {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
         class Model extends Backbone.Model {
-              set(...args) {
-                super.set(...args)
-                return this.validationError === null
-              }
-            }
+          set(...args) {
+            super.set(...args);
+            return this.validationError === null;
+          }
+        }
         class Collection extends Backbone.Collection {}
 
         this.model = new Model();
@@ -411,16 +430,18 @@ module.exports = {
           model: this.model,
           collection: new Collection([this.model])
         });
-        
 
-        this.result = this.model.set({
-          foo: 'bar'
-        }, { validate: true, invalid: this.invalid, valid: this.valid });
+        this.result = this.model.set(
+          {
+            foo: 'bar'
+          },
+          { validate: true, invalid: this.invalid, valid: this.valid }
+        );
       },
 
-      "are ignored": function () {
+      'are ignored': function() {
         assert(this.result);
       }
     }
   }
-}
+};

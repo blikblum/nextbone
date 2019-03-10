@@ -1,6 +1,40 @@
-import {uniqueId, extend, once, result, defaults as getDefaults, escape, iteratee as createIteratee, isEqual, has, defer,
-  invert, omit, pick, isString, isFunction, isRegExp, isObject, negate, invoke, max, min, first, initial,
-  last, rest, without, difference, findLastIndex, shuffle, sample, partition, sortBy, countBy, indexBy, groupBy} from 'underscore';
+import {
+  uniqueId,
+  extend,
+  once,
+  result,
+  defaults as getDefaults,
+  escape,
+  iteratee as createIteratee,
+  isEqual,
+  has,
+  defer,
+  invert,
+  omit,
+  pick,
+  isString,
+  isFunction,
+  isRegExp,
+  isObject,
+  negate,
+  invoke,
+  max,
+  min,
+  first,
+  initial,
+  last,
+  rest,
+  without,
+  difference,
+  findLastIndex,
+  shuffle,
+  sample,
+  partition,
+  sortBy,
+  countBy,
+  indexBy,
+  groupBy
+} from 'underscore';
 
 // Initial Setup
 // -------------
@@ -21,7 +55,8 @@ var isArray = Array.isArray;
 
 // Returns whether an object has a given set of `key:value` pairs.
 var isMatch = function(object, attrs) {
-  var objKeys = keys(attrs), length = objKeys.length;
+  var objKeys = keys(attrs),
+    length = objKeys.length;
   if (object == null) return !length;
   var obj = Object(object);
   for (var i = 0; i < length; i++) {
@@ -42,13 +77,11 @@ var matches = function(attrs) {
   };
 };
 
-
 // try to get a prop from instance, with fallback to constructor (class property)
 var getClassProp = function(obj, prop) {
   var value = obj[prop];
   return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
 };
-
 
 // Backbone.Events
 // ---------------
@@ -72,11 +105,13 @@ var _listening;
 // space-separated events `"change blur", callback` and jQuery-style event
 // maps `{event: callback}`).
 var eventsApi = function(iteratee, events, name, callback, opts) {
-  var i = 0, names;
+  var i = 0,
+    names;
   if (name && typeof name === 'object') {
     // Handle event maps.
-    if (callback !== void 0 && 'context' in opts && opts.context === void 0) opts.context = callback;
-    for (names = keys(name); i < names.length ; i++) {
+    if (callback !== void 0 && 'context' in opts && opts.context === void 0)
+      opts.context = callback;
+    for (names = keys(name); i < names.length; i++) {
       events = eventsApi(iteratee, events, names[i], name[names[i]], opts);
     }
   } else if (name && eventSplitter.test(name)) {
@@ -91,15 +126,21 @@ var eventsApi = function(iteratee, events, name, callback, opts) {
   return events;
 };
 
-
 // The reducing API that adds a callback to the `events` object.
 var onApi = function(events, name, callback, options) {
   if (callback) {
     var handlers = events[name] || (events[name] = []);
-    var context = options.context, ctx = options.ctx, listening = options.listening;
+    var context = options.context,
+      ctx = options.ctx,
+      listening = options.listening;
     if (listening) listening.count++;
 
-    handlers.push({callback: callback, context: context, ctx: context || ctx, listening: listening});
+    handlers.push({
+      callback: callback,
+      context: context,
+      ctx: context || ctx,
+      listening: listening
+    });
   }
   return events;
 };
@@ -114,13 +155,14 @@ var tryCatchOn = function(obj, name, callback, context) {
   }
 };
 
-
 // The reducing API that removes a callback from the `events` object.
 var offApi = function(events, name, callback, options) {
   if (!events) return;
 
-  var context = options.context, listeners = options.listeners;
-  var i = 0, names;
+  var context = options.context,
+    listeners = options.listeners;
+  var i = 0,
+    names;
 
   // Delete all event listeners and "drop" events.
   if (!name && !context && !callback) {
@@ -143,9 +185,8 @@ var offApi = function(events, name, callback, options) {
     for (var j = 0; j < handlers.length; j++) {
       var handler = handlers[j];
       if (
-        callback && callback !== handler.callback &&
-            callback !== handler.callback._callback ||
-              context && context !== handler.context
+        (callback && callback !== handler.callback && callback !== handler.callback._callback) ||
+        (context && context !== handler.context)
       ) {
         remaining.push(handler);
       } else {
@@ -169,10 +210,10 @@ var offApi = function(events, name, callback, options) {
 // `offer` unbinds the `onceWrapper` after it has been called.
 var onceMap = function(map, name, callback, offer) {
   if (callback) {
-    var fn = map[name] = once(function() {
+    var fn = (map[name] = once(function() {
       offer(name, fn);
       callback.apply(this, arguments);
-    });
+    }));
     fn._callback = callback;
   }
   return map;
@@ -194,13 +235,28 @@ var triggerApi = function(objEvents, name, callback, args) {
 // triggering events. Tries to keep the usual cases speedy (most internal
 // Backbone events have 3 arguments).
 var triggerEvents = function(events, args) {
-  var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
+  var ev,
+    i = -1,
+    l = events.length,
+    a1 = args[0],
+    a2 = args[1],
+    a3 = args[2];
   switch (args.length) {
-    case 0: while (++i < l) (ev = events[i]).callback.call(ev.ctx); return;
-    case 1: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1); return;
-    case 2: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2); return;
-    case 3: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); return;
-    default: while (++i < l) (ev = events[i]).callback.apply(ev.ctx, args); return;
+    case 0:
+      while (++i < l) (ev = events[i]).callback.call(ev.ctx);
+      return;
+    case 1:
+      while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1);
+      return;
+    case 2:
+      while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2);
+      return;
+    case 3:
+      while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3);
+      return;
+    default:
+      while (++i < l) (ev = events[i]).callback.apply(ev.ctx, args);
+      return;
   }
 };
 
@@ -242,7 +298,7 @@ class Events {
     if (!obj) return this;
     var id = obj._listenId || (obj._listenId = uniqueId('l'));
     var listeningTo = this._listeningTo || (this._listeningTo = {});
-    var listening = _listening = listeningTo[id];
+    var listening = (_listening = listeningTo[id]);
 
     // This object is not listening to any other events on `obj` yet.
     // Setup the necessary references to track the listening callbacks.
@@ -303,7 +359,7 @@ class Events {
   // are passed in using the space-separated syntax, the handler will fire
   // once for each event, not once for a combination of all events.
   once(name, callback, context) {
-  // Map the event into a `{event: once}` object.
+    // Map the event into a `{event: once}` object.
     var events = eventsApi(onceMap, {}, name, callback, this.off.bind(this));
     if (typeof name === 'string' && context == null) callback = void 0;
     return this.on(events, callback, context);
@@ -311,7 +367,7 @@ class Events {
 
   // Inversion-of-control versions of `once`.
   listenToOnce(obj, name, callback) {
-  // Map the event into a `{event: once}` object.
+    // Map the event into a `{event: once}` object.
     var events = eventsApi(onceMap, {}, name, callback, this.stopListening.bind(this, obj));
     return this.listenTo(obj, events);
   }
@@ -414,11 +470,11 @@ class Model extends Events {
 
   // preinitialize is an empty function by default. You can override it with a function
   // or object.  preinitialize will run before any instantiation logic is run in the Model.
-  preinitialize(){}
+  preinitialize() {}
 
   // Initialize is an empty function by default. Override it with your own
   // initialization logic.
-  initialize(){}
+  initialize() {}
 
   // Return a copy of the model's `attributes` object.
   toJSON(options) {
@@ -478,11 +534,11 @@ class Model extends Events {
     this._validate(attrs, options);
 
     // Extract attributes and options.
-    var unset      = options.unset;
-    var silent     = options.silent;
-    var reset      = options.reset;
-    var changes    = [];
-    var changing   = this._changing;
+    var unset = options.unset;
+    var silent = options.silent;
+    var reset = options.reset;
+    var changes = [];
+    var changing = this._changing;
     this._changing = true;
 
     if (!changing) {
@@ -492,7 +548,7 @@ class Model extends Events {
 
     var current = this.attributes;
     var changed = this.changed;
-    var prev    = this._previousAttributes;
+    var prev = this._previousAttributes;
 
     // For each `set` attribute, update or delete the current value.
     for (var attr in attrs) {
@@ -503,7 +559,7 @@ class Model extends Events {
       } else {
         delete changed[attr];
       }
-      unset ? delete current[attr] : current[attr] = val;
+      unset ? delete current[attr] : (current[attr] = val);
     }
 
     if (reset) {
@@ -546,14 +602,14 @@ class Model extends Events {
   // Remove an attribute from the model, firing `"change"`. `unset` is a noop
   // if the attribute doesn't exist.
   unset(attr, options) {
-    return this.set(attr, void 0, extend({}, options, {unset: true}));
+    return this.set(attr, void 0, extend({}, options, { unset: true }));
   }
 
   // Clear all attributes on the model, firing `"change"`.
   clear(options) {
     var attrs = {};
     for (var key in this.attributes) attrs[key] = void 0;
-    return this.set(attrs, extend({}, options, {unset: true}));
+    return this.set(attrs, extend({}, options, { unset: true }));
   }
 
   // Determine if the model has changed since the last `"change"` event.
@@ -599,7 +655,7 @@ class Model extends Events {
   // Fetch the model from the server, merging the response with the model's
   // local attributes. Any changed attributes will trigger a "change" event.
   fetch(options) {
-    options = extend({parse: true}, options);
+    options = extend({ parse: true }, options);
     var model = this;
     var success = options.success;
     options.success = function(resp) {
@@ -625,7 +681,7 @@ class Model extends Events {
       (attrs = {})[key] = val;
     }
 
-    options = extend({validate: true, parse: true}, options);
+    options = extend({ validate: true, parse: true }, options);
     var wait = options.wait;
 
     // If we're not waiting and attributes exist, save acts as
@@ -702,10 +758,7 @@ class Model extends Events {
   // using Backbone's restful methods, override this to change the endpoint
   // that will be called.
   url() {
-    var base =
-      result(this, 'urlRoot') ||
-      result(this.collection, 'url') ||
-      urlError();
+    var base = result(this, 'urlRoot') || result(this.collection, 'url') || urlError();
     if (this.isNew()) return base;
     var id = this.get(this.constructor.idAttribute || 'id');
     return base.replace(/[^\/]$/, '$&/') + encodeURIComponent(id);
@@ -729,7 +782,7 @@ class Model extends Events {
 
   // Check if the model is currently in a valid state.
   isValid(options) {
-    return this._validate({}, extend({}, options, {validate: true}));
+    return this._validate({}, extend({}, options, { validate: true }));
   }
 
   // underscore methods
@@ -770,7 +823,7 @@ class Model extends Events {
   _validate(attrs, options) {
     if (!options.validate || !this.validate) return true;
     attrs = extend({}, this.attributes, attrs);
-    var error = this.validationError = this.validate(attrs, options) || null;
+    var error = (this.validationError = this.validate(attrs, options) || null);
     if (!error) return true;
     this.trigger('invalid', this, error, options);
     return false;
@@ -809,21 +862,23 @@ class Collection extends Events {
     if (options.comparator !== void 0) this.comparator = options.comparator;
     this._reset();
     this.initialize.apply(this, arguments);
-    if (models) this.reset(models, extend({silent: true}, options));
+    if (models) this.reset(models, extend({ silent: true }, options));
   }
 
   // preinitialize is an empty function by default. You can override it with a function
   // or object.  preinitialize will run before any instantiation logic is run in the Collection.
-  preinitialize(){}
+  preinitialize() {}
 
   // Initialize is an empty function by default. Override it with your own
   // initialization logic.
-  initialize(){}
+  initialize() {}
 
   // The JSON representation of a Collection is an array of the
   // models' attributes.
   toJSON(options) {
-    return this.map(function(model) { return model.toJSON(options); });
+    return this.map(function(model) {
+      return model.toJSON(options);
+    });
   }
 
   // Proxy `Backbone.sync` by default.
@@ -835,7 +890,7 @@ class Collection extends Events {
   // Models or raw JavaScript objects to be converted to Models, or any
   // combination of the two.
   add(models, options) {
-    return this.set(models, extend({merge: false}, options, addOptions));
+    return this.set(models, extend({ merge: false }, options, addOptions));
   }
 
   // Remove a model, or a list of models from the set.
@@ -845,7 +900,7 @@ class Collection extends Events {
     models = singular ? [models] : models.slice();
     var removed = this._removeModels(models, options);
     if (!options.silent && removed.length) {
-      options.changes = {added: [], merged: [], removed: removed};
+      options.changes = { added: [], merged: [], removed: removed };
       this.trigger('update', this, options);
     }
     return singular ? removed[0] : removed;
@@ -908,7 +963,7 @@ class Collection extends Events {
         }
         models[i] = existing;
 
-      // If this is a new, valid model, push it to the `toAdd` list.
+        // If this is a new, valid model, push it to the `toAdd` list.
       } else if (add) {
         model = models[i] = this._prepareModel(model, options);
         if (model) {
@@ -933,9 +988,11 @@ class Collection extends Events {
     var orderChanged = false;
     var replace = !sortable && add && remove;
     if (set.length && replace) {
-      orderChanged = this.length !== set.length || this.models.some(function(m, index) {
-        return m !== set[index];
-      });
+      orderChanged =
+        this.length !== set.length ||
+        this.models.some(function(m, index) {
+          return m !== set[index];
+        });
       this.models.length = 0;
       splice(this.models, set, 0);
       this.length = this.models.length;
@@ -946,7 +1003,7 @@ class Collection extends Events {
     }
 
     // Silently sort the collection if appropriate.
-    if (sort) this.sort({silent: true});
+    if (sort) this.sort({ silent: true });
 
     // Unless silenced, it's time to fire all appropriate add/sort/update events.
     if (!options.silent) {
@@ -981,14 +1038,14 @@ class Collection extends Events {
     }
     options.previousModels = this.models;
     this._reset();
-    models = this.add(models, extend({silent: true}, options));
+    models = this.add(models, extend({ silent: true }, options));
     if (!options.silent) this.trigger('reset', this, options);
     return models;
   }
 
   // Add a model to the end of the collection.
   push(model, options) {
-    return this.add(model, extend({at: this.length}, options));
+    return this.add(model, extend({ at: this.length }, options));
   }
 
   // Remove a model from the end of the collection.
@@ -999,7 +1056,7 @@ class Collection extends Events {
 
   // Add a model to the beginning of the collection.
   unshift(model, options) {
-    return this.add(model, extend({at: 0}, options));
+    return this.add(model, extend({ at: 0 }, options));
   }
 
   // Remove a model from the beginning of the collection.
@@ -1017,9 +1074,11 @@ class Collection extends Events {
   // properties, or an attributes object that is transformed through modelId.
   get(obj) {
     if (obj == null) return void 0;
-    return this._byId[obj] ||
+    return (
+      this._byId[obj] ||
       this._byId[this.modelId(this._isModel(obj) ? obj.attributes : obj)] ||
-      obj.cid && this._byId[obj.cid];
+      (obj.cid && this._byId[obj.cid])
+    );
   }
 
   // Returns `true` if the model is in the collection.
@@ -1075,7 +1134,7 @@ class Collection extends Events {
   // collection when they arrive. If `reset: true` is passed, the response
   // data will be passed through the `reset` method instead of `set`.
   fetch(options) {
-    options = extend({parse: true}, options);
+    options = extend({ parse: true }, options);
     var success = options.success;
     var collection = this;
     options.success = function(resp) {
@@ -1124,7 +1183,7 @@ class Collection extends Events {
   // Define how to uniquely identify models in the collection.
   modelId(attrs) {
     var model = this.model || this.constructor.model || Model;
-    return attrs[model && model.idAttribute || 'id'];
+    return attrs[(model && model.idAttribute) || 'id'];
   }
 
   // Get an iterator of all models in this collection.
@@ -1299,7 +1358,7 @@ class Collection extends Events {
   _reset() {
     this.length = 0;
     this.models = [];
-    this._byId  = {};
+    this._byId = {};
   }
 
   // Prepare a hash of attributes (or other model) to be added to this
@@ -1312,7 +1371,10 @@ class Collection extends Events {
     options = options ? clone(options) : {};
     options.collection = this;
     var modelClass = this.model || this.constructor.model || Model;
-    var model = modelClass.prototype instanceof Model || modelClass === Model ? new modelClass(attrs, options) : modelClass(attrs, options);
+    var model =
+      modelClass.prototype instanceof Model || modelClass === Model
+        ? new modelClass(attrs, options)
+        : modelClass(attrs, options);
     if (!model.validationError) return model;
     this.trigger('invalid', this, model.validationError, options);
     return false;
@@ -1390,10 +1452,9 @@ class Collection extends Events {
   }
 }
 
-
 // Default options for `Collection#set`.
-var setOptions = {add: true, remove: true, merge: true};
-var addOptions = {add: true, remove: false};
+var setOptions = { add: true, remove: true, merge: true };
+var addOptions = { add: true, remove: false };
 
 // Splices `insert` into `array` at index `at`.
 var splice = function(array, insert, at) {
@@ -1429,7 +1490,6 @@ class CollectionIterator {
 
   next() {
     if (this._collection) {
-
       // Only continue iterating if the iterated collection is long enough.
       if (this._index < this._collection.length) {
         var model = this._collection.at(this._index);
@@ -1443,11 +1503,12 @@ class CollectionIterator {
           var id = this._collection.modelId(model.attributes);
           if (this._kind === ITERATOR_KEYS) {
             value = id;
-          } else { // ITERATOR_KEYSVALUES
+          } else {
+            // ITERATOR_KEYSVALUES
             value = [id, model];
           }
         }
-        return {value: value, done: false};
+        return { value: value, done: false };
       }
 
       // Once exhausted, remove the reference to the collection so future
@@ -1455,7 +1516,7 @@ class CollectionIterator {
       this._collection = void 0;
     }
 
-    return {value: void 0, done: true};
+    return { value: void 0, done: true };
   }
 
   // All Iterators should themselves be Iterable.
@@ -1468,7 +1529,10 @@ class CollectionIterator {
 var cb = function(iteratee, instance) {
   if (isFunction(iteratee)) return iteratee;
   if (isObject(iteratee) && !instance._isModel(iteratee)) return modelMatcher(iteratee);
-  if (isString(iteratee)) return function(model) { return model.get(iteratee); };
+  if (isString(iteratee))
+    return function(model) {
+      return model.get(iteratee);
+    };
   return iteratee;
 };
 
@@ -1478,7 +1542,6 @@ var modelMatcher = function(attrs) {
     return matcher(model.attributes);
   };
 };
-
 
 // Backbone.view
 // -------------
@@ -1552,21 +1615,26 @@ const bindViewState = (el, value) => {
   }
 };
 
-const isSpecDecoratorCall = (args) => {
+const isSpecDecoratorCall = args => {
   const descriptorKind = args[0].kind;
-  return args.length === 1 && (descriptorKind === 'field' || descriptorKind === 'method' || descriptorKind === 'class');
+  return (
+    args.length === 1 &&
+    (descriptorKind === 'field' || descriptorKind === 'method' || descriptorKind === 'class')
+  );
 };
 
 const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
   const classEvents = ctor.__events || (ctor.__events = []);
-  classEvents.push({eventName, selector, listener});
+  classEvents.push({ eventName, selector, listener });
 };
 
 const registerStateProperty = (ctor, name, key) => {
   const classStates = ctor.__states || (ctor.__states = new Set());
   classStates.add(name);
   const desc = {
-    get() { return this[key]; },
+    get() {
+      return this[key];
+    },
     set(value) {
       const oldValue = this[key];
       if (value === oldValue) return;
@@ -1584,11 +1652,11 @@ const registerStateProperty = (ctor, name, key) => {
   };
   Object.defineProperty(ctor.prototype, name, desc);
   if (ctor.createProperty) {
-    ctor.createProperty(name, {type: Object, noAccessor: true});
+    ctor.createProperty(name, { type: Object, noAccessor: true });
   }
 };
 
-const ensureViewClass = (ElementClass) => {
+const ensureViewClass = ElementClass => {
   if (ElementClass[isClassDecorated]) return ElementClass;
   ElementClass[isClassDecorated] = true;
   class ViewClass extends ElementClass {
@@ -1596,7 +1664,7 @@ const ensureViewClass = (ElementClass) => {
       super();
       const events = this.constructor.__events;
       if (events) {
-        events.forEach(({eventName, selector, listener}) => {
+        events.forEach(({ eventName, selector, listener }) => {
           delegate(this, eventName, selector, listener);
         });
       }
@@ -1624,7 +1692,7 @@ const ensureViewClass = (ElementClass) => {
 // Method decorator to register a delegated event
 const event = (eventName, selector) => (...args) => {
   if (isSpecDecoratorCall(args)) {
-    const {kind, key, placement, descriptor, initializer} = args[0];
+    const { kind, key, placement, descriptor, initializer } = args[0];
     return {
       kind,
       placement,
@@ -1647,7 +1715,7 @@ const state = (...args) => {
   const name = isSpec ? args[0].key : args[1];
   const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
   if (isSpec) {
-    const {kind, placement, descriptor, initializer} = args[0];
+    const { kind, placement, descriptor, initializer } = args[0];
     return {
       kind,
       placement,
@@ -1666,7 +1734,7 @@ const state = (...args) => {
 // Custom element decorator
 const view = (...args) => {
   if (isSpecDecoratorCall(args)) {
-    const {kind, elements} = args[0];
+    const { kind, elements } = args[0];
     return {
       kind,
       elements,
@@ -1679,7 +1747,7 @@ const view = (...args) => {
 // ES class Events mixin / decorator
 const withEvents = (...args) => {
   if (isSpecDecoratorCall(args)) {
-    const {kind, elements} = args[0];
+    const { kind, elements } = args[0];
     return {
       kind,
       elements,
@@ -1721,7 +1789,7 @@ var sync = {
     options || (options = {});
 
     // Default JSON-request options.
-    var params = {type: type, dataType: 'json'};
+    var params = { type: type, dataType: 'json' };
 
     // Ensure that we have a URL.
     if (!options.url) {
@@ -1729,11 +1797,14 @@ var sync = {
     }
 
     // Ensure that we have the appropriate request data.
-    if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
+    if (
+      options.data == null &&
+      model &&
+      (method === 'create' || method === 'update' || method === 'patch')
+    ) {
       params.contentType = 'application/json';
       params.data = JSON.stringify(options.attrs || model.toJSON(options));
     }
-
 
     // Don't process data on a non-GET request.
     if (params.type !== 'GET') {
@@ -1749,7 +1820,7 @@ var sync = {
     };
 
     // Make the request, allowing the user to override any Ajax options.
-    var xhr = options.xhr = ajax.handler(extend(params, options));
+    var xhr = (options.xhr = ajax.handler(extend(params, options)));
     model.trigger('request', model, xhr, options);
     return xhr;
   }
@@ -1764,9 +1835,7 @@ var stringifyGETParams = function(url, data) {
   var query = '';
   for (var key in data) {
     if (data[key] == null) continue;
-    query += '&'
-      + encodeURIComponent(key) + '='
-      + encodeURIComponent(data[key]);
+    query += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
   }
   if (query) url += (~url.indexOf('?') ? '&' : '?') + query.substring(1);
   return url;
@@ -1775,7 +1844,6 @@ var stringifyGETParams = function(url, data) {
 var getData = function(response, dataType) {
   return dataType === 'json' ? response.json() : response.text();
 };
-
 
 // Override handler method to customize ajax functionality.
 var ajax = {
@@ -1788,7 +1856,7 @@ var ajax = {
     getDefaults(options, {
       method: options.type,
       headers: getDefaults(options.headers || {}, {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json'
       }),
       body: options.data
@@ -1815,7 +1883,6 @@ var ajax = {
   }
 };
 
-
 // Backbone.Router
 // ---------------
 
@@ -1834,11 +1901,11 @@ class Router extends Events {
 
   // preinitialize is an empty function by default. You can override it with a function
   // or object.  preinitialize will run before any instantiation logic is run in the Router.
-  preinitialize(){}
+  preinitialize() {}
 
   // Initialize is an empty function by default. Override it with your own
   // initialization logic.
-  initialize(){}
+  initialize() {}
 
   // Manually bind a single named route to a callback. For example:
   //
@@ -1884,7 +1951,8 @@ class Router extends Events {
     var routes = getClassProp(this, 'routes');
     if (!routes) return;
     this.routes = routes;
-    var routeKey, routeKeys = keys(this.routes);
+    var routeKey,
+      routeKeys = keys(this.routes);
     while ((routeKey = routeKeys.pop()) != null) {
       this.route(routeKey, this.routes[routeKey]);
     }
@@ -1893,7 +1961,8 @@ class Router extends Events {
   // Convert a route string into a regular expression, suitable for matching
   // against the current location hash.
   _routeToRegExp(route) {
-    route = route.replace(escapeRegExp, '\\$&')
+    route = route
+      .replace(escapeRegExp, '\\$&')
       .replace(optionalParam, '(?:$1)?')
       .replace(namedParam, function(match, optional) {
         return optional ? match : '([^/?]+)';
@@ -1915,13 +1984,12 @@ class Router extends Events {
   }
 }
 
-
 // Cached regular expressions for matching named param parts and splatted
 // parts of route strings.
 var optionalParam = /\((.*?)\)/g;
-var namedParam    = /(\(\?)?:\w+/g;
-var splatParam    = /\*\w+/g;
-var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
+var namedParam = /(\(\?)?:\w+/g;
+var splatParam = /\*\w+/g;
+var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
 // Backbone.History
 // ----------------
@@ -1996,9 +2064,9 @@ class History extends Events {
 
   // Get the pathname and search params, without the root.
   getPath() {
-    var path = this.decodeFragment(
-      this.location.pathname + this.getSearch()
-    ).slice(this.root.length - 1);
+    var path = this.decodeFragment(this.location.pathname + this.getSearch()).slice(
+      this.root.length - 1
+    );
     return path.charAt(0) === '/' ? path.slice(1) : path;
   }
 
@@ -2022,11 +2090,11 @@ class History extends Events {
 
     // Figure out the initial configuration.
     // Is pushState desired ... is it available?
-    this.options          = extend({root: '/'}, this.options, options);
-    this.root             = this.options.root;
-    this._useHashChange   = this.options.hashChange !== false;
-    this._usePushState    = !!this.options.pushState;
-    this.fragment         = this.getFragment();
+    this.options = extend({ root: '/' }, this.options, options);
+    this.root = this.options.root;
+    this._useHashChange = this.options.hashChange !== false;
+    this._usePushState = !!this.options.pushState;
+    this.fragment = this.getFragment();
 
     // Normalize root to always include a leading and trailing slash.
     this.root = ('/' + this.root + '/').replace(rootStripper, '/');
@@ -2037,7 +2105,7 @@ class History extends Events {
       // If we've started out with a hash-based route, but we're currently
       // in a browser where it could be `pushState`-based instead...
       if (this.atRoot()) {
-        this.navigate(this.getHash(), {replace: true});
+        this.navigate(this.getHash(), { replace: true });
       }
     }
 
@@ -2072,7 +2140,7 @@ class History extends Events {
   // Add a route to be tested when the fragment changes. Routes added later
   // may override previous routes.
   route(route, callback) {
-    this.handlers.unshift({route: route, callback: callback});
+    this.handlers.unshift({ route: route, callback: callback });
   }
 
   // Checks the current URL to see if it has changed, and if it has,
@@ -2108,7 +2176,7 @@ class History extends Events {
   // you wish to modify the current URL without adding an entry to the history.
   navigate(fragment, options) {
     if (!History.started) return false;
-    if (!options || options === true) options = {trigger: !!options};
+    if (!options || options === true) options = { trigger: !!options };
 
     // Normalize the fragment.
     fragment = this.getFragment(fragment || '');
@@ -2133,13 +2201,13 @@ class History extends Events {
     if (this._usePushState) {
       this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
 
-    // If hash changes haven't been explicitly disabled, update the hash
-    // fragment to store history.
+      // If hash changes haven't been explicitly disabled, update the hash
+      // fragment to store history.
     } else if (this._useHashChange) {
       this._updateHash(this.location, fragment, options.replace);
 
-    // If you've told us that you explicitly don't want fallback hashchange-
-    // based history, then `navigate` becomes a page refresh.
+      // If you've told us that you explicitly don't want fallback hashchange-
+      // based history, then `navigate` becomes a page refresh.
     } else {
       return this.location.assign(url);
     }
@@ -2159,7 +2227,6 @@ class History extends Events {
   }
 }
 
-
 // Cached regex for stripping a leading hash/slash and trailing space.
 var routeStripper = /^[#\/]|\s+$/g;
 
@@ -2168,7 +2235,6 @@ var rootStripper = /^\/+|\/+$/g;
 
 // Cached regex for stripping urls of hash.
 var pathStripper = /#.*$/;
-
 
 // Helpers
 // -------

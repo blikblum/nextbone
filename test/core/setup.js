@@ -3,7 +3,6 @@ import * as Backbone from '../../nextbone';
 window.Backbone = Backbone;
 
 (function(QUnit) {
-
   var sync = Backbone.sync.handler;
   var ajax = Backbone.ajax.handler;
   var history = window.history;
@@ -32,7 +31,6 @@ window.Backbone = Backbone;
       };
       sync.apply(this, arguments);
     };
-
   });
 
   QUnit.testDone(function() {
@@ -41,5 +39,4 @@ window.Backbone = Backbone;
     history.pushState = pushState;
     history.replaceState = replaceState;
   });
-
 })(QUnit);

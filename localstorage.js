@@ -1,8 +1,8 @@
-import {sync} from './nextbone.js';
+import { sync } from './nextbone.js';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
-*/
+ */
 function s4() {
   const rand = (1 + Math.random()) * 0x10000;
   return (rand | 0).toString(16).substring(1);
@@ -17,7 +17,6 @@ export function guid() {
 
 /** The default serializer for transforming your saved data to localStorage */
 const defaultSerializer = {
-
   /** Return a JSON-serialized string representation of item
    * @param {Object} item - The encoded model data
    * @returns {string} A JSON-encoded string
@@ -51,19 +50,19 @@ class LocalStorage {
 
   /** Return the global localStorage variable
    * @returns {Object} Local Storage reference.
-  */
+   */
   localStorage() {
     return window.localStorage;
   }
 
   /** Returns the records associated with store
    * @returns {Array} The records.
-  */
+   */
   getRecords() {
     if (!this.records || revisionMap[this.name] !== this.revision) {
       const store = this._getItem(this.name);
       this.revision = revisionMap[this.name];
-      return store && store.split(',') || [];
+      return (store && store.split(',')) || [];
     }
     return this.records;
   }
@@ -126,16 +125,15 @@ class LocalStorage {
    */
   findAll() {
     const records = this.getRecords();
-    return records.map(
-      id => this.serializer.deserialize(this._getItem(this._itemName(id)))
-    ).filter(
-      item => item != null);
+    return records
+      .map(id => this.serializer.deserialize(this._getItem(this._itemName(id))))
+      .filter(item => item != null);
   }
 
   /** Delete a model from `this.data`, returning it.
    * @param {Model} model - Model to delete
    * @returns {Model} Model removed from this.data
-  */
+   */
   destroy(model) {
     this._removeItem(this._itemName(model.id));
     const newRecords = this.getRecords().filter(item => item !== model);
@@ -163,7 +161,7 @@ class LocalStorage {
   /** Return the item name to lookup in localStorage
    * @param {integer} id - Item ID
    * @returns {string} Item name
-  */
+   */
   _itemName(id) {
     return `${this.name}-${id}`;
   }
@@ -191,7 +189,7 @@ class LocalStorage {
  * @returns {Storage} The localstorage
  */
 function getLocalStorage(model) {
-  return model.localStorage || model.collection && model.collection.localStorage;
+  return model.localStorage || (model.collection && model.collection.localStorage);
 }
 
 /** Override Backbone's `sync` method to run against localStorage
@@ -227,7 +225,6 @@ function localStorageSync(method, model, options) {
         resp = store.destroy(model);
         break;
     }
-
   } catch (error) {
     if (error.code === 22 && store._storageSize() === 0) {
       errorMessage = 'Private browsing is unsupported';
@@ -291,7 +288,7 @@ export const localStorage = (name, serializer) => ctorOrDescriptor => {
   if (typeof ctorOrDescriptor === 'function') {
     return createClass(ctorOrDescriptor, name, serializer);
   }
-  const {kind, elements} = ctorOrDescriptor;
+  const { kind, elements } = ctorOrDescriptor;
   return {
     kind,
     elements,

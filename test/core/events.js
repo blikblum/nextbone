@@ -1,11 +1,9 @@
 (function(QUnit) {
-
   QUnit.module('Backbone.Events');
 
   QUnit.test('extending a class with mixin', function(assert) {
     assert.expect(6);
-    class Test {
-    }
+    class Test {}
     var TestWithEvents = Backbone.withEvents(Test);
     assert.equal(TestWithEvents.prototype.on, Backbone.Events.prototype.on);
     assert.equal(TestWithEvents.prototype.off, Backbone.Events.prototype.off);
@@ -19,8 +17,7 @@
   QUnit.test('extending a class with decorator', function(assert) {
     assert.expect(3);
     @Backbone.withEvents
-    class Test {
-    }
+    class Test {}
     assert.equal(Test.prototype.on, Backbone.Events.prototype.on);
     assert.equal(Test.prototype.off, Backbone.Events.prototype.off);
     assert.equal(Test.prototype.trigger, Backbone.Events.prototype.trigger);
@@ -28,9 +25,11 @@
 
   QUnit.test('on and trigger', function(assert) {
     assert.expect(2);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
-    obj.on('event', function() { obj.counter += 1; });
+    obj.on('event', function() {
+      obj.counter += 1;
+    });
     obj.trigger('event');
     assert.equal(obj.counter, 1, 'counter should be incremented.');
     obj.trigger('event');
@@ -42,10 +41,12 @@
 
   QUnit.test('binding and triggering multiple events', function(assert) {
     assert.expect(4);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
 
-    obj.on('a b c', function() { obj.counter += 1; });
+    obj.on('a b c', function() {
+      obj.counter += 1;
+    });
 
     obj.trigger('a');
     assert.equal(obj.counter, 1);
@@ -62,18 +63,21 @@
   });
 
   QUnit.test('binding and triggering with event maps', function(assert) {
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
 
     var increment = function() {
       this.counter += 1;
     };
 
-    obj.on({
-      a: increment,
-      b: increment,
-      c: increment
-    }, obj);
+    obj.on(
+      {
+        a: increment,
+        b: increment,
+        c: increment
+      },
+      obj
+    );
 
     obj.trigger('a');
     assert.equal(obj.counter, 1);
@@ -84,16 +88,19 @@
     obj.trigger('c');
     assert.equal(obj.counter, 4);
 
-    obj.off({
-      a: increment,
-      c: increment
-    }, obj);
+    obj.off(
+      {
+        a: increment,
+        c: increment
+      },
+      obj
+    );
     obj.trigger('a b c');
     assert.equal(obj.counter, 5);
   });
 
   QUnit.test('binding and triggering multiple event names with event maps', function(assert) {
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
 
     var increment = function() {
@@ -122,30 +129,46 @@
 
   QUnit.test('binding and trigger with event maps context', function(assert) {
     assert.expect(2);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     var context = {};
     Backbone.Events.extend(obj);
 
-    obj.on({
-      a: function() {
-        assert.strictEqual(this, context, 'defaults `context` to `callback` param');
-      }
-    }, context).trigger('a');
+    obj
+      .on(
+        {
+          a: function() {
+            assert.strictEqual(this, context, 'defaults `context` to `callback` param');
+          }
+        },
+        context
+      )
+      .trigger('a');
 
-    obj.off().on({
-      a: function() {
-        assert.strictEqual(this, context, 'will not override explicit `context` param');
-      }
-    }, this, context).trigger('a');
+    obj
+      .off()
+      .on(
+        {
+          a: function() {
+            assert.strictEqual(this, context, 'will not override explicit `context` param');
+          }
+        },
+        this,
+        context
+      )
+      .trigger('a');
   });
 
   QUnit.test('listenTo and stopListening', function(assert) {
     assert.expect(1);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    a.listenTo(b, 'all', function(){ assert.ok(true); });
+    a.listenTo(b, 'all', function() {
+      assert.ok(true);
+    });
     b.trigger('anything');
-    a.listenTo(b, 'all', function(){ assert.ok(false); });
+    a.listenTo(b, 'all', function() {
+      assert.ok(false);
+    });
     a.stopListening();
     b.trigger('anything');
   });
@@ -154,12 +177,14 @@
     assert.expect(4);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    var cb = function(){ assert.ok(true); };
-    a.listenTo(b, {event: cb});
+    var cb = function() {
+      assert.ok(true);
+    };
+    a.listenTo(b, { event: cb });
     b.trigger('event');
-    a.listenTo(b, {event2: cb});
+    a.listenTo(b, { event2: cb });
     b.on('event2', cb);
-    a.stopListening(b, {event2: cb});
+    a.stopListening(b, { event2: cb });
     b.trigger('event event2');
     a.stopListening();
     b.trigger('event event2');
@@ -169,11 +194,13 @@
     assert.expect(2);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    var cb = function() { assert.ok(true); };
+    var cb = function() {
+      assert.ok(true);
+    };
     a.listenTo(b, 'event', cb);
     b.on('event', cb);
     a.listenTo(b, 'event2', cb);
-    a.stopListening(null, {event: cb});
+    a.stopListening(null, { event: cb });
     b.trigger('event event2');
     b.off();
     a.listenTo(b, 'event event2', cb);
@@ -185,10 +212,15 @@
   QUnit.test('listenToOnce', function(assert) {
     assert.expect(2);
     // Same as the previous test, but we use once rather than having to explicitly unbind
-    var obj = {counterA: 0, counterB: 0};
+    var obj = { counterA: 0, counterB: 0 };
     Backbone.Events.extend(obj);
-    var incrA = function(){ obj.counterA += 1; obj.trigger('event'); };
-    var incrB = function(){ obj.counterB += 1; };
+    var incrA = function() {
+      obj.counterA += 1;
+      obj.trigger('event');
+    };
+    var incrB = function() {
+      obj.counterB += 1;
+    };
     obj.listenToOnce(obj, 'event', incrA);
     obj.listenToOnce(obj, 'event', incrB);
     obj.trigger('event');
@@ -200,10 +232,14 @@
     assert.expect(1);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    a.listenToOnce(b, 'all', function() { assert.ok(true); });
+    a.listenToOnce(b, 'all', function() {
+      assert.ok(true);
+    });
     b.trigger('anything');
     b.trigger('anything');
-    a.listenToOnce(b, 'all', function() { assert.ok(false); });
+    a.listenToOnce(b, 'all', function() {
+      assert.ok(false);
+    });
     a.stopListening();
     b.trigger('anything');
   });
@@ -212,10 +248,14 @@
     assert.expect(1);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    a.listenToOnce(b, 'all', function() { assert.ok(true); });
+    a.listenToOnce(b, 'all', function() {
+      assert.ok(true);
+    });
     b.trigger('anything');
     b.trigger('anything');
-    a.listenTo(b, 'all', function() { assert.ok(false); });
+    a.listenTo(b, 'all', function() {
+      assert.ok(false);
+    });
     a.stopListening();
     b.trigger('anything');
   });
@@ -224,9 +264,17 @@
     assert.expect(1);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    a.listenTo(b, {change: function(){ assert.ok(true); }});
+    a.listenTo(b, {
+      change: function() {
+        assert.ok(true);
+      }
+    });
     b.trigger('change');
-    a.listenTo(b, {change: function(){ assert.ok(false); }});
+    a.listenTo(b, {
+      change: function() {
+        assert.ok(false);
+      }
+    });
     a.stopListening();
     b.trigger('change');
   });
@@ -234,14 +282,18 @@
   QUnit.test('listenTo yourself', function(assert) {
     assert.expect(1);
     var e = Backbone.Events.extend({});
-    e.listenTo(e, 'foo', function(){ assert.ok(true); });
+    e.listenTo(e, 'foo', function() {
+      assert.ok(true);
+    });
     e.trigger('foo');
   });
 
   QUnit.test('listenTo yourself cleans yourself up with stopListening', function(assert) {
     assert.expect(1);
     var e = Backbone.Events.extend({});
-    e.listenTo(e, 'foo', function(){ assert.ok(true); });
+    e.listenTo(e, 'foo', function() {
+      assert.ok(true);
+    });
     e.trigger('foo');
     e.stopListening();
     e.trigger('foo');
@@ -322,30 +374,43 @@
     assert.expect(2);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
-    a.listenTo(b, 'all', function(){ assert.ok(true); });
+    a.listenTo(b, 'all', function() {
+      assert.ok(true);
+    });
     b.trigger('anything');
-    a.listenTo(b, 'other', function(){ assert.ok(false); });
+    a.listenTo(b, 'other', function() {
+      assert.ok(false);
+    });
     a.stopListening(b, 'other');
     a.stopListening(b, 'all');
     assert.equal(_.size(a._listeningTo), 0);
   });
 
-  QUnit.test('listenToOnce without context cleans up references after the event has fired', function(assert) {
-    assert.expect(2);
-    var a = Backbone.Events.extend({});
-    var b = Backbone.Events.extend({});
-    a.listenToOnce(b, 'all', function(){ assert.ok(true); });
-    b.trigger('anything');
-    assert.equal(_.size(a._listeningTo), 0);
-  });
+  QUnit.test(
+    'listenToOnce without context cleans up references after the event has fired',
+    function(assert) {
+      assert.expect(2);
+      var a = Backbone.Events.extend({});
+      var b = Backbone.Events.extend({});
+      a.listenToOnce(b, 'all', function() {
+        assert.ok(true);
+      });
+      b.trigger('anything');
+      assert.equal(_.size(a._listeningTo), 0);
+    }
+  );
 
   QUnit.test('listenToOnce with event maps cleans up references', function(assert) {
     assert.expect(2);
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
     a.listenToOnce(b, {
-      one: function() { assert.ok(true); },
-      two: function() { assert.ok(false); }
+      one: function() {
+        assert.ok(true);
+      },
+      two: function() {
+        assert.ok(false);
+      }
     });
     b.trigger('one');
     assert.equal(_.size(a._listeningTo), 1);
@@ -356,8 +421,12 @@
     var a = Backbone.Events.extend({});
     var b = Backbone.Events.extend({});
     a.listenToOnce(b, {
-      one: function() { assert.ok(this === a); },
-      two: function() { assert.ok(false); }
+      one: function() {
+        assert.ok(this === a);
+      },
+      two: function() {
+        assert.ok(false);
+      }
     });
     b.trigger('one');
   });
@@ -372,13 +441,16 @@
 
   QUnit.test('trigger all for each event', function(assert) {
     assert.expect(3);
-    var a, b, obj = {counter: 0};
+    var a,
+      b,
+      obj = { counter: 0 };
     Backbone.Events.extend(obj);
-    obj.on('all', function(event) {
-      obj.counter++;
-      if (event === 'a') a = true;
-      if (event === 'b') b = true;
-    })
+    obj
+      .on('all', function(event) {
+        obj.counter++;
+        if (event === 'a') a = true;
+        if (event === 'b') b = true;
+      })
       .trigger('a b');
     assert.ok(a);
     assert.ok(b);
@@ -387,9 +459,11 @@
 
   QUnit.test('on, then unbind all functions', function(assert) {
     assert.expect(1);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
-    var callback = function() { obj.counter += 1; };
+    var callback = function() {
+      obj.counter += 1;
+    };
     obj.on('event', callback);
     obj.trigger('event');
     obj.off('event');
@@ -399,11 +473,15 @@
 
   QUnit.test('bind two callbacks, unbind only one', function(assert) {
     assert.expect(2);
-    var obj = {counterA: 0, counterB: 0};
+    var obj = { counterA: 0, counterB: 0 };
     Backbone.Events.extend(obj);
-    var callback = function() { obj.counterA += 1; };
+    var callback = function() {
+      obj.counterA += 1;
+    };
     obj.on('event', callback);
-    obj.on('event', function() { obj.counterB += 1; });
+    obj.on('event', function() {
+      obj.counterB += 1;
+    });
     obj.trigger('event');
     obj.off('event', callback);
     obj.trigger('event');
@@ -413,7 +491,7 @@
 
   QUnit.test('unbind a callback in the midst of it firing', function(assert) {
     assert.expect(1);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
     var callback = function() {
       obj.counter += 1;
@@ -428,10 +506,16 @@
 
   QUnit.test('two binds that unbind themeselves', function(assert) {
     assert.expect(2);
-    var obj = {counterA: 0, counterB: 0};
+    var obj = { counterA: 0, counterB: 0 };
     Backbone.Events.extend(obj);
-    var incrA = function(){ obj.counterA += 1; obj.off('event', incrA); };
-    var incrB = function(){ obj.counterB += 1; obj.off('event', incrB); };
+    var incrA = function() {
+      obj.counterA += 1;
+      obj.off('event', incrA);
+    };
+    var incrB = function() {
+      obj.counterB += 1;
+      obj.off('event', incrB);
+    };
     obj.on('event', incrA);
     obj.on('event', incrB);
     obj.trigger('event');
@@ -463,16 +547,28 @@
     };
 
     var obj = Backbone.Events.extend({});
-    obj.on('event', function() { this.assertTrue(); }, new TestClass);
+    obj.on(
+      'event',
+      function() {
+        this.assertTrue();
+      },
+      new TestClass()
+    );
     obj.trigger('event');
   });
 
   QUnit.test('nested trigger with unbind', function(assert) {
     assert.expect(1);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
-    var incr1 = function(){ obj.counter += 1; obj.off('event', incr1); obj.trigger('event'); };
-    var incr2 = function(){ obj.counter += 1; };
+    var incr1 = function() {
+      obj.counter += 1;
+      obj.off('event', incr1);
+      obj.trigger('event');
+    };
+    var incr2 = function() {
+      obj.counter += 1;
+    };
     obj.on('event', incr1);
     obj.on('event', incr2);
     obj.trigger('event');
@@ -481,15 +577,26 @@
 
   QUnit.test('callback list is not altered during trigger', function(assert) {
     assert.expect(2);
-    var counter = 0, obj = Backbone.Events.extend({});
-    var incr = function(){ counter++; };
-    var incrOn = function(){ obj.on('event all', incr); };
-    var incrOff = function(){ obj.off('event all', incr); };
+    var counter = 0,
+      obj = Backbone.Events.extend({});
+    var incr = function() {
+      counter++;
+    };
+    var incrOn = function() {
+      obj.on('event all', incr);
+    };
+    var incrOff = function() {
+      obj.off('event all', incr);
+    };
 
     obj.on('event all', incrOn).trigger('event');
     assert.equal(counter, 0, 'on does not alter callback list');
 
-    obj.off().on('event', incrOff).on('event all', incr).trigger('event');
+    obj
+      .off()
+      .on('event', incrOff)
+      .on('event all', incr)
+      .trigger('event');
     assert.equal(counter, 2, 'off does not alter callback list');
   });
 
@@ -497,32 +604,48 @@
     assert.expect(1);
     var counter = 0;
     var obj = Backbone.Events.extend({});
-    var incr = function(){ counter++; };
-    obj.on('x', function() {
-      obj.on('y', incr).on('all', incr);
-    })
+    var incr = function() {
+      counter++;
+    };
+    obj
+      .on('x', function() {
+        obj.on('y', incr).on('all', incr);
+      })
       .trigger('x y');
     assert.strictEqual(counter, 2);
   });
 
   QUnit.test('if no callback is provided, `on` is a noop', function(assert) {
     assert.expect(0);
-    Backbone.Events.extend({}).on('test').trigger('test');
+    Backbone.Events.extend({})
+      .on('test')
+      .trigger('test');
   });
 
-  QUnit.test('if callback is truthy but not a function, `on` should throw an error just like jQuery', function(assert) {
-    assert.expect(1);
-    var view = Backbone.Events.extend({}).on('test', 'noop');
-    assert.raises(function() {
-      view.trigger('test');
-    });
-  });
+  QUnit.test(
+    'if callback is truthy but not a function, `on` should throw an error just like jQuery',
+    function(assert) {
+      assert.expect(1);
+      var view = Backbone.Events.extend({}).on('test', 'noop');
+      assert.raises(function() {
+        view.trigger('test');
+      });
+    }
+  );
 
   QUnit.test('remove all events for a specific context', function(assert) {
     assert.expect(4);
     var obj = Backbone.Events.extend({});
-    obj.on('x y all', function() { assert.ok(true); });
-    obj.on('x y all', function() { assert.ok(false); }, obj);
+    obj.on('x y all', function() {
+      assert.ok(true);
+    });
+    obj.on(
+      'x y all',
+      function() {
+        assert.ok(false);
+      },
+      obj
+    );
     obj.off(null, null, obj);
     obj.trigger('x y');
   });
@@ -530,8 +653,12 @@
   QUnit.test('remove all events for a specific callback', function(assert) {
     assert.expect(4);
     var obj = Backbone.Events.extend({});
-    var success = function() { assert.ok(true); };
-    var fail = function() { assert.ok(false); };
+    var success = function() {
+      assert.ok(true);
+    };
+    var fail = function() {
+      assert.ok(false);
+    };
     obj.on('x y all', success);
     obj.on('x y all', fail);
     obj.off(null, fail);
@@ -541,8 +668,20 @@
   QUnit.test('#1310 - off does not skip consecutive events', function(assert) {
     assert.expect(0);
     var obj = Backbone.Events.extend({});
-    obj.on('event', function() { assert.ok(false); }, obj);
-    obj.on('event', function() { assert.ok(false); }, obj);
+    obj.on(
+      'event',
+      function() {
+        assert.ok(false);
+      },
+      obj
+    );
+    obj.on(
+      'event',
+      function() {
+        assert.ok(false);
+      },
+      obj
+    );
     obj.off(null, null, obj);
     obj.trigger('event');
   });
@@ -550,10 +689,15 @@
   QUnit.test('once', function(assert) {
     assert.expect(2);
     // Same as the previous test, but we use once rather than having to explicitly unbind
-    var obj = {counterA: 0, counterB: 0};
+    var obj = { counterA: 0, counterB: 0 };
     Backbone.Events.extend(obj);
-    var incrA = function(){ obj.counterA += 1; obj.trigger('event'); };
-    var incrB = function(){ obj.counterB += 1; };
+    var incrA = function() {
+      obj.counterA += 1;
+      obj.trigger('event');
+    };
+    var incrB = function() {
+      obj.counterB += 1;
+    };
     obj.once('event', incrA);
     obj.once('event', incrB);
     obj.trigger('event');
@@ -563,7 +707,9 @@
 
   QUnit.test('once variant one', function(assert) {
     assert.expect(3);
-    var f = function(){ assert.ok(true); };
+    var f = function() {
+      assert.ok(true);
+    };
 
     var a = Backbone.Events.extend({}).once('event', f);
     var b = Backbone.Events.extend({}).on('event', f);
@@ -576,7 +722,9 @@
 
   QUnit.test('once variant two', function(assert) {
     assert.expect(3);
-    var f = function(){ assert.ok(true); };
+    var f = function() {
+      assert.ok(true);
+    };
     var obj = Backbone.Events.extend({});
 
     obj
@@ -588,7 +736,9 @@
 
   QUnit.test('once with off', function(assert) {
     assert.expect(0);
-    var f = function(){ assert.ok(true); };
+    var f = function() {
+      assert.ok(true);
+    };
     var obj = Backbone.Events.extend({});
 
     obj.once('event', f);
@@ -597,18 +747,21 @@
   });
 
   QUnit.test('once with event maps', function(assert) {
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     Backbone.Events.extend(obj);
 
     var increment = function() {
       this.counter += 1;
     };
 
-    obj.once({
-      a: increment,
-      b: increment,
-      c: increment
-    }, obj);
+    obj.once(
+      {
+        a: increment,
+        b: increment,
+        c: increment
+      },
+      obj
+    );
 
     obj.trigger('a');
     assert.equal(obj.counter, 1);
@@ -623,24 +776,37 @@
     assert.equal(obj.counter, 3);
   });
 
-  QUnit.test('bind a callback with a supplied context using once with object notation', function(assert) {
+  QUnit.test('bind a callback with a supplied context using once with object notation', function(
+    assert
+  ) {
     assert.expect(1);
-    var obj = {counter: 0};
+    var obj = { counter: 0 };
     var context = {};
     Backbone.Events.extend(obj);
 
-    obj.once({
-      a: function() {
-        assert.strictEqual(this, context, 'defaults `context` to `callback` param');
-      }
-    }, context).trigger('a');
+    obj
+      .once(
+        {
+          a: function() {
+            assert.strictEqual(this, context, 'defaults `context` to `callback` param');
+          }
+        },
+        context
+      )
+      .trigger('a');
   });
 
   QUnit.test('once with off only by context', function(assert) {
     assert.expect(0);
     var context = {};
     var obj = Backbone.Events.extend({});
-    obj.once('event', function(){ assert.ok(false); }, context);
+    obj.once(
+      'event',
+      function() {
+        assert.ok(false);
+      },
+      context
+    );
     obj.off(null, null, context);
     obj.trigger('event');
   });
@@ -653,7 +819,10 @@
   QUnit.test('once with asynchronous events', function(assert) {
     var done = assert.async();
     assert.expect(1);
-    var func = _.debounce(function() { assert.ok(true); done(); }, 50);
+    var func = _.debounce(function() {
+      assert.ok(true);
+      done();
+    }, 50);
     var obj = Backbone.Events.extend({}).once('async', func);
 
     obj.trigger('async');
@@ -663,17 +832,23 @@
   QUnit.test('once with multiple events.', function(assert) {
     assert.expect(2);
     var obj = Backbone.Events.extend({});
-    obj.once('x y', function() { assert.ok(true); });
+    obj.once('x y', function() {
+      assert.ok(true);
+    });
     obj.trigger('x y');
   });
 
   QUnit.test('Off during iteration with once.', function(assert) {
     assert.expect(2);
     var obj = Backbone.Events.extend({});
-    var f = function(){ this.off('event', f); };
+    var f = function() {
+      this.off('event', f);
+    };
     obj.on('event', f);
-    obj.once('event', function(){});
-    obj.on('event', function(){ assert.ok(true); });
+    obj.once('event', function() {});
+    obj.on('event', function() {
+      assert.ok(true);
+    });
 
     obj.trigger('event');
     obj.trigger('event');
@@ -691,7 +866,9 @@
 
   QUnit.test('once without a callback is a noop', function(assert) {
     assert.expect(0);
-    Backbone.Events.extend({}).once('event').trigger('event');
+    Backbone.Events.extend({})
+      .once('event')
+      .trigger('event');
   });
 
   QUnit.test('listenToOnce without a callback is a noop', function(assert) {
@@ -722,7 +899,9 @@
     var one = Backbone.Events.extend({});
     var two = Backbone.Events.extend({});
     var count = 1;
-    one.listenToOnce(two, 'x y', function(n) { assert.ok(n === count++); });
+    one.listenToOnce(two, 'x y', function(n) {
+      assert.ok(n === count++);
+    });
     two.trigger('x', 1);
     two.trigger('x', 1);
     two.trigger('y', 2);
@@ -741,11 +920,15 @@
       }
     };
 
-    obj.listenTo(other, 'test', function() { assert.ok(true); });
+    obj.listenTo(other, 'test', function() {
+      assert.ok(true);
+    });
     other.trigger('test');
   });
 
-  QUnit.test('#3611 - stopListening is compatible with non-Backbone event libraries', function(assert) {
+  QUnit.test('#3611 - stopListening is compatible with non-Backbone event libraries', function(
+    assert
+  ) {
     var obj = Backbone.Events.extend({});
     var other = {
       events: {},
@@ -761,7 +944,9 @@
       }
     };
 
-    obj.listenTo(other, 'test', function() { assert.ok(false); });
+    obj.listenTo(other, 'test', function() {
+      assert.ok(false);
+    });
     obj.stopListening(other);
     other.trigger('test');
     assert.equal(_.size(obj._listeningTo), 0);
