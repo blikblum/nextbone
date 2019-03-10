@@ -1559,8 +1559,8 @@ const isClassDecorated = Symbol();
 // result of calling bound `listener` with the parameters given to the
 // handler.
 
-const delegate = function(el, eventName, selector, listener) {
-  if (delegate.$) return $delegate(el, eventName, selector, listener, delegate.$);
+const delegate = function(el, eventName, selector, listener, context = el) {
+  if (delegate.$) return $delegate(el, eventName, selector, listener, context, delegate.$);
 
   let handler, eventTarget;
   if (selector) {
@@ -1570,29 +1570,29 @@ const delegate = function(el, eventName, selector, listener) {
       for (; node && node !== el; node = node.parentNode) {
         if (node.matches && node.matches(selector)) {
           e.selectorTarget = node;
-          listener.call(el, e);
+          listener.call(context, e);
         }
       }
     };
   } else {
     eventTarget = el;
-    handler = listener.bind(el);
+    handler = listener.bind(context);
   }
   eventTarget.addEventListener(eventName, handler, false);
   return handler;
 };
 
 // jquery version of delegate
-const $delegate = function(el, eventName, selector, listener, $) {
+const $delegate = function(el, eventName, selector, listener, context, $) {
   let handler;
   if (selector) {
     handler = function(e) {
       e.selectorTarget = e.currentTarget;
-      listener.call(el, e);
+      listener.call(context, e);
     };
     $(el.renderRoot || el).on(eventName, selector, handler);
   } else {
-    handler = listener.bind(el);
+    handler = listener.bind(context);
     $(el).on(eventName, handler);
   }
   return handler;
