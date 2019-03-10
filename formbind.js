@@ -71,7 +71,9 @@ const createClass = (ctor, options = {}) => {
   class FormBindMixin extends ctor {
     constructor() {
       super();
-      events.forEach(({ event, selector }) => delegate(this, event, selector, this.updateModel));
+      events.forEach(({ event, selector }) =>
+        delegate(this.renderRoot || this, event, selector, this.updateModel, this)
+      );
     }
 
     updateModel(e) {
