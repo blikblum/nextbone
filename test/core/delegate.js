@@ -156,13 +156,13 @@ class TestShadowDOM extends HTMLElement {
           let el, oneEl, oneChildEl, twoEl;
 
           function oneClick(e) {
-            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(this, el.shadowRoot, 'this should be the element shadowRoot');
             assert.equal(e.target, oneChildEl, 'target should be .one-child element');
             assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
           }
 
           function twoClick(e) {
-            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(this, el.shadowRoot, 'this should be the element shadowRoot');
             assert.equal(e.target, twoEl, 'target should be .two element');
             assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
           }
@@ -177,10 +177,10 @@ class TestShadowDOM extends HTMLElement {
 
           Backbone.delegate.$ = jqueryInstance;
 
-          const handler1 = Backbone.delegate(el, 'click', '.one', oneClick);
-          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', oneClick);
-          const handler3 = Backbone.delegate(el, 'click', '.two', twoClick);
-          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', twoClick);
+          const handler1 = Backbone.delegate(el.shadowRoot, 'click', '.one', oneClick);
+          const handler2 = Backbone.delegate(el.shadowRoot, 'my-delegated-event', '.one', oneClick);
+          const handler3 = Backbone.delegate(el.shadowRoot, 'click', '.two', twoClick);
+          const handler4 = Backbone.delegate(el.shadowRoot, 'my-delegated-event', '.two', twoClick);
           const handler5 = Backbone.delegate(el, 'my-event', undefined, selfClick);
 
           oneEl = el.renderRoot.querySelector('.one');

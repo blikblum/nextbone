@@ -1562,23 +1562,19 @@ const isClassDecorated = Symbol();
 const delegate = function(el, eventName, selector, listener, context = el) {
   if (delegate.$) return $delegate(el, eventName, selector, listener, context, delegate.$);
 
-  let handler, eventTarget;
-  if (selector) {
-    eventTarget = el.renderRoot || el;
-    handler = function(e) {
-      var node = e.target;
-      for (; node && node !== el; node = node.parentNode) {
-        if (node.matches && node.matches(selector)) {
-          e.selectorTarget = node;
-          listener.call(context, e);
+  const handler = selector
+    ? function(e) {
+        var node = e.target;
+        for (; node && node !== el; node = node.parentNode) {
+          if (node.matches && node.matches(selector)) {
+            e.selectorTarget = node;
+            listener.call(context, e);
+          }
         }
       }
-    };
-  } else {
-    eventTarget = el;
-    handler = listener.bind(context);
-  }
-  eventTarget.addEventListener(eventName, handler, false);
+    : listener.bind(context);
+
+  el.addEventListener(eventName, handler, false);
   return handler;
 };
 
@@ -1590,7 +1586,7 @@ const $delegate = function(el, eventName, selector, listener, context, $) {
       e.selectorTarget = e.currentTarget;
       listener.call(context, e);
     };
-    $(el.renderRoot || el).on(eventName, selector, handler);
+    $(el).on(eventName, selector, handler);
   } else {
     handler = listener.bind(context);
     $(el).on(eventName, handler);
@@ -1665,7 +1661,7 @@ const ensureViewClass = ElementClass => {
       const events = this.constructor.__events;
       if (events) {
         events.forEach(({ eventName, selector, listener }) => {
-          delegate(this, eventName, selector, listener);
+          delegate(selector ? this.renderRoot || this : this, eventName, selector, listener, this);
         });
       }
     }
