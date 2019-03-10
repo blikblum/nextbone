@@ -145,6 +145,37 @@ class TestShadowDOM extends HTMLElement {
         }
       );
 
+      QUnit.test(
+        `non bubbable events triggered by ${triggerType} and delegated by ${delegateType}`,
+        async function(assert) {
+          assert.expect(6);
+          let el, oneEl, twoEl;
+
+          function oneBlur(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, oneEl, 'target should be .one element');
+            assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
+          }
+
+          function twoFocus(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, twoEl, 'target should be .two element');
+            assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
+          }
+
+          el = await fixture(`<div><input class="one"/><input class="two"/></div>`);
+          oneEl = el.querySelector('.one');
+          twoEl = el.querySelector('.two');
+          oneEl.focus();
+
+          Backbone.delegate.$ = jqueryInstance;
+
+          Backbone.delegate(el, 'blur', '.one', oneBlur);
+          Backbone.delegate(el, 'focus', '.two', twoFocus);
+          twoEl.focus();
+        }
+      );
+
       // jquery does not support listening events to in ShadowRoot elements
       // https://github.com/jquery/jquery/issues/4317
       if (delegateType === 'jquery') return;

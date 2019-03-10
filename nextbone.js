@@ -1550,6 +1550,8 @@ var modelMatcher = function(attrs) {
 
 const isClassDecorated = Symbol();
 
+const notBubbleEvents = ['blur', 'focus'];
+
 // Make a event delegation handler for the given `eventName` and `selector`
 // and attach it to `el`.
 // If selector is empty, the listener will be bound to `el`. If not, a
@@ -1574,7 +1576,7 @@ const delegate = function(el, eventName, selector, listener, context = el) {
       }
     : listener.bind(context);
 
-  el.addEventListener(eventName, handler, false);
+  el.addEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
   return handler;
 };
 
@@ -1597,7 +1599,7 @@ const $delegate = function(el, eventName, selector, listener, context, $) {
 const undelegate = function(el, eventName, handler) {
   const eventTarget = !(handler.name === 'handler') ? el : el.renderRoot || el;
   if (!delegate.$) {
-    eventTarget.removeEventListener(eventName, handler, false);
+    eventTarget.removeEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
   } else {
     delegate.$(eventTarget).off(eventName, handler);
   }
