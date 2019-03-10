@@ -44,7 +44,7 @@ const createNormalizedOptions = options => {
   const excludeFromJSON = reduce(
     options,
     (result, def, key) => {
-      if (def.toJSON === false) {
+      if (def.toJSON !== true) {
         result.push(key);
       }
       return result;

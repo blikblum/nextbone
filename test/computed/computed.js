@@ -327,11 +327,11 @@ describe('nextbone/computed', function() {
       json = model.toJSON();
     });
 
-    it('should computed field be part of JSON by default', function() {
-      expect(json.grossPrice).to.be.ok;
+    it('should computed field stripped out of JSON by default', function() {
+      expect(json.grossPrice).to.not.be.ok;
     });
 
-    describe('when computed is stripped out', function() {
+    describe('when toJSON is true', function() {
       beforeEach(function() {
         @computed({
           grossPrice: {
@@ -342,7 +342,7 @@ describe('nextbone/computed', function() {
             set: function(value, fields) {
               fields.netPrice = value / (1 + fields.vatRate / 100);
             },
-            toJSON: false
+            toJSON: true
           }
         })
         class TestModel extends Model {
@@ -359,8 +359,8 @@ describe('nextbone/computed', function() {
         json = model.toJSON();
       });
 
-      it('should computed field stripped out of JSON', function() {
-        expect(json.grossPrice).to.not.be.ok;
+      it('should computed field be part of JSON', function() {
+        expect(json.grossPrice).to.be.ok;
       });
     });
 
