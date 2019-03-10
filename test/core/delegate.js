@@ -62,36 +62,33 @@ class TestShadowDOM extends HTMLElement {
           assert.expect(21);
           let el, oneEl, oneChildEl, twoEl;
 
-          class TestEvents {
-            oneClick(e) {
-              assert.equal(this, el, 'this should be the element instance');
-              assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-              assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
-            }
-
-            twoClick(e) {
-              assert.equal(this, el, 'this should be the element instance');
-              assert.equal(e.target, twoEl, 'target should be .two element');
-              assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
-            }
-
-            selfClick(e) {
-              assert.equal(this, el, 'this should be the element instance');
-              assert.equal(e.target, el, 'target should be be the element instance');
-              assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
-            }
+          function oneClick(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, oneChildEl, 'target should be .one-child element');
+            assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
           }
 
-          const events = new TestEvents();
+          function twoClick(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, twoEl, 'target should be .two element');
+            assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
+          }
+
+          function selfClick(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, el, 'target should be be the element instance');
+            assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
+          }
+
           el = await fixture(elHTML);
 
           Backbone.delegate.$ = jqueryInstance;
 
-          const handler1 = Backbone.delegate(el, 'click', '.one', events.oneClick);
-          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
-          const handler3 = Backbone.delegate(el, 'click', '.two', events.twoClick);
-          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
-          const handler5 = Backbone.delegate(el, 'my-event', undefined, events.selfClick);
+          const handler1 = Backbone.delegate(el, 'click', '.one', oneClick);
+          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', oneClick);
+          const handler3 = Backbone.delegate(el, 'click', '.two', twoClick);
+          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', twoClick);
+          const handler5 = Backbone.delegate(el, 'my-event', undefined, selfClick);
 
           oneEl = el.querySelector('.one');
           oneChildEl = el.querySelector('.one-child');
@@ -158,36 +155,33 @@ class TestShadowDOM extends HTMLElement {
           assert.expect(21);
           let el, oneEl, oneChildEl, twoEl;
 
-          class TestEvents {
-            oneClick(e) {
-              assert.equal(this, el, 'this should be the element instance');
-              assert.equal(e.target, oneChildEl, 'target should be .one-child element');
-              assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
-            }
-
-            twoClick(e) {
-              assert.equal(this, el, 'this should be the element instance');
-              assert.equal(e.target, twoEl, 'target should be .two element');
-              assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
-            }
-
-            selfClick(e) {
-              assert.equal(this, el, 'this should be the element instance');
-              assert.equal(e.target, el, 'target should be be the element instance');
-              assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
-            }
+          function oneClick(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, oneChildEl, 'target should be .one-child element');
+            assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
           }
 
-          const events = new TestEvents();
+          function twoClick(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, twoEl, 'target should be .two element');
+            assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
+          }
+
+          function selfClick(e) {
+            assert.equal(this, el, 'this should be the element instance');
+            assert.equal(e.target, el, 'target should be be the element instance');
+            assert.notOk(e.selectorTarget, 'selectorTarget should be undefined');
+          }
+
           el = await fixture(`<${elShadowTag}></${elShadowTag}>`);
 
           Backbone.delegate.$ = jqueryInstance;
 
-          const handler1 = Backbone.delegate(el, 'click', '.one', events.oneClick);
-          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', events.oneClick);
-          const handler3 = Backbone.delegate(el, 'click', '.two', events.twoClick);
-          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', events.twoClick);
-          const handler5 = Backbone.delegate(el, 'my-event', undefined, events.selfClick);
+          const handler1 = Backbone.delegate(el, 'click', '.one', oneClick);
+          const handler2 = Backbone.delegate(el, 'my-delegated-event', '.one', oneClick);
+          const handler3 = Backbone.delegate(el, 'click', '.two', twoClick);
+          const handler4 = Backbone.delegate(el, 'my-delegated-event', '.two', twoClick);
+          const handler5 = Backbone.delegate(el, 'my-event', undefined, selfClick);
 
           oneEl = el.renderRoot.querySelector('.one');
           oneChildEl = el.renderRoot.querySelector('.one-child');
