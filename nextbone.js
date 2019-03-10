@@ -1536,7 +1536,7 @@ const $delegate = function(el, eventName, selector, listener, $) {
 };
 
 const undelegate = function(el, eventName, handler) {
-  const eventTarget = el.renderRoot || el
+  const eventTarget = !(handler.name === 'handler') ? el : el.renderRoot || el;
   if (!delegate.$) {
     eventTarget.removeEventListener(eventName, handler, false);
   } else {
