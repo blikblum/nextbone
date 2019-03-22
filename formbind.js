@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import { isObject } from 'underscore';
 import { delegate } from './nextbone';
 
 function getPathSegments(path) {
@@ -21,7 +21,7 @@ function getPathSegments(path) {
 
 // todo: use lodash `set` when/if using lodash instead of underscore
 function setPath(obj, path, value) {
-  if (!_.isObject(obj) || typeof path !== 'string') {
+  if (!isObject(obj) || typeof path !== 'string') {
     return obj;
   }
 
@@ -31,7 +31,7 @@ function setPath(obj, path, value) {
   for (let i = 0; i < pathArr.length; i++) {
     const p = pathArr[i];
 
-    if (!_.isObject(obj[p])) {
+    if (!isObject(obj[p])) {
       obj[p] = {};
     }
 
@@ -121,7 +121,7 @@ const createClass = (ctor, options = {}) => {
       const attributes = getValidatingAttributes(this, prop);
       // handle nested attributes
       if (prop.indexOf('.') !== -1) {
-        const attrs = _.clone(model.attributes);
+        const attrs = Object.assign({}, model.attributes);
         setPath(attrs, prop, value);
         model.set(attrs, { validate: true, attributes });
       } else {

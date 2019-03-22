@@ -1,5 +1,11 @@
 import { Collection } from './nextbone';
-import _ from 'underscore';
+import { isFunction, sortedIndex, invoke, includes, partial, extend } from 'underscore';
+
+var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
+
+var clone = function(obj) {
+  return obj ? Object.assign({}, obj) : {};
+};
 
 class VirtualCollection extends Collection {
   static buildFilter(options) {
@@ -7,11 +13,11 @@ class VirtualCollection extends Collection {
       return function() {
         return true;
       };
-    } else if (_.isFunction(options)) {
+    } else if (isFunction(options)) {
       return options;
     } else if (options.constructor === Object) {
       return function(model) {
-        return _.every(_.keys(options), function(key) {
+        return Object.keys(options).every(function(key) {
           return model.get(key) === options[key];
         });
       };
@@ -51,29 +57,25 @@ class VirtualCollection extends Collection {
   }
 
   _rebuildIndex() {
-    _.invoke(this.models, 'off', 'all', this._onAllEvent, this);
+    invoke(this.models, 'off', 'all', this._onAllEvent, this);
     this._reset();
-    this.collection.each(
-      _.bind(function(model, i) {
-        if (this.accepts(model, i)) {
-          this.listenTo(model, 'all', this._onAllEvent);
-          this.models.push(model);
-          this._byId[model.cid] = model;
-          if (model.id) this._byId[model.id] = model;
-        }
-      }, this)
-    );
+    this.collection.each((model, i) => {
+      if (this.accepts(model, i)) {
+        this.listenTo(model, 'all', this._onAllEvent);
+        this.models.push(model);
+        this._byId[model.cid] = model;
+        if (model.id) this._byId[model.id] = model;
+      }
+    });
     this.length = this.models.length;
 
     if (this.comparator) this.sort({ silent: true });
   }
 
   orderViaParent(options) {
-    this.models = this.collection.filter(
-      _.bind(function(model) {
-        return this._byId[model.cid] !== undefined;
-      }, this)
-    );
+    this.models = this.collection.filter(model => {
+      return this._byId[model.cid] !== undefined;
+    });
     if (!options.silent) this.trigger('sort', this, options);
   }
 
@@ -83,12 +85,9 @@ class VirtualCollection extends Collection {
   }
 
   _proxyParentEvents(events) {
-    _.each(
-      events,
-      _.bind(function(eventName) {
-        this.listenTo(this.collection, eventName, _.partial(this.trigger, eventName));
-      }, this)
-    );
+    events.forEach(eventName => {
+      this.listenTo(this.collection, eventName, partial(this.trigger, eventName));
+    });
   }
 
   _clearChangesCache() {
@@ -100,7 +99,7 @@ class VirtualCollection extends Collection {
   }
 
   _onUpdate(collection, options) {
-    var newOptions = _.extend({}, options, { changes: this._changeCache });
+    var newOptions = extend({}, options, { changes: this._changeCache });
     this.trigger('update', this, newOptions);
     this._clearChangesCache();
   }
@@ -120,7 +119,7 @@ class VirtualCollection extends Collection {
     if (!this.get(model)) return;
     this._changeCache.removed.push(model);
     var i = this._indexRemove(model),
-      optionsClone = _.clone(options);
+      optionsClone = clone(options);
     optionsClone.index = i;
     model.off('all', this._onAllEvent, this);
     this.trigger('remove', model, this, optionsClone);
@@ -141,7 +140,7 @@ class VirtualCollection extends Collection {
       }
     } else if (alreadyHere) {
       var i = this._indexRemove(model),
-        optionsClone = _.clone(options);
+        optionsClone = clone(options);
       optionsClone.index = i;
       this.trigger('remove', model, this, optionsClone);
     }
@@ -158,14 +157,14 @@ class VirtualCollection extends Collection {
   }
 
   sortedIndex(model, value, context) {
-    var iterator = _.isFunction(value)
+    var iterator = isFunction(value)
       ? value
       : function(target) {
           return target.get(value);
         };
 
     if (iterator.length === 1) {
-      return _.sortedIndex(this.models, model, _.bind(iterator, context));
+      return sortedIndex(this.models, model, iterator.bind(context));
     }
     return sortedIndexTwo(this.models, model, iterator, context);
   }
@@ -206,8 +205,7 @@ class VirtualCollection extends Collection {
   }
 
   _onAllEvent(eventName) {
-    var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
-    if (!_.includes(explicitlyHandledEvents, eventName)) {
+    if (!includes(explicitlyHandledEvents, eventName)) {
       this.trigger.apply(this, arguments);
     }
   }
@@ -218,34 +216,33 @@ class VirtualCollection extends Collection {
 }
 
 // methods that alter data should proxy to the parent collection
-_.each(
-  [
-    'add',
-    'remove',
-    'set',
-    'reset',
-    'push',
-    'pop',
-    'unshift',
-    'shift',
-    'slice',
-    'sync',
-    'fetch',
-    'url'
-  ],
-  function(methodName) {
-    VirtualCollection.prototype[methodName] = function() {
-      if (_.isFunction(this.collection[methodName])) {
-        return this.collection[methodName].apply(this.collection, arguments);
-      }
-      return this.collection[methodName];
-    };
-  }
-);
+
+[
+  'add',
+  'remove',
+  'set',
+  'reset',
+  'push',
+  'pop',
+  'unshift',
+  'shift',
+  'slice',
+  'sync',
+  'fetch',
+  'url'
+].forEach(function(methodName) {
+  VirtualCollection.prototype[methodName] = function() {
+    var method = this.collection[methodName];
+    if (isFunction(method)) {
+      return method.apply(this.collection, arguments);
+    }
+    return method;
+  };
+});
 
 /**
 
-Equivalent to _.sortedIndex, but for comparators with two arguments
+Equivalent to sortedIndex, but for comparators with two arguments
 
 **/
 function sortedIndexTwo(array, obj, iterator, context) {
