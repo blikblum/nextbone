@@ -1552,6 +1552,10 @@ const isClassDecorated = Symbol();
 
 const notBubbleEvents = ['blur', 'focus'];
 
+const isView = function(el) {
+  return el.constructor[isClassDecorated];
+};
+
 // Make a event delegation handler for the given `eventName` and `selector`
 // and attach it to `el`.
 // If selector is empty, the listener will be bound to `el`. If not, a
@@ -2262,6 +2266,7 @@ export {
   view,
   event,
   state,
+  isView,
   withEvents,
   sync,
   ajax,

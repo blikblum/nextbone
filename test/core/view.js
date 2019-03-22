@@ -218,5 +218,20 @@ const elHTML = html`
 
       assert.equal(createPropertyCount, 2);
     });
+
+    QUnit.test(`isView${suffix}`, async function(assert) {
+      assert.expect(1);
+      @classDecorator
+      class Test extends LitElement {
+        render() {
+          return elHTML;
+        }
+      }
+
+      const tag = defineCE(Test);
+      const el = await fixture(`<${tag}></${tag}>`);
+
+      assert.equal(!!Backbone.isView(el), classDecorator === Backbone.view);
+    });
   });
 })(QUnit);
