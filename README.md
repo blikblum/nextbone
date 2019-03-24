@@ -1,34 +1,81 @@
-     ____                     __      __
-    /\  _`\                  /\ \    /\ \                                   __
-    \ \ \ \ \     __      ___\ \ \/'\\ \ \____    ___     ___      __      /\_\    ____
-     \ \  _ <'  /'__`\   /'___\ \ , < \ \ '__`\  / __`\ /' _ `\  /'__`\    \/\ \  /',__\
-      \ \ \ \ \/\ \ \.\_/\ \__/\ \ \\`\\ \ \ \ \/\ \ \ \/\ \/\ \/\  __/  __ \ \ \/\__, `\
-       \ \____/\ \__/.\_\ \____\\ \_\ \_\ \_,__/\ \____/\ \_\ \_\ \____\/\_\_\ \ \/\____/
-        \/___/  \/__/\/_/\/____/ \/_/\/_/\/___/  \/___/  \/_/\/_/\/____/\/_/\ \_\ \/___/
-                                                                           \ \____/
-                                                                            \/___/
-    (_'_______________________________________________________________________________'_)
-    (_.———————————————————————————————————————————————————————————————————————————————._)
+# Nextbone
 
+Nextbone is a conversion of venerable [Backbone](http://backbonejs.org/) using modern Javascript features. It also replaces the View layer by a set of utilities to integrate with Web Components.
 
-Backbone supplies structure to JavaScript-heavy applications by providing models with key-value binding and custom events, collections with a rich API of enumerable functions, views with declarative event handling, and connects it all to your existing application over a RESTful JSON interface.
+### Features
 
-For Docs, License, Tests, pre-packed downloads, and everything else, really, see:
-http://backbonejs.org
+ - Keeps Backbone features / behavior with minimal changes. _In fact, most of the code is untouched_
+ - Uses EcmaScript Modules and Classes
+ - Fully tree shackable
+ - Seamless integration with Web Components (specially [LitElement](https://lit-element.polymer-project.org/))
 
-To suggest a feature or report a bug:
-https://github.com/jashkenas/backbone/issues
+### Install
 
-For questions on working with Backbone or general discussions:
-https://groups.google.com/forum/#!forum/backbonejs,
-http://stackoverflow.com/questions/tagged/backbone.js, or
-https://gitter.im/jashkenas/backbone
+    $ npm install nextbone
 
-Backbone is an open-sourced component of DocumentCloud:
-https://github.com/documentcloud
+To take fully advantage of nextbone is necessary to use Typescript or Babel configured with `@babel/plugin-proposal-decorators` and `@babel/plugin-proposal-class-properties` plugins
 
-Many thanks to our contributors:
-https://github.com/jashkenas/backbone/graphs/contributors
+### Usage
 
-Special thanks to Robert Kieffer for the original philosophy behind Backbone.
-https://github.com/broofa
+> Examples uses language features (class properties and decorators) that needs transpiling with Babel or Typescript 
+
+Define models
+
+```Javascript
+import { Model, Collection } from 'nextbone'
+
+class Task extends Model {
+  static defaults  = {
+    title: '',
+    done: false
+  }
+}
+
+class Tasks extends Collection {
+  static model = Task
+}
+
+const tasks = new Tasks()
+tasks.fetch()
+```
+
+Define a web component using LitElement
+
+```Javascript
+import { LitElement, html} from 'lit-element'
+import { state, event } from 'nextbone'
+
+class TasksView extends LitElement {
+  @state
+  tasks = new Tasks()
+  
+  @event('click', '#fetch')
+  fetchTasks() {
+    this.tasks.fetch()
+  }
+
+  render() {
+    return html`
+    <h2>Tasks</h2>
+    <ul>
+      ${tasks.map(task => {
+        html`<li>${task.get('title')}</li>`
+      })}
+    </ul>
+    <button id="fetch">Fetch data</button>
+    `
+  }
+}
+
+customElements.define('tasks-view', TasksView)
+
+document.body.innerHTML = '<tasks-view></tasks-view>'
+```
+
+### Documentation
+
+TBD
+
+### Related projects
+
+Copyright © 2019 Luiz Américo Pereira Câmara
