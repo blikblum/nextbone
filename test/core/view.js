@@ -145,7 +145,7 @@ const elHTML = html`
     });
 
     QUnit.test(`state${suffix}`, async function(assert) {
-      assert.expect(8);
+      assert.expect(13);
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
       @classDecorator
@@ -164,6 +164,9 @@ const elHTML = html`
 
         @Backbone.state
         collection = new Backbone.Collection();
+
+        @Backbone.state({ copy: true })
+        copyModel = new Backbone.Model();
 
         _enqueueUpdate(...args) {
           enqueueUpdateCount++;
@@ -190,33 +193,49 @@ const elHTML = html`
       assert.equal(enqueueUpdateCount, 3);
       await el.updateComplete;
 
+      // update property defined with copy: true should trigger element update
+      // but should not change element instance
+      const originalCopyModel = el.copyModel;
+      el.copyModel = new Backbone.Model({ foo: 'bar' });
+      assert.equal(originalCopyModel, el.copyModel);
+      assert.equal(el.copyModel.get('foo'), 'bar');
+      assert.equal(enqueueUpdateCount, 4);
+      await el.updateComplete;
+
+      // update property defined with copy: true with plain object should trigger element update
+      // and should update the model
+      el.copyModel = { x: 'y' };
+      assert.equal(el.copyModel.get('x'), 'y');
+      assert.equal(enqueueUpdateCount, 5);
+      await el.updateComplete;
+
       // setting the same instance should not trigger element update
       el.model = newModel;
       el.collection = newCollection;
-      assert.equal(enqueueUpdateCount, 3);
+      assert.equal(enqueueUpdateCount, 5);
       await el.updateComplete;
 
       // but changes to model/collection should trigger element update but not doubled
       el.model.set('test', 3);
       el.collection.reset([]);
-      assert.equal(enqueueUpdateCount, 4);
+      assert.equal(enqueueUpdateCount, 6);
       await el.updateComplete;
 
       // when disconnected no update should be triggered
       el.remove();
       el.model.set('test', 4);
       el.collection.reset([{ test: 'x' }]);
-      assert.equal(enqueueUpdateCount, 4);
+      assert.equal(enqueueUpdateCount, 6);
       await el.updateComplete;
 
       // when reconnected should be trigger element update
       parentEl.appendChild(el);
       el.model.set('test', 5);
       el.collection.reset([{ test: 4 }]);
-      assert.equal(enqueueUpdateCount, 5);
+      assert.equal(enqueueUpdateCount, 7);
       await el.updateComplete;
 
-      assert.equal(createPropertyCount, 2);
+      assert.equal(createPropertyCount, 3);
     });
 
     QUnit.test(`isView${suffix}`, async function(assert) {

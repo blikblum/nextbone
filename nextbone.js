@@ -1624,7 +1624,7 @@ const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
   classEvents.push({ eventName, selector, listener });
 };
 
-const registerStateProperty = (ctor, name, key) => {
+const registerStateProperty = (ctor, name, key, options = {}) => {
   const classStates = ctor.__states || (ctor.__states = new Set());
   classStates.add(name);
   const desc = {
@@ -1633,6 +1633,16 @@ const registerStateProperty = (ctor, name, key) => {
     },
     set(value) {
       const oldValue = this[key];
+      if (options.copy) {
+        if (oldValue instanceof Model) {
+          if (value instanceof Model) {
+            oldValue.set(value.attributes);
+          } else {
+            oldValue.set(Object(value || {}));
+          }
+        }
+        return;
+      }
       if (value === oldValue) return;
       if (this.isConnected) {
         bindViewState(this, value);
@@ -1711,12 +1721,19 @@ const event = (eventName, selector) => (protoOrDescriptor, methodName, propertyD
 };
 
 // Method decorator to define an observable model/collection to a property
-const state = (protoOrDescriptor, fieldName) => {
-  const isSpec = typeof fieldName !== 'string';
-  const name = isSpec ? protoOrDescriptor.key : fieldName;
+const state = (optionsOrProtoOrDescriptor, fieldName, options) => {
+  const isLegacy = typeof fieldName === 'string';
+  if (!isLegacy && typeof optionsOrProtoOrDescriptor.kind !== 'string') {
+    // passed options
+    return function(protoOrDescriptor) {
+      return state(protoOrDescriptor, fieldName, optionsOrProtoOrDescriptor);
+    };
+  }
+
+  const name = isLegacy ? fieldName : optionsOrProtoOrDescriptor.key;
   const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-  if (isSpec) {
-    const { kind, placement, descriptor, initializer } = protoOrDescriptor;
+  if (!isLegacy) {
+    const { kind, placement, descriptor, initializer } = optionsOrProtoOrDescriptor;
     return {
       kind,
       placement,
@@ -1724,12 +1741,12 @@ const state = (protoOrDescriptor, fieldName) => {
       initializer,
       key,
       finisher(ctor) {
-        registerStateProperty(ctor, name, key);
+        registerStateProperty(ctor, name, key, options);
         return ensureViewClass(ctor);
       }
     };
   }
-  registerStateProperty(protoOrDescriptor.constructor, name, key);
+  registerStateProperty(optionsOrProtoOrDescriptor.constructor, name, key, options);
 };
 
 // Custom element decorator
