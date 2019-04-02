@@ -23,7 +23,7 @@ module.exports = {
       this.model = new Model();
     },
 
-    'model is updated before the events are raised': function() {
+    'model is updated after the validated event is raised': function() {
       this.model.on(
         'change',
         function() {
@@ -35,7 +35,7 @@ module.exports = {
       this.model.on(
         'validated',
         function() {
-          assert.equals(1, this.model.get('age'));
+          refute.defined(this.model.get('age'));
         },
         this
       );

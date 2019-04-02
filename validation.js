@@ -10,7 +10,6 @@ import {
   reduce,
   each,
   include,
-  defer,
   extend,
   pick
 } from 'underscore';
@@ -518,9 +517,8 @@ const createClass = (ModelClass, rules) => {
       // Trigger validated events.
       // Need to defer this so the model is actually updated before
       // the event is triggered.
-      defer(function() {
-        model.trigger('validated', model, invalidAttrs, setOptions);
-      });
+
+      model.trigger('validated', model, invalidAttrs, setOptions);
 
       // Return any error messages to Nextbone.
       if (invalidAttrs && hasCommonKeys(invalidAttrs, changedAttrs)) {
