@@ -51,7 +51,7 @@ module.exports = {
 
     'when model is valid': {
       'validated event is triggered with model and null as errors': function(done) {
-        this.model.on(
+        this.model.once(
           'validated',
           function(model, errors) {
             assert.same(null, errors);

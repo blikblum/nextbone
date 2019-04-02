@@ -471,42 +471,21 @@ const createClass = (ModelClass, rules) => {
     }
 
     // Check to see if an attribute, an array of attributes or the
-    // entire model is valid. Passing true will force a validation
-    // of the model.
-    isValid(option) {
-      var self = this,
-        flattened,
-        attrs,
-        error,
-        invalidAttrs;
+    // entire model is valid.
+    isValid(options) {
+      var attributes;
 
-      if (isString(option)) {
-        attrs = [option];
-      } else if (isArray(option)) {
-        attrs = option;
-      }
-      if (attrs) {
-        flattened = flatten(self.attributes);
-        //Loop through all attributes and mark attributes invalid if appropriate
-        each(attrs, function(attr) {
-          error = validateAttr(self, attr, flattened[attr], extend({}, self.attributes), rules);
-          if (error) {
-            invalidAttrs = invalidAttrs || {};
-            invalidAttrs[attr] = error;
-            options.invalid(attr, error, self);
-          } else {
-            options.valid(attr, self);
-          }
-        });
+      if (isString(options)) {
+        attributes = [options];
+      } else if (isArray(options)) {
+        attributes = options;
       }
 
-      if (option === true) {
-        invalidAttrs = this.validate();
-      }
-      if (invalidAttrs) {
-        this.trigger('invalid', this, invalidAttrs, { validationError: invalidAttrs });
-      }
-      return attrs ? !invalidAttrs : this._isValid;
+      var error = (this.validationError =
+        this.validate(null, { validate: true, attributes }) || null);
+      if (!error) return true;
+      this.trigger('invalid', this, error, options);
+      return false;
     }
 
     // This is called by Backbone when it needs to perform validation.

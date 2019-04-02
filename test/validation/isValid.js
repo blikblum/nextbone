@@ -6,7 +6,7 @@ module.exports = {
       },
 
       'returns true': function() {
-        assert(this.model.isValid());
+        assert.equals(this.model.isValid(), true);
       }
     },
 
@@ -17,42 +17,39 @@ module.exports = {
             required: true
           }
         })
-        class Model extends Backbone.Model {
-          set(...args) {
-            super.set(...args);
-            return this.validationError === null;
-          }
-        }
+        class Model extends Backbone.Model {}
 
         this.model = new Model();
       },
 
-      'returns undefined when model is never validated': function() {
-        refute.defined(this.model.isValid());
-      },
-
       'returns true when model is valid': function() {
-        this.model.set({ name: 'name' }, { validate: true });
+        this.model.set({ name: 'name' });
 
-        assert(this.model.isValid());
+        assert.equals(this.model.isValid(), true);
       },
 
       'returns false when model is invalid': function() {
-        this.model.set({ name: '' }, { validate: true });
+        assert.equals(this.model.isValid(), false);
 
-        refute(this.model.isValid());
+        this.model.set({ name: '' });
+
+        assert.equals(this.model.isValid(), false);
       },
 
-      'can force validation by passing true': function() {
-        refute.defined(this.model.isValid());
-        assert(this.model.isValid(true) === false);
+      'set validationError when model is invalid': function() {
+        this.model.set({ name: '' });
+
+        this.model.isValid();
+
+        assert(this.model.validationError);
+        assert(this.model.validationError.name);
       },
 
       'invalid is triggered when model is invalid': function(done) {
         this.model.on('invalid', function(model, attrs) {
           done();
         });
-        refute(this.model.isValid(true));
+        refute(this.model.isValid());
       },
 
       'and passing name of attribute': {
@@ -65,12 +62,7 @@ module.exports = {
               required: true
             }
           })
-          class Model extends Backbone.Model {
-            set(...args) {
-              super.set(...args);
-              return this.validationError === null;
-            }
-          }
+          class Model extends Backbone.Model {}
           this.model = new Model();
         },
 
@@ -88,7 +80,7 @@ module.exports = {
         'returns true when attribute is valid': function() {
           this.model.set({ name: 'name' });
 
-          assert(this.model.isValid('name'));
+          assert.equals(this.model.isValid('name'), true);
         }
       },
 
@@ -105,12 +97,7 @@ module.exports = {
               required: true
             }
           })
-          class Model extends Backbone.Model {
-            set(...args) {
-              super.set(...args);
-              return this.validationError === null;
-            }
-          }
+          class Model extends Backbone.Model {}
           this.model = new Model();
         },
 
@@ -127,7 +114,7 @@ module.exports = {
         'returns true when all attributes are valid': function() {
           this.model.set({ name: 'name', age: 1 });
 
-          assert(this.model.isValid(['name', 'age']));
+          assert.equals(this.model.isValid(['name', 'age']), true);
         }
       }
     }

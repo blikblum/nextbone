@@ -19,10 +19,6 @@ module.exports = {
       this.model = new this.Model();
     },
 
-    'isValid is undefined when no validation has occurred': function() {
-      refute.defined(new this.Model().isValid());
-    },
-
     'isValid is false when model is invalid': function() {
       assert.equals(false, this.model.isValid(true));
     },
