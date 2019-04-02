@@ -501,8 +501,6 @@ const createClass = (ModelClass, rules) => {
         changedAttrs = attrs ? flatten(attrs) : flattened,
         invalidAttrs = validateModel(model, allAttrs, pick(flattened, keys(validatedAttrs)), rules);
 
-      model._isValid = invalidAttrs === null;
-
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
       each(validatedAttrs, function(val, attr) {
