@@ -174,7 +174,10 @@ describe('LocalStorage Model', function() {
       mySavedModel.destroy();
 
       const item = root.localStorage.getItem('SavedModel-10');
+      const localRecords = root.localStorage.getItem(`SavedModel`);
+
       expect(item).to.be.null;
+      expect(localRecords).to.be.equal('');
     });
   });
 
@@ -368,9 +371,11 @@ describe('LocalStorage Collection', function() {
       newModel.destroy();
 
       const removed = root.localStorage.getItem(`SavedCollection-${parsed.id}`);
+      const localRecords = root.localStorage.getItem(`SavedCollection`);
 
       expect(removed).to.be.null;
       expect(mySavedCollection.length).to.be.equal(0);
+      expect(localRecords).to.be.equal('');
     });
   });
 

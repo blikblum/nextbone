@@ -136,7 +136,7 @@ class LocalStorage {
    */
   destroy(model) {
     this._removeItem(this._itemName(model.id));
-    const newRecords = this.getRecords().filter(item => item !== model);
+    const newRecords = this.getRecords().filter(id => id != model.id);
 
     this.save(newRecords);
 
