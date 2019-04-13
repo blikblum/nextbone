@@ -55,7 +55,7 @@ function initializeData(instance, name, data) {
   window.localStorage.setItem(name, records.join(','));
 }
 
-function bindLocalStorage(instance, name, { serializer, initialData }) {
+export function bindLocalStorage(instance, name, { serializer, initialData } = {}) {
   instance.localStorage = new LocalStorage(name, serializer);
   if (initialData && !initializedData[name]) {
     initializeData(instance, name, initialData);
@@ -304,7 +304,7 @@ sync.handler = function localStorageSyncHandler(method, model, options = {}) {
   return fn.call(this, method, model, options);
 };
 
-const createClass = (ModelClass, name, options = {}) => {
+const createClass = (ModelClass, name, options) => {
   return class extends ModelClass {
     constructor(...args) {
       super(...args);

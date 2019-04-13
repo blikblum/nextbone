@@ -1,5 +1,5 @@
 import { Model, Collection, ajax } from '../../nextbone';
-import { localStorage } from '../../localstorage';
+import { localStorage, bindLocalStorage } from '../../localstorage';
 import { clone, uniq } from 'underscore';
 
 import { expect } from 'chai';
@@ -69,6 +69,23 @@ describe('LocalStorage Model', function() {
       number: 1337,
       string2: 'String 2'
     });
+  });
+
+  it('can be configured at runtime', function() {
+    const anyModel = new Model({
+      name: 'Jim'
+    });
+
+    bindLocalStorage(anyModel, 'ModelAtRuntime');
+
+    anyModel.save();
+
+    const itemId = anyModel.id;
+    const item = root.localStorage.getItem(`ModelAtRuntime-${itemId}`);
+
+    const parsed = JSON.parse(item);
+
+    expect(parsed).to.eql(anyModel.attributes);
   });
 
   describe('if not saved', function() {
@@ -330,6 +347,26 @@ describe('LocalStorage Collection', function() {
 
     const records = newCollection.localStorage.records;
     expect(uniq(records)).to.eql(records);
+  });
+
+  it('can be configured at runtime', function() {
+    const anyCollection = new Collection([
+      {
+        name: 'Jones'
+      }
+    ]);
+
+    bindLocalStorage(anyCollection, 'CollectionAtRuntime');
+
+    const anyModel = anyCollection.at(0);
+    anyModel.save();
+
+    const itemId = anyModel.id;
+    const item = root.localStorage.getItem(`CollectionAtRuntime-${itemId}`);
+
+    const parsed = JSON.parse(item);
+
+    expect(parsed).to.eql(anyModel.attributes);
   });
 
   describe('pulling from localStorage', function() {
