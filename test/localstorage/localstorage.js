@@ -424,3 +424,71 @@ describe('LocalStorage Collection', function() {
     });
   });
 });
+
+describe('Initial data', () => {
+  it('can be defined as an array', () => {
+    const arrayData = [
+      {
+        id: 1,
+        name: 'John'
+      },
+      {
+        name: 'Jim'
+      },
+      {
+        id: 2,
+        name: 'Jones'
+      }
+    ];
+    @localStorage('SavedCollectionWithData', { initialData: arrayData })
+    class SavedCollectionWithData extends Collection {}
+
+    const collectionWithData = new SavedCollectionWithData();
+    collectionWithData.fetch();
+
+    const localRecords = root.localStorage.getItem(`SavedCollectionWithData`);
+
+    expect(collectionWithData.length).to.equal(3);
+    expect(localRecords).to.match(/1,\S{8}-\S{4}-\S{4}-\S{4}-\S{12},2/);
+  });
+
+  it('can be defined as a object', () => {
+    const objectData = {
+      id: 1,
+      name: 'John'
+    };
+    @localStorage('SavedModelWithData', { initialData: objectData })
+    class SavedModelWithData extends Model {}
+
+    const modelWithData = new SavedModelWithData({ id: 1 });
+    modelWithData.fetch();
+
+    const localRecords = root.localStorage.getItem(`SavedModelWithData`);
+
+    expect(modelWithData.get('id')).to.equal(1);
+    expect(modelWithData.get('name')).to.equal('John');
+    expect(localRecords).to.equal('1');
+  });
+
+  it('can be defined as a function', () => {
+    function getData() {
+      return [
+        {
+          id: 2,
+          name: 'Jim'
+        }
+      ];
+    }
+    @localStorage('NewSavedModelWithData', { initialData: getData })
+    class SavedModelWithData extends Model {}
+
+    const modelWithData = new SavedModelWithData({ id: 2 });
+    modelWithData.fetch();
+
+    const localRecords = root.localStorage.getItem(`NewSavedModelWithData`);
+
+    expect(modelWithData.get('id')).to.equal(2);
+    expect(modelWithData.get('name')).to.equal('Jim');
+    expect(localRecords).to.equal('2');
+  });
+});

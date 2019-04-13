@@ -1,4 +1,4 @@
-import { sync } from './nextbone.js';
+import { sync, Collection } from './nextbone.js';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits
@@ -33,6 +33,35 @@ const defaultSerializer = {
     return JSON.parse(data);
   }
 };
+
+const initializedData = {};
+
+function initializeData(instance, name, data) {
+  const records = [];
+  if (typeof data === 'function') data = data();
+  if (!Array.isArray(data)) data = [data];
+  const idAttribute =
+    instance instanceof Collection
+      ? (instance.model || instance.constructor.model || {})['idAttribute'] || 'id'
+      : instance.idAttribute;
+  data.forEach(item => {
+    let id = item[idAttribute];
+    if (!id && id !== 0) {
+      item[idAttribute] = id = guid();
+    }
+    window.localStorage.setItem(`${name}-${id}`, JSON.stringify(item));
+    records.push(id);
+  });
+  window.localStorage.setItem(name, records.join(','));
+}
+
+function bindLocalStorage(instance, name, { serializer, initialData }) {
+  instance.localStorage = new LocalStorage(name, serializer);
+  if (initialData && !initializedData[name]) {
+    initializeData(instance, name, initialData);
+    initializedData[name] = true;
+  }
+}
 
 const revisionMap = {};
 
@@ -275,25 +304,25 @@ sync.handler = function localStorageSyncHandler(method, model, options = {}) {
   return fn.call(this, method, model, options);
 };
 
-const createClass = (ModelClass, name, serializer) => {
+const createClass = (ModelClass, name, options = {}) => {
   return class extends ModelClass {
     constructor(...args) {
       super(...args);
-      this.localStorage = new LocalStorage(name, serializer);
+      bindLocalStorage(this, name, options);
     }
   };
 };
 
-export const localStorage = (name, serializer) => ctorOrDescriptor => {
+export const localStorage = (name, options) => ctorOrDescriptor => {
   if (typeof ctorOrDescriptor === 'function') {
-    return createClass(ctorOrDescriptor, name, serializer);
+    return createClass(ctorOrDescriptor, name, options);
   }
   const { kind, elements } = ctorOrDescriptor;
   return {
     kind,
     elements,
     finisher(ctor) {
-      return createClass(ctor, name, serializer);
+      return createClass(ctor, name, options);
     }
   };
 };
