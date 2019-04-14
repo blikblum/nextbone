@@ -82,7 +82,7 @@ const createClass = (ctor, options = {}) => {
     return result;
   }, []);
 
-  class FormBindMixin extends ctor {
+  return class extends ctor {
     constructor() {
       super();
       events.forEach(({ event, selector }) =>
@@ -128,8 +128,7 @@ const createClass = (ctor, options = {}) => {
         model.set(prop, value, { validate: true, attributes });
       }
     }
-  }
-  return FormBindMixin;
+  };
 };
 
 export const formBind = (optionsOrCtorOrDescriptor, options) => {
