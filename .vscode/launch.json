@@ -26,6 +26,18 @@
       },
       "internalConsoleOptions": "openOnSessionStart",
       "disableOptimisticBPs": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Service Tests",
+      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "args": ["--require", "@babel/register", "${workspaceRoot}/test/service"],
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "internalConsoleOptions": "openOnSessionStart",
+      "disableOptimisticBPs": true
     }
   ]
 }

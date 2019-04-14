@@ -45,6 +45,7 @@
     "rollup-plugin-commonjs": "^9.2.1",
     "rollup-plugin-node-resolve": "^4.0.1",
     "sinon": "^7.2.7",
+    "sinon-chai": "^3.3.0",
     "whatwg-fetch": "^3.0.0"
   },
   "scripts": {
@@ -55,6 +56,7 @@
     "test:validation": "cross-env NODE_ENV=test mocha --require @babel/register --ui exports --recursive test/validation",
     "test:virtualcollection": "cross-env NODE_ENV=test mocha --require @babel/register test/virtualcollection",
     "test:formbind": "karma start test/formbind/karma.conf.js",
+    "test:service": "cross-env NODE_ENV=test mocha --require @babel/register test/service",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js formbind.js test/core/*.js",
