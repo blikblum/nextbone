@@ -77,6 +77,7 @@
     "validation.js",
     "virtualcollection.js",
     "formbind.js",
+    "service.js",
     "LICENSE"
   ]
 }
