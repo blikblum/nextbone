@@ -30,8 +30,8 @@ class TestDefaultInputs extends LitElement {
 
 const defaultsTag = defineCE(TestDefaultInputs);
 
-@formBind({ modelName: 'otherModel' })
-class TestModelName extends LitElement {
+@formBind({ model: 'otherModel' })
+class TestModelOption extends LitElement {
   createRenderRoot() {
     return this;
   }
@@ -39,12 +39,12 @@ class TestModelName extends LitElement {
   render() {
     return html`
       <input id="default" name="textProp" />
-      <input id="other" data-model-name="yetAnotherModel" name="textProp" />
+      <input id="other" data-model="yetAnotherModel" name="textProp" />
     `;
   }
 }
 
-const modelNameTag = defineCE(TestModelName);
+const modelOptionTag = defineCE(TestModelOption);
 
 describe('formBind', function() {
   let myModel;
@@ -244,7 +244,7 @@ describe('formBind', function() {
   describe('with custom model name', function() {
     let el, otherModelSetSpy, yetAnotherModelSetSpy;
     beforeEach(async function() {
-      el = await fixture(`<${modelNameTag}></${modelNameTag}>`);
+      el = await fixture(`<${modelOptionTag}></${modelOptionTag}>`);
       el.model = myModel;
       el.otherModel = new Model();
       el.yetAnotherModel = new Model();
@@ -269,7 +269,7 @@ describe('formBind', function() {
       );
     });
 
-    it('should update the model defined by data-model-name', async function() {
+    it('should update the model defined by data-model', async function() {
       const inputEl = el.renderRoot.querySelector('#other');
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));

@@ -95,13 +95,13 @@ const createClass = (ctor, options = {}) => {
       const prop = inputEl.name;
       if (!prop) return;
       const propType = inputEl.dataset.propType || inputEl.type;
-      const modelName = inputEl.dataset.modelName || options.modelName || 'model';
-      let model = inputEl.model;
+      const modelOption = inputEl.model || inputEl.dataset.model || options.model || 'model';
+      const model = typeof modelOption === 'string' ? this[modelOption] : modelOption;
+
       if (!model) {
-        model = this[modelName];
-      }
-      if (!model) {
-        console.warn(`formBind: could not find model "${modelName}" in element "${this.tagName}"`); // eslint-disable-line no-console
+        console.warn(
+          `formBind: could not find model "${modelOption}" in element "${this.tagName}"`
+        ); // eslint-disable-line no-console
         return;
       }
 
