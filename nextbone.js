@@ -1570,6 +1570,10 @@ const isView = function(el) {
   return el.constructor[isClassDecorated];
 };
 
+const isState = function(value) {
+  return value instanceof Model || value instanceof Collection;
+};
+
 // Make a event delegation handler for the given `eventName` and `selector`
 // and attach it to `el`.
 // If selector is empty, the listener will be bound to `el`. If not, a
@@ -1647,17 +1651,19 @@ const registerStateProperty = (ctor, name, key, options = {}) => {
     },
     set(value) {
       const oldValue = this[key];
+      if (value === oldValue) return;
       if (options.copy) {
         if (oldValue instanceof Model) {
           oldValue.assign(value);
+          return;
+        } else if (isState(value)) {
+          value = value.clone();
         }
-        return;
       }
-      if (value === oldValue) return;
       if (this.isConnected) {
         bindViewState(this, value);
       }
-      if (oldValue instanceof Model || oldValue instanceof Collection) {
+      if (isState(oldValue)) {
         this.stopListening(oldValue);
       }
       this[key] = value;

@@ -145,7 +145,7 @@ const elHTML = html`
     });
 
     QUnit.test(`state${suffix}`, async function(assert) {
-      assert.expect(13);
+      assert.expect(17);
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
       @classDecorator
@@ -167,6 +167,9 @@ const elHTML = html`
 
         @Backbone.state({ copy: true })
         copyModel = new Backbone.Model();
+
+        @Backbone.state({ copy: true })
+        unitializedCopyModel;
 
         _enqueueUpdate(...args) {
           enqueueUpdateCount++;
@@ -235,7 +238,16 @@ const elHTML = html`
       assert.equal(enqueueUpdateCount, 7);
       await el.updateComplete;
 
-      assert.equal(createPropertyCount, 3);
+      // unitialized copy model should clone passed model
+      el.unitializedCopyModel = newModel;
+      assert.ok(el.unitializedCopyModel instanceof Backbone.Model);
+      assert.ok(_.isEqual(el.unitializedCopyModel.attributes, newModel.attributes));
+      assert.notEqual(el.unitializedCopyModel, newModel);
+
+      el.unitializedCopyModel.set('test', 'x');
+      assert.equal(enqueueUpdateCount, 8);
+
+      assert.equal(createPropertyCount, 4);
     });
 
     QUnit.test(`isView${suffix}`, async function(assert) {
