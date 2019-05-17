@@ -49,7 +49,9 @@ class VirtualCollection extends Collection {
   }
 
   updateFilter(filter) {
-    this.accepts = VirtualCollection.buildFilter(filter);
+    if (filter) {
+      this.accepts = VirtualCollection.buildFilter(filter);
+    }
     this._rebuildIndex();
     this.trigger('filter', this, filter);
     this.trigger('reset', this, filter);

@@ -727,6 +727,18 @@ describe('VirtualCollection', function() {
       assert(reset.called);
       assert(vc.length === 1);
     });
+    it('should allow to call updateFilter() without a filter', function() {
+      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+        vc = new VirtualCollection(collection, {
+          filter: function(m, i) {
+            return i === 0;
+          }
+        });
+
+      var oldAccepts = vc.accepts;
+      vc.updateFilter();
+      assert.equal(oldAccepts, vc.accepts);
+    });
     it('should ignore malformed change event arguments', function() {
       var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]);
 
