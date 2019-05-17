@@ -1621,4 +1621,21 @@
     model.set({ id: 3 });
     assert.equal(model.id, 3);
   });
+
+  QUnit.test('assign', function(assert) {
+    assert.expect(3);
+    var assignOptions = { x: 'a' };
+    var Model = class extends Backbone.Model {
+      assignTo(target, options) {
+        super.assignTo(target, options);
+        assert.equal(options, assignOptions);
+      }
+    };
+    var model = new Model({});
+    var sourceModel = new Model({ z: 2 });
+    model.assign({ y: 'b' }, assignOptions);
+    assert.equal(model.get('y'), 'b');
+    model.assign(sourceModel, assignOptions);
+    assert.equal(model.get('z'), 2);
+  });
 })(QUnit);

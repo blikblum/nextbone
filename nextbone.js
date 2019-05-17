@@ -775,6 +775,20 @@ class Model extends Events {
     return new this.constructor(this.attributes);
   }
 
+  // assign attributes from an object or another model
+  assign(source, options) {
+    if (source instanceof Model) {
+      source.assignTo(this, options);
+    } else if (isObject(source)) {
+      this.set(source, options);
+    }
+  }
+
+  // inversion of control for assign
+  assignTo(target, options) {
+    target.set(this.attributes, options);
+  }
+
   // A model is new if it has never been saved to the server, and lacks an id.
   isNew() {
     return !this.has(this.constructor.idAttribute || 'id');
