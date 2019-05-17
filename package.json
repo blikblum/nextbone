@@ -78,6 +78,7 @@
     "virtualcollection.js",
     "formbind.js",
     "service.js",
+    "dom-utils.js",
     "LICENSE"
   ]
 }
