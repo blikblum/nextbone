@@ -1649,11 +1649,7 @@ const registerStateProperty = (ctor, name, key, options = {}) => {
       const oldValue = this[key];
       if (options.copy) {
         if (oldValue instanceof Model) {
-          if (value instanceof Model) {
-            oldValue.set(value.attributes);
-          } else {
-            oldValue.set(Object(value || {}));
-          }
+          oldValue.assign(value);
         }
         return;
       }
