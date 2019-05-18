@@ -34,8 +34,6 @@ const defaultSerializer = {
   }
 };
 
-const initializedData = {};
-
 function initializeData(instance, name, data) {
   const records = [];
   if (typeof data === 'function') data = data();
@@ -57,9 +55,10 @@ function initializeData(instance, name, data) {
 
 export function bindLocalStorage(instance, name, { serializer, initialData } = {}) {
   instance.localStorage = new LocalStorage(name, serializer);
-  if (initialData && !initializedData[name]) {
+  let revision = revisionMap[name] || 0;
+  if (initialData && !(revision || window.localStorage.getItem(name))) {
     initializeData(instance, name, initialData);
-    initializedData[name] = true;
+    revisionMap[name] = ++revision;
   }
 }
 
@@ -102,7 +101,7 @@ class LocalStorage {
   save(records) {
     this._setItem(this.name, records.join(','));
     this.records = records;
-    let revision = revisionMap[this.name];
+    let revision = revisionMap[this.name] || 0;
     this.revision = revisionMap[this.name] = ++revision;
   }
 
