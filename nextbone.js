@@ -460,9 +460,13 @@ class Model extends Events {
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
     if (options.parse) attrs = this.parse(attrs, options) || {};
-    var defaults = getClassProp(this, 'defaults');
-    attrs = getDefaults(extend({}, defaults, attrs), defaults);
-    this.set(attrs, options);
+    if (options.clone) {
+      this.assign(options.clone);
+    } else {
+      var defaults = getClassProp(this, 'defaults');
+      attrs = getDefaults(extend({}, defaults, attrs), defaults);
+      this.set(attrs, options);
+    }
     // A hash of attributes whose current and previous value differ.
     this.changed = {};
     this.initialize.apply(this, arguments);
@@ -772,7 +776,7 @@ class Model extends Events {
 
   // Create a new model with identical attributes to this one.
   clone() {
-    return new this.constructor(this.attributes);
+    return new this.constructor(null, { clone: this });
   }
 
   // assign attributes from an object or another model

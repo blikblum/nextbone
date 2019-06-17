@@ -165,7 +165,7 @@
   });
 
   QUnit.test('clone', function(assert) {
-    assert.expect(10);
+    assert.expect(11);
     var a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });
     var b = a.clone();
     assert.equal(a.get('foo'), 1);
@@ -183,6 +183,16 @@
     bar.set(foo.clone().attributes, { unset: true });
     assert.equal(foo.get('p'), 1);
     assert.equal(bar.get('p'), undefined);
+
+    class MyModel extends Backbone.Model {
+      assign(source) {
+        assert.ok(true);
+        super.assign(source);
+      }
+    }
+
+    var c = new MyModel();
+    c.clone();
   });
 
   QUnit.test('isNew', function(assert) {
