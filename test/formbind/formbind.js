@@ -21,6 +21,7 @@ class TestDefaultInputs extends LitElement {
       <input id="data-number" data-prop-type="number" name="numberProp" />
       <input type="radio" name="radioProp" value="a" />
       <input type="radio" name="radioProp" value="b" checked />
+      <input type="checkbox" name="checkProp" />
       <select name="selectProp">
         <option value="xx">XX</option>
         <option selected value="yy">YY</option>
@@ -125,6 +126,18 @@ describe('formBind', function() {
         'radioProp',
         'a',
         match({ validate: true, attributes: ['radioProp'] })
+      );
+    });
+
+    it('should handle change event for checkbox input', async function() {
+      let inputEl = el.renderRoot.querySelector('input[type="checkbox"]');
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(
+        setSpy,
+        'checkProp',
+        false,
+        match({ validate: true, attributes: ['checkProp'] })
       );
     });
 

@@ -72,7 +72,8 @@ function getValidatingAttributes(el, attr) {
 const defaultInputs = {
   select: ['input'],
   input: ['input'],
-  'input[type=radio]': ['change']
+  'input[type=radio]': ['change'],
+  'input[type=checkbox]': ['change']
 };
 
 const createClass = (ctor, options = {}) => {
