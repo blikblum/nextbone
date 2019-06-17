@@ -56,7 +56,7 @@
     "test:validation": "cross-env NODE_ENV=test mocha --require @babel/register --ui exports --recursive test/validation",
     "test:virtualcollection": "cross-env NODE_ENV=test mocha --require @babel/register test/virtualcollection",
     "test:formbind": "karma start test/formbind/karma.conf.js",
-    "test:service": "cross-env NODE_ENV=test mocha --require @babel/register test/service",
+    "test:class-utils": "cross-env NODE_ENV=test mocha --require @babel/register test/class-utils",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js formbind.js test/core/*.js",
@@ -77,7 +77,7 @@
     "validation.js",
     "virtualcollection.js",
     "formbind.js",
-    "service.js",
+    "class-utils.js",
     "dom-utils.js",
     "LICENSE"
   ]

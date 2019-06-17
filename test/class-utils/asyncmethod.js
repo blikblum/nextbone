@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import chai, { expect } from 'chai';
-import { defineAsyncMethods, asyncMethod } from '../../service';
+import { defineAsyncMethods, asyncMethod } from '../../class-utils';
 
 chai.use(sinonChai);
 
@@ -30,7 +30,7 @@ describe('asyncMethod', function() {
       @asyncMethod
       bar(...args) {
         barSpy.apply(this, args);
-        return 'x'
+        return 'x';
       }
 
       onError(e) {
@@ -49,7 +49,7 @@ describe('asyncMethod', function() {
     return myService.bar().then(result => {
       expect(result).to.equal('x');
     });
-  });  
+  });
 
   it('should call original method', function() {
     return myService.foo(1, 'a').then(() => {
