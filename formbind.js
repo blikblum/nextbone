@@ -124,6 +124,9 @@ const createClass = (ctor, options = {}) => {
         const attrs = Object.assign({}, model.attributes);
         setPath(attrs, prop, value);
         model.set(attrs, { validate: true, attributes });
+        if (!Object.keys(model.changed).length) {
+          model.trigger('change', model, {});
+        }
       } else {
         model.set(prop, value, { validate: true, attributes });
       }

@@ -16,6 +16,7 @@ class TestDefaultInputs extends LitElement {
   render() {
     return html`
       <input type="text" name="textProp" />
+      <input type="text" name="nested.textProp" />
       <input type="number" name="numberProp" />
       <input id="data-number" data-prop-type="number" name="numberProp" />
       <input type="radio" name="radioProp" value="a" />
@@ -68,7 +69,7 @@ describe('formBind', function() {
     });
 
     it('should handle input event for generic input', async function() {
-      const inputEl = el.renderRoot.querySelector('input[type="text"]');
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
@@ -238,6 +239,35 @@ describe('formBind', function() {
         'a',
         match({ validate: true, attributes: ['numberProp'] })
       );
+    });
+
+    describe('with nested path', () => {
+      it('should update the attributes correctly', () => {
+        const inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+        inputEl.value = 'zzz';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        assert.calledOnce(setSpy);
+        expect(myModel.attributes.nested).to.eql({ textProp: 'zzz' });
+      });
+
+      it('should trigger change event when path is empty', () => {
+        const changeSpy = spy();
+        const inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+        myModel.on('change', changeSpy);
+        inputEl.value = 'zzz';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        assert.calledOnce(changeSpy);
+      });
+
+      it('should trigger change event when path is already set', () => {
+        myModel.set({ nested: { textProp: 1 } });
+        const changeSpy = spy();
+        const inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+        myModel.on('change', changeSpy);
+        inputEl.value = 'zzz';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        assert.calledOnce(changeSpy);
+      });
     });
   });
 
