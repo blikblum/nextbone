@@ -4,7 +4,7 @@ var assert = require('assert'),
   sinon = require('sinon'),
   _ = require('underscore'),
   Backbone = require('../../nextbone'),
-  { VirtualCollection } = require('../../virtualcollection');
+  { VirtualCollection, buildFilter } = require('../../virtualcollection');
 
 function cids(collection, ids_array) {
   return _.map(ids_array, function(id) {
@@ -490,28 +490,28 @@ describe('VirtualCollection', function() {
 
   describe('buildFilter', function() {
     it('should build a single-attribute filter that matches a model', function() {
-      var filter = VirtualCollection.buildFilter({ foo: 'bar' });
+      var filter = buildFilter({ foo: 'bar' });
       assert.equal(true, filter(new Backbone.Model({ foo: 'bar' })));
     });
     it('should build a single-attribute filter that rejects a model', function() {
-      var filter = VirtualCollection.buildFilter({ foo: 'bar' });
+      var filter = buildFilter({ foo: 'bar' });
       assert.equal(false, filter(new Backbone.Model({ foo: 'car' })));
     });
     it('should build a multiple-attribute filter that matches a model', function() {
-      var filter = VirtualCollection.buildFilter({ foo: 'bar', ginger: 'ale' });
+      var filter = buildFilter({ foo: 'bar', ginger: 'ale' });
       assert.equal(true, filter(new Backbone.Model({ foo: 'bar', ginger: 'ale' })));
     });
     it('should build a multiple-attribute filter that rejects a model', function() {
-      var filter = VirtualCollection.buildFilter({ foo: 'bar', ginger: 'ale' });
+      var filter = buildFilter({ foo: 'bar', ginger: 'ale' });
       assert.equal(false, filter(new Backbone.Model({ foo: 'bar' })));
     });
     it('should build a filter that matches model attributes with null values', function() {
-      var filter = VirtualCollection.buildFilter({ foo: 'bar', ginger: null });
+      var filter = buildFilter({ foo: 'bar', ginger: null });
       assert.equal(false, filter(new Backbone.Model({ foo: 'bar', ginger: 'not null' })));
       assert.equal(true, filter(new Backbone.Model({ foo: 'bar', ginger: null })));
     });
     it('should build a filter that matches model attributes with undefined values', function() {
-      var filter = VirtualCollection.buildFilter({
+      var filter = buildFilter({
         foo: 'bar',
         ginger: undefined
       });

@@ -7,23 +7,23 @@ var clone = function(obj) {
   return obj ? Object.assign({}, obj) : {};
 };
 
-class VirtualCollection extends Collection {
-  static buildFilter(options) {
-    if (!options) {
-      return function() {
-        return true;
-      };
-    } else if (isFunction(options)) {
-      return options;
-    } else if (options.constructor === Object) {
-      return function(model) {
-        return Object.keys(options).every(function(key) {
-          return model.get(key) === options[key];
-        });
-      };
-    }
+var buildFilter = function(options) {
+  if (!options) {
+    return function() {
+      return true;
+    };
+  } else if (isFunction(options)) {
+    return options;
+  } else if (options.constructor === Object) {
+    return function(model) {
+      return Object.keys(options).every(function(key) {
+        return model.get(key) === options[key];
+      });
+    };
   }
+};
 
+class VirtualCollection extends Collection {
   constructor(collection, options = {}) {
     super(null, options);
     this.collection = collection;
@@ -33,7 +33,7 @@ class VirtualCollection extends Collection {
     if (collection.constructor.model) this.model = collection.constructor.model;
     this._clearChangesCache();
 
-    this.accepts = VirtualCollection.buildFilter(filter);
+    this.accepts = buildFilter(filter);
     this._rebuildIndex();
     this.listenTo(this.collection, 'add', this._onAdd);
     this.listenTo(this.collection, 'remove', this._onRemove);
@@ -47,7 +47,7 @@ class VirtualCollection extends Collection {
 
   updateFilter(filter) {
     if (filter) {
-      this.accepts = VirtualCollection.buildFilter(filter);
+      this.accepts = buildFilter(filter);
     }
     this._rebuildIndex();
     this.trigger('filter', this, filter);
@@ -254,4 +254,4 @@ function sortedIndexTwo(array, obj, iterator, context) {
   return low;
 }
 
-export { VirtualCollection };
+export { VirtualCollection, buildFilter };
