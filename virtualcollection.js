@@ -1,5 +1,5 @@
 import { Collection } from './nextbone';
-import { isFunction, sortedIndex, invoke, includes, extend } from 'underscore';
+import { isFunction, sortedIndex, includes, extend } from 'underscore';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
@@ -68,7 +68,7 @@ class VirtualCollection extends Collection {
   }
 
   _rebuildIndex() {
-    invoke(this.models, 'off', 'all', this._onAllEvent, this);
+    this.models.forEach(model => model.off('all', this._onAllEvent, this));
     this._reset();
     this._parent.each((model, i) => {
       if (this.accepts(model, i)) {
