@@ -27,12 +27,13 @@ class VirtualCollection extends Collection {
   constructor(collection, options = {}) {
     super(null, options);
     this.collection = collection;
+    const { destroyWith, filter } = options;
 
-    if (options.destroyWith) this.bindLifecycle(options.destroyWith, 'destroy');
+    if (destroyWith) this.listenTo(destroyWith, 'destroy', this.stopListening);
     if (collection.constructor.model) this.model = collection.constructor.model;
     this._clearChangesCache();
 
-    this.accepts = VirtualCollection.buildFilter(options.filter);
+    this.accepts = VirtualCollection.buildFilter(filter);
     this._rebuildIndex();
     this.listenTo(this.collection, 'add', this._onAdd);
     this.listenTo(this.collection, 'remove', this._onRemove);
@@ -42,10 +43,6 @@ class VirtualCollection extends Collection {
     this.listenTo(this.collection, 'sort', this._onSort);
     this.listenTo(this.collection, 'update', this._onUpdate);
     this._proxyParentEvents(['sync', 'request', 'error']);
-  }
-
-  bindLifecycle(view, methodName) {
-    this.listenTo(view, methodName, this.stopListening);
   }
 
   updateFilter(filter) {
