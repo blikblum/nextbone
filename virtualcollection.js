@@ -1,5 +1,5 @@
 import { Collection } from './nextbone';
-import { isFunction, sortedIndex, invoke, includes, partial, extend } from 'underscore';
+import { isFunction, sortedIndex, invoke, includes, extend } from 'underscore';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
@@ -97,7 +97,7 @@ class VirtualCollection extends Collection {
 
   _proxyParentEvents(collection, events) {
     events.forEach(eventName => {
-      this.listenTo(collection, eventName, partial(this.trigger, eventName));
+      this.listenTo(collection, eventName, (...args) => this.trigger(eventName, ...args));
     });
   }
 
