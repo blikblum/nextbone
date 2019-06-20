@@ -24,7 +24,7 @@ var buildFilter = function(options) {
 };
 
 class VirtualCollection extends Collection {
-  constructor(collection, options = {}) {
+  constructor(parent, options = {}) {
     super(null, options);
     const { destroyWith, filter } = options;
 
@@ -32,17 +32,17 @@ class VirtualCollection extends Collection {
     this._clearChangesCache();
 
     this.accepts = buildFilter(filter);
-    this.collection = collection;
+    this.parent = parent;
   }
 
-  get collection() {
-    return this._collection;
+  get parent() {
+    return this._parent;
   }
 
-  set collection(value) {
-    if (value == this._collection) return;
-    if (this._collection) this.stopListening();
-    this._collection = value;
+  set parent(value) {
+    if (value == this._parent) return;
+    if (this._parent) this.stopListening();
+    this._parent = value;
     if (value) {
       if (value.constructor.model) this.model = value.constructor.model;
       this._rebuildIndex();
@@ -70,7 +70,7 @@ class VirtualCollection extends Collection {
   _rebuildIndex() {
     invoke(this.models, 'off', 'all', this._onAllEvent, this);
     this._reset();
-    this._collection.each((model, i) => {
+    this._parent.each((model, i) => {
       if (this.accepts(model, i)) {
         this.listenTo(model, 'all', this._onAllEvent);
         this.models.push(model);
@@ -84,7 +84,7 @@ class VirtualCollection extends Collection {
   }
 
   orderViaParent(options) {
-    this.models = this._collection.filter(model => {
+    this.models = this._parent.filter(model => {
       return this._byId[model.cid] !== undefined;
     });
     if (!options.silent) this.trigger('sort', this, options);
@@ -147,7 +147,7 @@ class VirtualCollection extends Collection {
         }
         this.trigger('change', model, this, options);
       } else {
-        this._onAdd(model, this._collection, options);
+        this._onAdd(model, this._parent, options);
       }
     } else if (alreadyHere) {
       var i = this._indexRemove(model),
@@ -191,7 +191,7 @@ class VirtualCollection extends Collection {
         model,
         function(target) {
           //TODO: indexOf traverses the array every time the iterator is called
-          return this._collection.indexOf(target);
+          return this._parent.indexOf(target);
         },
         this
       );
@@ -222,7 +222,7 @@ class VirtualCollection extends Collection {
   }
 
   clone() {
-    return new this._collection.constructor(this.models);
+    return new this._parent.constructor(this.models);
   }
 }
 
@@ -243,9 +243,9 @@ class VirtualCollection extends Collection {
   'url'
 ].forEach(function(methodName) {
   VirtualCollection.prototype[methodName] = function() {
-    var method = this._collection[methodName];
+    var method = this._parent[methodName];
     if (isFunction(method)) {
-      return method.apply(this._collection, arguments);
+      return method.apply(this._parent, arguments);
     }
     return method;
   };

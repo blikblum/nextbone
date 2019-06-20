@@ -71,7 +71,7 @@ describe('VirtualCollection', function() {
     });
   });
 
-  describe('#collection', function() {
+  describe('#parent', function() {
     it('should allow to define the parent collection after instatiation', function() {
       var collection = new Backbone.Collection([
         { id: 1, foo: 'bar' },
@@ -84,7 +84,7 @@ describe('VirtualCollection', function() {
 
       assert.equal(vc.models.length, 0);
 
-      vc.collection = collection;
+      vc.parent = collection;
 
       assert.equal(vc.models.length, 2);
     });
@@ -106,7 +106,7 @@ describe('VirtualCollection', function() {
         filter: { foo: 'bar' }
       });
 
-      vc.collection = otherCollection;
+      vc.parent = otherCollection;
 
       assert.equal(vc.models.length, 1);
 
