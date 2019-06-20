@@ -1,5 +1,5 @@
 import { Collection } from './nextbone';
-import { isFunction, sortedIndex, includes, extend } from 'underscore';
+import { isFunction, sortedIndex, extend } from 'underscore';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
@@ -216,7 +216,7 @@ class VirtualCollection extends Collection {
   }
 
   _onAllEvent(eventName) {
-    if (!includes(explicitlyHandledEvents, eventName)) {
+    if (explicitlyHandledEvents.indexOf(eventName) === -1) {
       this.trigger.apply(this, arguments);
     }
   }
