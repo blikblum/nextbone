@@ -26,23 +26,35 @@ var buildFilter = function(options) {
 class VirtualCollection extends Collection {
   constructor(collection, options = {}) {
     super(null, options);
-    this.collection = collection;
     const { destroyWith, filter } = options;
 
     if (destroyWith) this.listenTo(destroyWith, 'destroy', this.stopListening);
-    if (collection.constructor.model) this.model = collection.constructor.model;
     this._clearChangesCache();
 
     this.accepts = buildFilter(filter);
-    this._rebuildIndex();
-    this.listenTo(this.collection, 'add', this._onAdd);
-    this.listenTo(this.collection, 'remove', this._onRemove);
-    this.listenTo(this.collection, 'change', this._onChange);
-    this.listenTo(this.collection, 'reset', this._onReset);
-    this.listenTo(this.collection, 'filter', this._onFilter);
-    this.listenTo(this.collection, 'sort', this._onSort);
-    this.listenTo(this.collection, 'update', this._onUpdate);
-    this._proxyParentEvents(['sync', 'request', 'error']);
+    this.collection = collection;
+  }
+
+  get collection() {
+    return this._collection;
+  }
+
+  set collection(value) {
+    if (value == this._collection) return;
+    if (this._collection) this.stopListening();
+    this._collection = value;
+    if (value) {
+      if (value.constructor.model) this.model = value.constructor.model;
+      this._rebuildIndex();
+      this.listenTo(value, 'add', this._onAdd);
+      this.listenTo(value, 'remove', this._onRemove);
+      this.listenTo(value, 'change', this._onChange);
+      this.listenTo(value, 'reset', this._onReset);
+      this.listenTo(value, 'filter', this._onFilter);
+      this.listenTo(value, 'sort', this._onSort);
+      this.listenTo(value, 'update', this._onUpdate);
+      this._proxyParentEvents(value, ['sync', 'request', 'error']);
+    }
   }
 
   updateFilter(filter) {
@@ -58,7 +70,7 @@ class VirtualCollection extends Collection {
   _rebuildIndex() {
     invoke(this.models, 'off', 'all', this._onAllEvent, this);
     this._reset();
-    this.collection.each((model, i) => {
+    this._collection.each((model, i) => {
       if (this.accepts(model, i)) {
         this.listenTo(model, 'all', this._onAllEvent);
         this.models.push(model);
@@ -72,7 +84,7 @@ class VirtualCollection extends Collection {
   }
 
   orderViaParent(options) {
-    this.models = this.collection.filter(model => {
+    this.models = this._collection.filter(model => {
       return this._byId[model.cid] !== undefined;
     });
     if (!options.silent) this.trigger('sort', this, options);
@@ -83,9 +95,9 @@ class VirtualCollection extends Collection {
     this.orderViaParent(options);
   }
 
-  _proxyParentEvents(events) {
+  _proxyParentEvents(collection, events) {
     events.forEach(eventName => {
-      this.listenTo(this.collection, eventName, partial(this.trigger, eventName));
+      this.listenTo(collection, eventName, partial(this.trigger, eventName));
     });
   }
 
@@ -135,7 +147,7 @@ class VirtualCollection extends Collection {
         }
         this.trigger('change', model, this, options);
       } else {
-        this._onAdd(model, this.collection, options);
+        this._onAdd(model, this._collection, options);
       }
     } else if (alreadyHere) {
       var i = this._indexRemove(model),
@@ -179,7 +191,7 @@ class VirtualCollection extends Collection {
         model,
         function(target) {
           //TODO: indexOf traverses the array every time the iterator is called
-          return this.collection.indexOf(target);
+          return this._collection.indexOf(target);
         },
         this
       );
@@ -210,7 +222,7 @@ class VirtualCollection extends Collection {
   }
 
   clone() {
-    return new this.collection.constructor(this.models);
+    return new this._collection.constructor(this.models);
   }
 }
 
@@ -231,9 +243,9 @@ class VirtualCollection extends Collection {
   'url'
 ].forEach(function(methodName) {
   VirtualCollection.prototype[methodName] = function() {
-    var method = this.collection[methodName];
+    var method = this._collection[methodName];
     if (isFunction(method)) {
-      return method.apply(this.collection, arguments);
+      return method.apply(this._collection, arguments);
     }
     return method;
   };

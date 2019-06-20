@@ -71,6 +71,55 @@ describe('VirtualCollection', function() {
     });
   });
 
+  describe('#collection', function() {
+    it('should allow to define the parent collection after instatiation', function() {
+      var collection = new Backbone.Collection([
+        { id: 1, foo: 'bar' },
+        { id: 2, foo: 'baz' },
+        { id: 3, foo: 'bar' }
+      ]);
+      var vc = new VirtualCollection(null, {
+        filter: { foo: 'bar' }
+      });
+
+      assert.equal(vc.models.length, 0);
+
+      vc.collection = collection;
+
+      assert.equal(vc.models.length, 2);
+    });
+
+    it('should allow to swap the parent collection', function() {
+      var collection = new Backbone.Collection([
+        { id: 1, foo: 'bar' },
+        { id: 2, foo: 'baz' },
+        { id: 3, foo: 'bar' }
+      ]);
+
+      var otherCollection = new Backbone.Collection([
+        { id: 1, foo: 'bar' },
+        { id: 2, foo: 'baz' },
+        { id: 3, foo: 'baz' }
+      ]);
+
+      var vc = new VirtualCollection(collection, {
+        filter: { foo: 'bar' }
+      });
+
+      vc.collection = otherCollection;
+
+      assert.equal(vc.models.length, 1);
+
+      collection.add({ id: 4, foo: 'bar' });
+
+      assert.equal(vc.models.length, 1);
+
+      otherCollection.add({ id: 4, foo: 'bar' });
+
+      assert.equal(vc.models.length, 2);
+    });
+  });
+
   describe('#model', function() {
     it('should inherit the model type of the parent collection', function() {
       var vc, collection, Library;
