@@ -31,7 +31,7 @@ class VirtualCollection extends Collection {
     if (destroyWith) this.listenTo(destroyWith, 'destroy', this.stopListening);
     this._clearChangesCache();
 
-    this.accepts = buildFilter(filter);
+    this.accepts = buildFilter(filter || this.acceptModel);
     this.parent = parent;
   }
 

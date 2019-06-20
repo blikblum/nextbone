@@ -120,6 +120,24 @@ describe('VirtualCollection', function() {
     });
   });
 
+  describe('#acceptModel', function() {
+    it('should be used as filter when filter option is not defined', function() {
+      class CustomVirtualCollection extends VirtualCollection {
+        acceptModel(model, index) {
+          return model.get('foo') === 'bar';
+        }
+      }
+      var collection = new Backbone.Collection([
+        { id: 1, foo: 'bar' },
+        { id: 2, foo: 'baz' },
+        { id: 3, foo: 'bar' }
+      ]);
+      var vc = new CustomVirtualCollection(collection);
+      assert.equal(vc.accepts, vc.acceptModel);
+      assert.equal(vc.models.length, 2);
+    });
+  });
+
   describe('#model', function() {
     it('should inherit the model type of the parent collection', function() {
       var vc, collection, Library;
