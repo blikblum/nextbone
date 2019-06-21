@@ -54,7 +54,7 @@
     "test:fetch": "cross-env NODE_ENV=test mocha --require @babel/register test/fetch",
     "test:localstorage": "karma start test/localstorage/karma.conf.js",
     "test:validation": "cross-env NODE_ENV=test mocha --require @babel/register --ui exports --recursive test/validation",
-    "test:virtualcollection": "cross-env NODE_ENV=test mocha --require @babel/register test/virtualcollection",
+    "test:virtualcollection": "karma start test/virtualcollection/karma.conf.js",
     "test:formbind": "karma start test/formbind/karma.conf.js",
     "test:class-utils": "cross-env NODE_ENV=test mocha --require @babel/register test/class-utils",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection",

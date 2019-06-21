@@ -1,16 +1,12 @@
 /*global it, describe, before, beforeEach*/
 
-var assert = require('assert'),
-  sinon = require('sinon'),
-  _ = require('underscore'),
-  Backbone = require('../../nextbone'),
-  { VirtualCollection, buildFilter } = require('../../virtualcollection');
+import chai from 'chai';
+import sinon from 'sinon';
+import _ from 'underscore';
+import * as Backbone from '../../nextbone';
+import { VirtualCollection, buildFilter } from '../../virtualcollection';
 
-function cids(collection, ids_array) {
-  return _.map(ids_array, function(id) {
-    return collection.get(id).cid;
-  });
-}
+const assert = chai.assert;
 
 describe('VirtualCollection', function() {
   describe('#constructor', function() {
