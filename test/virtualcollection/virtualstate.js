@@ -160,4 +160,27 @@ describe('virtualState', () => {
     expect(el.parentProp).to.eql(collection);
     expect(el.virtualProp.parent).to.eql(collection);
   });
+
+  it('should allow to share same parent property', async () => {
+    class Test extends LitElement {
+      @virtualState({
+        parent: 'parentProp'
+      })
+      virtualProp;
+
+      @virtualState({
+        parent: 'parentProp'
+      })
+      otherVirtualProp;
+    }
+
+    const tag = defineCE(Test);
+    const el = await fixture(`<${tag}></${tag}>`);
+
+    const collection = new Collection();
+    el.parentProp = collection;
+    expect(el.parentProp).to.eql(collection);
+    expect(el.virtualProp.parent).to.eql(collection);
+    expect(el.otherVirtualProp.parent).to.eql(collection);
+  });
 });

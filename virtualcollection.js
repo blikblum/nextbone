@@ -349,20 +349,25 @@ const registerVirtualState = (ctor, name, key, options = {}) => {
   const virtualStates = ctor.__virtualStates || (ctor.__virtualStates = new Set());
   virtualStates.add(name);
 
-  if (options.parent) {
-    const parentKey = typeof options.parent === 'symbol' ? Symbol() : `__vcParent_${name}`;
+  const { parent } = options;
+  if (parent) {
+    const parentKey = typeof parent === 'symbol' ? Symbol() : `__vcParent_${name}`;
+    const superDesc = Object.getOwnPropertyDescriptor(ctor.prototype, parent);
     const parentDesc = {
       get() {
         return this[parentKey];
       },
       set(value) {
+        if (superDesc && superDesc.set) {
+          superDesc.set.call(this, value);
+        }
         setParentCollection(this, value, name, key, options);
         this[parentKey] = value;
       },
       configurable: true,
       enumerable: true
     };
-    Object.defineProperty(ctor.prototype, options.parent, parentDesc);
+    Object.defineProperty(ctor.prototype, parent, parentDesc);
   }
   const desc = {
     get() {
@@ -400,8 +405,9 @@ const virtualState = (optionsOrProtoOrDescriptor, fieldName, options) => {
       initializer,
       key,
       finisher(ctor) {
-        registerVirtualState(ctor, name, key, options);
-        return ensureVirtualClass(ctor);
+        const result = ensureVirtualClass(ctor);
+        registerVirtualState(result, name, key, options);
+        return result;
       }
     };
   }
