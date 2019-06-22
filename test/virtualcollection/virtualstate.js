@@ -143,4 +143,21 @@ describe('virtualState', () => {
     sinon.assert.calledOnce(requestSpy);
     expect(el.virtualProp.length).to.equal(1);
   });
+
+  it('should accept parent property', async () => {
+    class Test extends LitElement {
+      @virtualState({
+        parent: 'parentProp'
+      })
+      virtualProp;
+    }
+
+    const tag = defineCE(Test);
+    const el = await fixture(`<${tag}></${tag}>`);
+
+    const collection = new Collection();
+    el.parentProp = collection;
+    expect(el.parentProp).to.eql(collection);
+    expect(el.virtualProp.parent).to.eql(collection);
+  });
 });

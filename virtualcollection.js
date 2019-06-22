@@ -316,40 +316,60 @@ const ensureVirtualClass = ElementClass => {
   return VirtualClass;
 };
 
+const setParentCollection = (el, collection, name, key, options) => {
+  let virtualCollection = el[key];
+  if (collection) {
+    if (!collection instanceof Collection) {
+      throw new Error(`Error setting ${name} property: value must be a Collection`);
+    }
+  }
+
+  const filter = isFunction(options.filter) ? options.filter.bind(el) : options.filter;
+
+  if (!virtualCollection) {
+    virtualCollection = new VirtualCollection(null, {
+      filter
+    });
+    if (el.isConnected) {
+      bindVirtualCollection(el, virtualCollection);
+    }
+  } else {
+    if (filter) {
+      virtualCollection.accepts = buildFilter(filter);
+    }
+  }
+
+  virtualCollection.parent = collection;
+
+  el[key] = virtualCollection;
+  el.requestUpdate(name, virtualCollection);
+};
+
 const registerVirtualState = (ctor, name, key, options = {}) => {
   const virtualStates = ctor.__virtualStates || (ctor.__virtualStates = new Set());
   virtualStates.add(name);
+
+  if (options.parent) {
+    const parentKey = typeof options.parent === 'symbol' ? Symbol() : `__vcParent_${name}`;
+    const parentDesc = {
+      get() {
+        return this[parentKey];
+      },
+      set(value) {
+        setParentCollection(this, value, name, key, options);
+        this[parentKey] = value;
+      },
+      configurable: true,
+      enumerable: true
+    };
+    Object.defineProperty(ctor.prototype, options.parent, parentDesc);
+  }
   const desc = {
     get() {
       return this[key];
     },
     set(value) {
-      let virtualCollection = this[key];
-      if (value) {
-        if (!value instanceof Collection) {
-          throw new Error(`Error setting ${name} property: value must be a Collection`);
-        }
-      }
-
-      const filter = isFunction(options.filter) ? options.filter.bind(this) : options.filter;
-
-      if (!virtualCollection) {
-        virtualCollection = new VirtualCollection(null, {
-          filter
-        });
-        if (this.isConnected) {
-          bindVirtualCollection(this, virtualCollection);
-        }
-      } else {
-        if (filter) {
-          virtualCollection.accepts = buildFilter(filter);
-        }
-      }
-
-      virtualCollection.parent = value;
-
-      this[key] = virtualCollection;
-      this.requestUpdate(name, virtualCollection);
+      setParentCollection(this, value, name, key, options);
     },
     configurable: true,
     enumerable: true
