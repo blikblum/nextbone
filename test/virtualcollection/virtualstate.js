@@ -100,4 +100,47 @@ describe('virtualState', () => {
     expect(el.virtualProp).to.be.instanceOf(VirtualCollection);
     expect(el.virtualProp.parent).to.eql(collection);
   });
+
+  it('should stop listening to parent when disconnected', async () => {
+    class Test extends LitElement {
+      @virtualState
+      virtualProp;
+    }
+
+    const tag = defineCE(Test);
+    const el = await fixture(`<${tag}></${tag}>`);
+
+    const collection = new Collection();
+    el.virtualProp = collection;
+    const requestSpy = sinon.spy(el, 'requestUpdate');
+
+    el.remove();
+
+    collection.add({ foo: 'baz' });
+    sinon.assert.notCalled(requestSpy);
+    expect(el.virtualProp.length).to.equal(0);
+  });
+
+  it('should listen to parent changes when disconnected and reconnected', async () => {
+    class Test extends LitElement {
+      @virtualState
+      virtualProp;
+    }
+
+    const tag = defineCE(Test);
+    const el = await fixture(`<${tag}></${tag}>`);
+
+    const collection = new Collection();
+    el.virtualProp = collection;
+
+    const parentEl = el.parentElement;
+    el.remove();
+    parentEl.appendChild(el);
+
+    const requestSpy = sinon.spy(el, 'requestUpdate');
+
+    collection.add({ foo: 'baz' });
+    sinon.assert.calledOnce(requestSpy);
+    expect(el.virtualProp.length).to.equal(1);
+  });
 });

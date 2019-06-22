@@ -271,6 +271,8 @@ function sortedIndexTwo(array, obj, iterator, context) {
 
 const isClassDecorated = Symbol('VirtualStateClass');
 
+const parentMap = new WeakMap();
+
 const bindVirtualCollection = (el, virtualCollection) => {
   el.listenTo(virtualCollection, 'sort update reset change', () => el.requestUpdate());
 };
@@ -286,7 +288,9 @@ const ensureVirtualClass = ElementClass => {
         virtualStates.forEach(name => {
           const virtualCollection = this[name];
           if (virtualCollection) {
-            // todo: in case of previously disconnected must rebind parent collection also
+            if (!virtualCollection.parent) {
+              virtualCollection.parent = parentMap.get(virtualCollection);
+            }
             bindVirtualCollection(this, virtualCollection);
           }
         });
@@ -299,7 +303,8 @@ const ensureVirtualClass = ElementClass => {
         virtualStates.forEach(name => {
           const virtualCollection = this[name];
           if (virtualCollection) {
-            virtualCollection.stopListening();
+            parentMap.set(virtualCollection, virtualCollection.parent);
+            virtualCollection.parent = null;
             this.stopListening(virtualCollection);
           }
         });
