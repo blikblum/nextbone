@@ -722,6 +722,20 @@ describe('VirtualCollection', function() {
 
       assert(called);
     });
+
+    it('should not trigger an `update` event when parent collection is updated and change is not accepted', function() {
+      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+        vc = new VirtualCollection(collection, {
+          filter: { type: 'a' }
+        });
+      var updateSpy = sinon.spy();
+
+      vc.on('update', updateSpy);
+      collection.add([{ type: 'b' }, { type: 'c' }]);
+
+      sinon.assert.notCalled(updateSpy);
+    });
+
     it('should trigger a `change` event when a model in the virtual collection is changed', function() {
       var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {

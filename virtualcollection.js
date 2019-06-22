@@ -110,9 +110,12 @@ class VirtualCollection extends Collection {
   }
 
   _onUpdate(collection, options) {
-    var newOptions = extend({}, options, { changes: this._changeCache });
-    this.trigger('update', this, newOptions);
-    this._clearChangesCache();
+    var changes = this._changeCache;
+    if (changes.added.length || changes.removed.length || changes.merged.length) {
+      var newOptions = extend({}, options, { changes });
+      this.trigger('update', this, newOptions);
+      this._clearChangesCache();
+    }
   }
 
   _onAdd(model, collection, options) {
