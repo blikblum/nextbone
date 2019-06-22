@@ -1,4 +1,4 @@
-import { Collection } from './nextbone';
+import { Collection, Events } from './nextbone';
 import { isFunction, sortedIndex, extend } from 'underscore';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
@@ -266,4 +266,118 @@ function sortedIndexTwo(array, obj, iterator, context) {
   return low;
 }
 
-export { VirtualCollection, buildFilter };
+const isClassDecorated = Symbol('VirtualStateClass');
+
+const bindVirtualCollection = (el, virtualCollection) => {
+  el.listenTo(virtualCollection, 'sort update reset change', () => el.requestUpdate());
+};
+
+const ensureVirtualClass = ElementClass => {
+  if (ElementClass[isClassDecorated]) return ElementClass;
+  ElementClass[isClassDecorated] = true;
+  const VirtualClass = class extends ElementClass {
+    connectedCallback() {
+      super.connectedCallback && super.connectedCallback();
+      const virtualStates = this.constructor.__virtualStates;
+      if (virtualStates) {
+        virtualStates.forEach(name => {
+          const virtualCollection = this[name];
+          if (virtualCollection) {
+            // todo: in case of previously disconnected must rebind parent collection also
+            bindVirtualCollection(this, virtualCollection);
+          }
+        });
+      }
+    }
+
+    disconnectedCallback() {
+      const virtualStates = this.constructor.__virtualStates;
+      if (virtualStates) {
+        virtualStates.forEach(name => {
+          const virtualCollection = this[name];
+          if (virtualCollection) {
+            virtualCollection.stopListening();
+            this.stopListening(virtualCollection);
+          }
+        });
+      }
+      super.disconnectedCallback && super.disconnectedCallback();
+    }
+  };
+  Events.extend(VirtualClass.prototype);
+  return VirtualClass;
+};
+
+const registerVirtualState = (ctor, name, key, options = {}) => {
+  const virtualStates = ctor.__virtualStates || (ctor.__virtualStates = new Set());
+  virtualStates.add(name);
+  const desc = {
+    get() {
+      return this[key];
+    },
+    set(value) {
+      let virtualCollection = this[key];
+      if (value) {
+        if (!value instanceof Collection) {
+          throw new Error(`Error setting ${name} property: value must be a Collection`);
+        }
+      }
+
+      const filter = isFunction(options.filter) ? options.filter.bind(this) : options.filter;
+
+      if (!virtualCollection) {
+        virtualCollection = new VirtualCollection(null, {
+          filter
+        });
+        if (this.isConnected) {
+          bindVirtualCollection(this, virtualCollection);
+        }
+      } else {
+        if (filter) {
+          virtualCollection.accepts = buildFilter(filter);
+        }
+      }
+
+      virtualCollection.parent = value;
+
+      this[key] = virtualCollection;
+      this.requestUpdate(name, virtualCollection);
+    },
+    configurable: true,
+    enumerable: true
+  };
+  Object.defineProperty(ctor.prototype, name, desc);
+  if (ctor.createProperty) {
+    ctor.createProperty(name, { type: Object, noAccessor: true });
+  }
+};
+
+const virtualState = (optionsOrProtoOrDescriptor, fieldName, options) => {
+  const isLegacy = typeof fieldName === 'string';
+  if (!isLegacy && typeof optionsOrProtoOrDescriptor.kind !== 'string') {
+    // passed options
+    return function(protoOrDescriptor) {
+      return virtualState(protoOrDescriptor, fieldName, optionsOrProtoOrDescriptor);
+    };
+  }
+
+  const name = isLegacy ? fieldName : optionsOrProtoOrDescriptor.key;
+  const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+  if (!isLegacy) {
+    const { kind, placement, descriptor, initializer } = optionsOrProtoOrDescriptor;
+    return {
+      kind,
+      placement,
+      descriptor,
+      initializer,
+      key,
+      finisher(ctor) {
+        registerVirtualState(ctor, name, key, options);
+        return ensureVirtualClass(ctor);
+      }
+    };
+  }
+  registerVirtualState(optionsOrProtoOrDescriptor.constructor, name, key, options);
+};
+
+export { VirtualCollection, buildFilter, virtualState };
