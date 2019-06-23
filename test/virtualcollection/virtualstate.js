@@ -12,6 +12,15 @@ const assert = chai.assert;
 const expect = chai.expect;
 
 describe('virtualState', () => {
+  it('should preserve decorated class name', async () => {
+    class Test extends LitElement {
+      @virtualState
+      virtualProp;
+    }
+
+    expect(Test.name).to.equal('Test');
+  });
+
   it('should call createProperty', async () => {
     const createPropSpy = sinon.spy();
 

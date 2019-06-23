@@ -277,10 +277,8 @@ const bindVirtualCollection = (el, virtualCollection) => {
   el.listenTo(virtualCollection, 'sort update reset change', () => el.requestUpdate());
 };
 
-const ensureVirtualClass = ElementClass => {
-  if (ElementClass[isClassDecorated]) return ElementClass;
-  ElementClass[isClassDecorated] = true;
-  const VirtualClass = class extends ElementClass {
+const createVirtualClass = ElementClass => {
+  return class extends ElementClass {
     connectedCallback() {
       super.connectedCallback && super.connectedCallback();
       const virtualStates = this.constructor.__virtualStates;
@@ -312,6 +310,12 @@ const ensureVirtualClass = ElementClass => {
       super.disconnectedCallback && super.disconnectedCallback();
     }
   };
+};
+
+const ensureVirtualClass = ElementClass => {
+  if (ElementClass[isClassDecorated]) return ElementClass;
+  ElementClass[isClassDecorated] = true;
+  const VirtualClass = createVirtualClass(ElementClass);
   Events.extend(VirtualClass.prototype);
   return VirtualClass;
 };
