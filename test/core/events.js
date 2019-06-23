@@ -15,12 +15,13 @@
   });
 
   QUnit.test('extending a class with decorator', function(assert) {
-    assert.expect(3);
+    assert.expect(4);
     @Backbone.withEvents
     class Test {}
     assert.equal(Test.prototype.on, Backbone.Events.prototype.on);
     assert.equal(Test.prototype.off, Backbone.Events.prototype.off);
     assert.equal(Test.prototype.trigger, Backbone.Events.prototype.trigger);
+    assert.equal(Test.name, 'Test');
   });
 
   QUnit.test('on and trigger', function(assert) {
