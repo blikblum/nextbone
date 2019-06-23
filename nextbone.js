@@ -1682,10 +1682,8 @@ const registerStateProperty = (ctor, name, key, options = {}) => {
   }
 };
 
-const ensureViewClass = ElementClass => {
-  if (ElementClass[isClassDecorated]) return ElementClass;
-  ElementClass[isClassDecorated] = true;
-  const ViewClass = class extends ElementClass {
+const createViewClass = ElementClass => {
+  return class extends ElementClass {
     constructor() {
       super();
       const events = this.constructor.__events;
@@ -1711,6 +1709,12 @@ const ensureViewClass = ElementClass => {
       super.disconnectedCallback && super.disconnectedCallback();
     }
   };
+};
+
+const ensureViewClass = ElementClass => {
+  if (ElementClass[isClassDecorated]) return ElementClass;
+  ElementClass[isClassDecorated] = true;
+  const ViewClass = createViewClass(ElementClass);
   Events.extend(ViewClass.prototype);
   return ViewClass;
 };

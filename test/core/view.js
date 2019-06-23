@@ -14,6 +14,15 @@ const elHTML = html`
 (function(QUnit) {
   QUnit.module('Backbone.view');
 
+  QUnit.test('decorated class name', assert => {
+    assert.expect(1);
+
+    @Backbone.view
+    class Test extends HTMLElement {}
+
+    assert.equal(Test.name, 'Test');
+  });
+
   // test the possibility to use field/method decorators without view decorator
   [Backbone.view, _.noop].forEach(classDecorator => {
     const suffix = classDecorator === Backbone.view ? '' : ' - without class decorator';
