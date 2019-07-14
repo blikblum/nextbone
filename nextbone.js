@@ -39,9 +39,6 @@ import {
 // Initial Setup
 // -------------
 
-// Create a local reference to a common array method we'll want to use later.
-var slice = Array.prototype.slice;
-
 // Underscore like functions
 var keys = function(obj) {
   return obj ? Object.keys(obj) : [];
@@ -1084,8 +1081,8 @@ class Collection extends Events {
   }
 
   // Slice out a sub-array of models from the collection.
-  slice() {
-    return slice.apply(this.models, arguments);
+  slice(...args) {
+    return this.models.slice(...args);
   }
 
   // Get a model from the set by id, cid, model object with id or cid
