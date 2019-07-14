@@ -47,7 +47,7 @@ var keys = function(obj) {
   return obj ? Object.keys(obj) : [];
 };
 
-var clone = function(obj) {
+var cloneObject = function(obj) {
   return Object.assign({}, obj);
 };
 
@@ -482,7 +482,7 @@ class Model extends Events {
 
   // Return a copy of the model's `attributes` object.
   toJSON(options) {
-    return clone(this.attributes);
+    return cloneObject(this.attributes);
   }
 
   // Get the Model class idAttribute. Read only.
@@ -546,7 +546,7 @@ class Model extends Events {
     this._changing = true;
 
     if (!changing) {
-      this._previousAttributes = clone(this.attributes);
+      this._previousAttributes = cloneObject(this.attributes);
       this.changed = {};
     }
 
@@ -630,7 +630,7 @@ class Model extends Events {
   // You can also pass an attributes object to diff against the model,
   // determining if there *would be* a change.
   changedAttributes(diff) {
-    if (!diff) return this.hasChanged() ? clone(this.changed) : false;
+    if (!diff) return this.hasChanged() ? cloneObject(this.changed) : false;
     var old = this._changing ? this._previousAttributes : this.attributes;
     var changed = {};
     var hasChanged;
@@ -653,7 +653,7 @@ class Model extends Events {
   // Get all of the attributes of the model at the time of the previous
   // `"change"` event.
   previousAttributes() {
-    return clone(this._previousAttributes);
+    return cloneObject(this._previousAttributes);
   }
 
   // Fetch the model from the server, merging the response with the model's
@@ -731,7 +731,7 @@ class Model extends Events {
   // Optimistically removes the model from its collection, if it has one.
   // If `wait: true` is passed, waits for the server to respond before removal.
   destroy(options) {
-    options = options ? clone(options) : {};
+    options = options ? cloneObject(options) : {};
     var model = this;
     var success = options.success;
     var wait = options.wait;
@@ -1050,7 +1050,7 @@ class Collection extends Events {
   // any granular `add` or `remove` events. Fires `reset` when finished.
   // Useful for bulk operations and optimizations.
   reset(models, options) {
-    options = options ? clone(options) : {};
+    options = options ? cloneObject(options) : {};
     for (var i = 0; i < this.models.length; i++) {
       this._removeReference(this.models[i], options);
     }
@@ -1169,7 +1169,7 @@ class Collection extends Events {
   // collection immediately, unless `wait: true` is passed, in which case we
   // wait for the server to agree.
   create(model, options) {
-    options = options ? clone(options) : {};
+    options = options ? cloneObject(options) : {};
     var wait = options.wait;
     model = this._prepareModel(model, options);
     if (!model) return false;
@@ -1386,7 +1386,7 @@ class Collection extends Events {
       if (!attrs.collection) attrs.collection = this;
       return attrs;
     }
-    options = options ? clone(options) : {};
+    options = options ? cloneObject(options) : {};
     options.collection = this;
     var modelClass = this.model || this.constructor.model || Model;
     var model =
@@ -2296,18 +2296,24 @@ var wrapError = function(model, options) {
 };
 
 export {
+  // main classes
   Model,
   Collection,
   Events,
-  delegate,
-  undelegate,
+  Router,
+  History,
+  // mixins
+  withEvents,
+  // hooks
+  sync,
+  ajax,
+  // decorators
   view,
   event,
   state,
+  // helpers
+  delegate,
+  undelegate,
   isView,
-  withEvents,
-  sync,
-  ajax,
-  Router,
-  History
+  cloneObject
 };
