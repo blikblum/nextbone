@@ -1880,8 +1880,16 @@ var stringifyGETParams = function(url, data) {
   return url;
 };
 
-var getData = function(response, dataType) {
-  return dataType === 'json' ? response.json() : response.text();
+var tryParseJSON = function(text) {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return text;
+  }
+};
+
+var getData = function(text, dataType) {
+  return dataType === 'json' ? tryParseJSON(text) : text;
 };
 
 // Override handler method to customize ajax functionality.
@@ -1903,14 +1911,14 @@ var ajax = {
 
     return fetch(options.url, options)
       .then(function(response) {
-        var promise = getData(response, options.dataType);
+        return response.text().then(function(text) {
+          var data = getData(text, options.dataType);
 
-        if (response.ok) return promise;
+          if (response.ok) return data;
 
-        var error = new Error(response.statusText);
-        return promise.then(function(responseData) {
+          var error = new Error(response.statusText);
           error.response = response;
-          error.responseData = responseData;
+          error.responseData = data;
           if (options.error) options.error(error);
           throw error;
         });

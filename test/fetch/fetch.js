@@ -229,6 +229,34 @@ describe('backbone.fetch', function() {
       server.respond([400, {}, JSON.stringify({ code: 'INVALID_HORSE' })]);
     });
 
+    it('should handle invalid JSON response on failing response', function(done) {
+      var promise = ajax({
+        url: 'test',
+        dataType: 'json',
+        type: 'GET',
+        success: function(response) {
+          throw new Error('this request should fail');
+        },
+        error: function(error) {
+          expect(error.response.status).to.equal(400);
+        }
+      });
+
+      promise
+        .then(function() {
+          throw new Error('this request should fail');
+        })
+        .catch(function(error) {
+          expect(error.response.status).to.equal(400);
+          done();
+        })
+        .catch(function(error) {
+          done(error);
+        });
+
+      server.respond([400, {}, 'Server error']);
+    });
+
     it('should parse text as property of Error on failing request', function(done) {
       var promise = ajax({
         dataType: 'text',
