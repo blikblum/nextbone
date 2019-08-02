@@ -1909,24 +1909,22 @@ var ajax = {
       body: options.data
     });
 
-    return fetch(options.url, options)
-      .then(function(response) {
-        return response.text().then(function(text) {
-          var data = getData(text, options.dataType);
+    return fetch(options.url, options).then(function(response) {
+      return response.text().then(function(text) {
+        var data = getData(text, options.dataType);
 
-          if (response.ok) return data;
+        if (response.ok) {
+          if (options.success) options.success(data);
+          return data;
+        }
 
-          var error = new Error(response.statusText);
-          error.response = response;
-          error.responseData = data;
-          if (options.error) options.error(error);
-          throw error;
-        });
-      })
-      .then(function(responseData) {
-        if (options.success) options.success(responseData);
-        return responseData;
+        var error = new Error(response.statusText);
+        error.response = response;
+        error.responseData = data;
+        if (options.error) options.error(error);
+        throw error;
       });
+    });
   }
 };
 
