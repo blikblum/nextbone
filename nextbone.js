@@ -746,15 +746,15 @@ class Model extends Events {
       if (!model.isNew()) model.trigger('sync', model, resp, options);
     };
 
-    var xhr = false;
+    var result;
     if (this.isNew()) {
-      defer(options.success);
+      result = Promise.resolve().then(options.success);
     } else {
       wrapError(this, options);
-      xhr = this.sync('delete', this, options);
+      result = this.sync('delete', this, options);
     }
     if (!wait) destroy();
-    return xhr;
+    return result;
   }
 
   // Default URL for the model's representation on the server -- if you're

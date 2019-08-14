@@ -834,12 +834,16 @@
 
   QUnit.test('destroy', function(assert) {
     assert.expect(3);
+    var done = assert.async();
     doc.destroy();
     assert.equal(this.syncArgs.method, 'delete');
     assert.ok(_.isEqual(this.syncArgs.model, doc));
 
     var newModel = new Backbone.Model();
-    assert.equal(newModel.destroy(), false);
+    newModel.destroy().then(function(value) {
+      assert.equal(value, undefined);
+      done();
+    });
   });
 
   QUnit.test('destroy will pass extra options to success callback', function(assert) {
