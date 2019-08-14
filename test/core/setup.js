@@ -11,6 +11,8 @@ window.Backbone = Backbone;
 
   QUnit.config.noglobals = true;
 
+  QUnit.onUnhandledRejection = function() {};
+
   QUnit.testStart(function() {
     var env = QUnit.config.current.testEnvironment;
 

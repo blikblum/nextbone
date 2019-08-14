@@ -74,6 +74,8 @@ var matches = function(attrs) {
   };
 };
 
+class ValidationError extends Error {}
+
 // try to get a prop from instance, with fallback to constructor (class property)
 var getClassProp = function(obj, prop) {
   var value = obj[prop];
@@ -690,9 +692,9 @@ class Model extends Events {
     // the model will be valid when the attributes, if any, are set.
     if (attrs && !wait) {
       this.set(attrs, options);
-      if (this.validationError) return false;
+      if (this.validationError) return Promise.reject(new ValidationError());
     } else if (!this._validate(attrs, options)) {
-      return false;
+      return Promise.reject(new ValidationError());
     }
 
     // After a successful server-side save, the client is (optionally)
@@ -2305,6 +2307,8 @@ export {
   Events,
   Router,
   History,
+  // error classes
+  ValidationError,
   // mixins
   withEvents,
   // hooks

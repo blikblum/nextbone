@@ -1107,13 +1107,15 @@
     assert.ok(this.syncArgs.model === model);
   });
 
-  QUnit.test('save without `wait` set invalid attributes but returns false', function(assert) {
+  QUnit.test('save without `wait` set invalid attributes but returns rejected promise', function(
+    assert
+  ) {
+    assert.expect(2);
     var model = new Backbone.Model();
     model.validate = function() {
       return 1;
     };
-    var result = model.save({ a: 1 });
-    assert.equal(result, false);
+    assert.rejects(model.save({ a: 1 }), Backbone.ValidationError);
     assert.equal(model.get('a'), 1);
   });
 
@@ -1433,11 +1435,11 @@
     model.sync = function() {
       assert.ok(false);
     };
-    assert.strictEqual(model.save(), false);
+    assert.rejects(model.save());
   });
 
   QUnit.test("#1377 - Save without attrs triggers 'error'.", function(assert) {
-    assert.expect(1);
+    assert.expect(2);
     var Model = class extends Backbone.Model {
       url = '/test/';
       sync(method, m, options) {
@@ -1451,7 +1453,7 @@
     model.on('invalid', function() {
       assert.ok(true);
     });
-    model.save();
+    assert.rejects(model.save());
   });
 
   QUnit.test('#1545 - `undefined` can be passed to a model constructor without coersion', function(
