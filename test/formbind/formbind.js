@@ -67,7 +67,6 @@ describe('formBind', function() {
     beforeEach(async function() {
       el = await fixture(`<${defaultsTag}></${defaultsTag}>`);
       el.model = myModel;
-      await el.updateComplete;
     });
 
     it('should handle input event for generic input', async function() {
@@ -75,15 +74,10 @@ describe('formBind', function() {
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'textProp',
-        'zzz',
-        match({ validate: true, attributes: ['textProp'] })
-      );
+      assert.calledWith(setSpy, 'textProp', 'zzz');
     });
 
-    it('should bot handle input event input with no-bind attribute', async function() {
+    it('should not handle input event input with no-bind attribute', async function() {
       const inputEl = el.renderRoot.querySelector('input[name="noBind"]');
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -94,59 +88,34 @@ describe('formBind', function() {
       const inputEl = el.renderRoot.querySelector('select');
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'selectProp',
-        'yy',
-        match({ validate: true, attributes: ['selectProp'] })
-      );
+      assert.calledWith(setSpy, 'selectProp', 'yy');
       setSpy.resetHistory();
 
       const optionEl = el.renderRoot.querySelector('option:first-child');
       optionEl.selected = true;
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'selectProp',
-        'xx',
-        match({ validate: true, attributes: ['selectProp'] })
-      );
+      assert.calledWith(setSpy, 'selectProp', 'xx');
     });
 
     it('should handle change event for radio input', async function() {
       let inputEl = el.renderRoot.querySelector('input[type="radio"][checked]');
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'radioProp',
-        'b',
-        match({ validate: true, attributes: ['radioProp'] })
-      );
+      assert.calledWith(setSpy, 'radioProp', 'b');
       setSpy.resetHistory();
 
       inputEl = el.renderRoot.querySelector('input[type="radio"]:not([checked])');
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'radioProp',
-        'a',
-        match({ validate: true, attributes: ['radioProp'] })
-      );
+      assert.calledWith(setSpy, 'radioProp', 'a');
     });
 
     it('should handle change event for checkbox input', async function() {
       let inputEl = el.renderRoot.querySelector('input[type="checkbox"]');
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'checkProp',
-        false,
-        match({ validate: true, attributes: ['checkProp'] })
-      );
+      assert.calledWith(setSpy, 'checkProp', false);
     });
 
     it('should convert value to number for number input', async function() {
@@ -154,24 +123,14 @@ describe('formBind', function() {
       inputEl.value = '3';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        3,
-        match({ validate: true, attributes: ['numberProp'] })
-      );
+      assert.calledWith(setSpy, 'numberProp', 3);
 
       setSpy.resetHistory();
 
       inputEl.value = 'a';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        null,
-        match({ validate: true, attributes: ['numberProp'] })
-      );
+      assert.calledWith(setSpy, 'numberProp', null);
     });
 
     it('should convert value to number for input with data-prop-type = "number"', async function() {
@@ -179,62 +138,14 @@ describe('formBind', function() {
       inputEl.value = '3';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        3,
-        match({ validate: true, attributes: ['numberProp'] })
-      );
+      assert.calledWith(setSpy, 'numberProp', 3);
 
       setSpy.resetHistory();
 
       inputEl.value = 'a';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        'a',
-        match({ validate: true, attributes: ['numberProp'] })
-      );
-    });
-
-    it('should validate all previously validated properties', async function() {
-      const inputEl = el.renderRoot.querySelector('input[type="text"]');
-      inputEl.value = 'zzz';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'textProp',
-        'zzz',
-        match({ validate: true, attributes: ['textProp'] })
-      );
-
-      setSpy.resetHistory();
-
-      const inputNumberEl = el.renderRoot.querySelector('input[type="number"]');
-      inputNumberEl.value = '3';
-      inputNumberEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        3,
-        match({ validate: true, attributes: ['textProp', 'numberProp'] })
-      );
-
-      setSpy.resetHistory();
-
-      const inputRadioEl = el.renderRoot.querySelector('input[type="radio"][checked]');
-      inputRadioEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
-      assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'radioProp',
-        'b',
-        match({ validate: true, attributes: ['textProp', 'numberProp', 'radioProp'] })
-      );
+      assert.calledWith(setSpy, 'numberProp', 'a');
     });
 
     it('should look for model in property defined by data-model-name', async function() {
@@ -242,24 +153,70 @@ describe('formBind', function() {
       inputEl.value = '3';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        3,
-        match({ validate: true, attributes: ['numberProp'] })
-      );
+      assert.calledWith(setSpy, 'numberProp', 3);
 
       setSpy.resetHistory();
 
       inputEl.value = 'a';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(
-        setSpy,
-        'numberProp',
-        'a',
-        match({ validate: true, attributes: ['numberProp'] })
-      );
+      assert.calledWith(setSpy, 'numberProp', 'a');
+    });
+
+    it('should create a "form" property holding form state', async function() {
+      expect(el.form).to.be.instanceOf(Object);
+      expect(el.form.errors).to.be.instanceOf(Object);
+      expect(el.form.touched).to.be.instanceOf(Object);
+    });
+
+    it('should set error on form state when validation fails with an object', async function() {
+      myModel.validate = function() {
+        return { textProp: 'error' };
+      };
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = 'zzz';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+    });
+
+    it('should set error on form state when validation fails with an string', async function() {
+      myModel.validate = function() {
+        return 'error';
+      };
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = 'zzz';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+    });
+
+    it('should remove error on form state when validation succeeds', async function() {
+      myModel.validate = function() {
+        return 'error';
+      };
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = 'zzz';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      myModel.validate = function() {
+        return undefined;
+      };
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      expect(el.form.errors).to.deep.equal({});
+    });
+
+    it('should update errors on form state when form.isValid is called', async function() {
+      myModel.set({ textProp: 'xx' });
+      myModel.validate = function() {
+        return { textProp: 'error' };
+      };
+      el.form.isValid();
+      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+
+      myModel.validate = function() {
+        return undefined;
+      };
+      el.form.isValid();
+      expect(el.form.errors).to.deep.equal({});
     });
 
     describe('with nested path', () => {
@@ -301,7 +258,6 @@ describe('formBind', function() {
       el.yetAnotherModel = new Model();
       otherModelSetSpy = spy(el.otherModel, 'set');
       yetAnotherModelSetSpy = spy(el.yetAnotherModel, 'set');
-      await el.updateComplete;
     });
 
     it('should update the model defined by modelName option by default', async function() {
@@ -312,12 +268,7 @@ describe('formBind', function() {
       assert.notCalled(yetAnotherModelSetSpy);
 
       assert.calledOnce(otherModelSetSpy);
-      assert.calledWith(
-        otherModelSetSpy,
-        'textProp',
-        'zzz',
-        match({ validate: true, attributes: ['textProp'] })
-      );
+      assert.calledWith(otherModelSetSpy, 'textProp', 'zzz');
     });
 
     it('should update the model defined by data-model', async function() {
@@ -328,12 +279,7 @@ describe('formBind', function() {
       assert.notCalled(otherModelSetSpy);
 
       assert.calledOnce(yetAnotherModelSetSpy);
-      assert.calledWith(
-        yetAnotherModelSetSpy,
-        'textProp',
-        'zzz',
-        match({ validate: true, attributes: ['textProp'] })
-      );
+      assert.calledWith(yetAnotherModelSetSpy, 'textProp', 'zzz');
     });
   });
 });

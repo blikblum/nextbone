@@ -19,7 +19,15 @@ function getPathSegments(path) {
   return parts;
 }
 
-// todo: use lodash `set` when/if using lodash instead of underscore
+// todo: use lodash `get/set` when/if using lodash instead of underscore
+
+const getPath = (object, path, value) => {
+  // Check if path is string or array. Regex : ensure that we do not have '.' and brackets
+  const pathArray = Array.isArray(path) ? path : path.split(/[,[\].]/g).filter(Boolean);
+  // Find value if exist return otherwise return undefined value;
+  return pathArray.reduce((prevObj, key) => prevObj && prevObj[key], object) || value;
+};
+
 function setPath(obj, path, value) {
   if (!isObject(obj) || typeof path !== 'string') {
     return obj;
@@ -55,18 +63,30 @@ function parseNumber(value) {
   return isNumeric ? n : toNull(value);
 }
 
-// todo: evaluate storing the value in an el propperty using a symbol
-const elAttributesMap = new WeakMap();
+class FormState {
+  constructor(el, model = 'model') {
+    this.el = el;
+    this.model = model;
+    this.errors = {};
+    this.touched = {};
+  }
 
-function getValidatingAttributes(el, attr) {
-  let attrs = elAttributesMap.get(el);
-  if (!attrs) {
-    elAttributesMap.set(el, (attrs = []));
+  getValue(attr, model) {
+    model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
+    return getPath(model.attributes, attr);
   }
-  if (attrs.indexOf(attr) === -1) {
-    attrs.push(attr);
+
+  isValid(model) {
+    model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
+    const result = model.isValid();
+    if (result) {
+      Object.keys(model.attributes).forEach(key => {
+        delete this.errors[key];
+      });
+    } else {
+      if (isObject(model.validationError)) Object.assign(this.errors, model.validationError);
+    }
   }
-  return attrs;
 }
 
 const defaultInputs = {
@@ -86,6 +106,7 @@ const createClass = (ctor, options = {}) => {
   return class extends ctor {
     constructor() {
       super();
+      this.form = new FormState(this, options.model);
       events.forEach(({ event, selector }) =>
         delegate(this.renderRoot || this, event, selector, this.updateModel, this)
       );
@@ -120,17 +141,31 @@ const createClass = (ctor, options = {}) => {
           value = parseNumber(inputEl.value);
           break;
       }
-      const attributes = getValidatingAttributes(this, prop);
+
       // handle nested attributes
       if (prop.indexOf('.') !== -1) {
         const attrs = Object.assign({}, model.attributes);
         setPath(attrs, prop, value);
-        model.set(attrs, { validate: true, attributes });
+        model.set(attrs);
         if (!Object.keys(model.changed).length) {
           model.trigger('change', model, {});
         }
       } else {
-        model.set(prop, value, { validate: true, attributes });
+        model.set(prop, value);
+      }
+      this.form.touched[prop] = true;
+
+      if (model.validate) {
+        const errors = model.validate(model.attributes, { attributes: [prop] });
+        if (errors) {
+          if (isObject(errors)) {
+            Object.assign(this.form.errors, errors);
+          } else {
+            this.form.errors[prop] = errors;
+          }
+        } else {
+          delete this.form.errors[prop];
+        }
       }
     }
   };
