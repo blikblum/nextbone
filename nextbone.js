@@ -79,14 +79,14 @@ var getClassProp = function(obj, prop) {
   return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
 };
 
-// Backbone.Events
+// Events
 // ---------------
 
 // A class to provide a custom event channel. You may bind a callback to an event with `on` or
 // remove with `off`; `trigger`-ing an event fires all callbacks in succession.
 // It can be be also mixed in to *any object* in order
 //     var object = {};
-//     Backbone.Events.extend(object);
+//     Events.extend(object);
 //     object.on('expand', function(){ alert('expanded'); });
 //     object.trigger('expand');
 //
@@ -229,7 +229,7 @@ var triggerApi = function(objEvents, name, callback, args) {
 
 // A difficult-to-believe, but optimized internal dispatch function for
 // triggering events. Tries to keep the usual cases speedy (most internal
-// Backbone events have 3 arguments).
+// Nextbone events have 3 arguments).
 var triggerEvents = function(events, args) {
   var ev,
     i = -1,
@@ -315,7 +315,7 @@ class Events {
     _listening = void 0;
 
     if (error) throw error;
-    // If the target obj is not Backbone.Events, track events manually.
+    // If the target obj is not an Events instance, track events manually.
     if (listening.interop) listening.on(name, callback);
 
     return this;
@@ -404,7 +404,7 @@ class Listening {
   }
 
   // Offs a callback (or several).
-  // Uses an optimized counter if the listenee uses Backbone.Events.
+  // Uses an optimized counter if the listenee uses Events.
   // Otherwise, falls back to manual tracking to support events
   // library interop.
 
@@ -456,10 +456,10 @@ const on = eventName => (protoOrDescriptor, methodName, propertyDescriptor) => {
   registerOnEvent(protoOrDescriptor.constructor, eventName, propertyDescriptor.value);
 };
 
-// Backbone.Model
+// Model
 // --------------
 
-// Backbone **Models** are the basic data object in the framework --
+// **Models** are the basic data object in the library --
 // frequently representing a row in a table in a database on your server.
 // A discrete chunk of data and a bunch of useful, related methods for
 // performing computations and transformations on that data.
@@ -517,7 +517,7 @@ class Model extends Events {
     return this.constructor.idAttribute || 'id';
   }
 
-  // Proxy `Backbone.sync` by default -- but override this if you need
+  // Proxy `sync.handler` by default -- but override this if you need
   // custom syncing semantics for *this* particular model.
   sync() {
     return sync.handler.apply(this, arguments);
@@ -786,7 +786,7 @@ class Model extends Events {
   }
 
   // Default URL for the model's representation on the server -- if you're
-  // using Backbone's restful methods, override this to change the endpoint
+  // using Nextbone's restful methods, override this to change the endpoint
   // that will be called.
   url() {
     var base = getResult(this, 'urlRoot') || getResult(this.collection, 'url') || urlError();
@@ -880,10 +880,10 @@ class Model extends Events {
 /* global Symbol */
 var $$iterator = Symbol.iterator;
 
-// Backbone.Collection
+// Collection
 // -------------------
 
-// If models tend to represent a single row of data, a Backbone Collection is
+// If models tend to represent a single row of data, a Collection is
 // more analogous to a table full of data ... or a small slice or page of that
 // table, or a collection of rows that belong together for a particular reason
 // -- all of the messages in this particular folder, all of the documents
@@ -895,7 +895,7 @@ var $$iterator = Symbol.iterator;
 // its models in sort order, as they're added and removed.
 
 class Collection extends Events {
-  // The default model for a collection is just a **Backbone.Model**.
+  // The default model for a collection is just a **Model**.
   // This should be overridden in most cases.
   // static model = Model;
 
@@ -926,12 +926,12 @@ class Collection extends Events {
     });
   }
 
-  // Proxy `Backbone.sync` by default.
+  // Proxy `sync.handler` by default.
   sync() {
     return sync.handler.apply(this, arguments);
   }
 
-  // Add a model, or list of models to the set. `models` may be Backbone
+  // Add a model, or list of models to the set. `models` may be Nextbone
   // Models or raw JavaScript objects to be converted to Models, or any
   // combination of the two.
   add(models, options) {
@@ -1512,7 +1512,7 @@ var ITERATOR_KEYSVALUES = 3;
 
 // A CollectionIterator implements JavaScript's Iterator protocol, allowing the
 // use of `for of` loops in modern browsers and interoperation between
-// Backbone.Collection and other JavaScript functions and third-party libraries
+// Collection and other JavaScript functions and third-party libraries
 // which can operate on Iterables.
 class CollectionIterator {
   constructor(collection, kind) {
@@ -1576,7 +1576,7 @@ var modelMatcher = function(attrs) {
   };
 };
 
-// Backbone.view
+// view
 // -------------
 
 // Set of decorators to custom elements based on lit-element base class
@@ -1818,10 +1818,10 @@ const withEvents = classOrDescriptor => {
   return WithEventsClass;
 };
 
-// Backbone.sync
+// sync
 // -------------
 
-// Override this function to change the manner in which Backbone persists
+// Override this function to change the manner in which Nextbone persists
 // models to the server. You will be passed the type of request, and the
 // model in question. By default, makes a RESTful Ajax request
 // to the model's `url()`. Some possible customizations could be:
@@ -1830,7 +1830,7 @@ const withEvents = classOrDescriptor => {
 // * Send up the models as XML instead of JSON.
 // * Persist models via WebSockets instead of Ajax.
 
-// Map from CRUD to HTTP for our default `Backbone.sync` implementation.
+// Map from CRUD to HTTP for our default `sync` implementation.
 var methodMap = {
   create: 'POST',
   update: 'PUT',
@@ -1883,7 +1883,7 @@ var sync = {
   }
 };
 
-// Backbone.ajax
+// ajax
 // -------------
 
 // Default implementation based on `fetch` API
@@ -1946,7 +1946,7 @@ var ajax = {
   }
 };
 
-// Backbone.Router
+// Router
 // ---------------
 
 // Routers map faux-URLs to actions, and fire events when routes are
@@ -2001,13 +2001,13 @@ class Router extends Events {
     if (callback) callback.apply(this, args);
   }
 
-  // Simple proxy to `Backbone.history` to save a fragment into the history.
+  // Simple proxy to `history` to save a fragment into the history.
   navigate(fragment, options) {
     History.instance.navigate(fragment, options);
     return this;
   }
 
-  // Bind all defined routes to `Backbone.history`. We have to reverse the
+  // Bind all defined routes to `history`. We have to reverse the
   // order of the routes here to support behavior where the most general
   // routes can be defined at the bottom of the route map.
   _bindRoutes() {
@@ -2054,7 +2054,7 @@ var namedParam = /(\(\?)?:\w+/g;
 var splatParam = /\*\w+/g;
 var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
-// Backbone.History
+// History
 // ----------------
 
 // Handles cross-browser history management, based on either
@@ -2064,7 +2064,7 @@ var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 // falls back to polling.
 
 class History extends Events {
-  // Create the default Backbone.history.
+  // Create the default history instance.
   static get instance() {
     return this._instance || (this._instance = new History());
   }
@@ -2148,7 +2148,7 @@ class History extends Events {
   // Start the hash change handling, returning `true` if the current URL matches
   // an existing route, and `false` otherwise.
   start(options) {
-    if (History.started) throw new Error('Backbone.history has already been started');
+    if (History.started) throw new Error('Nextbone history has already been started');
     History.started = true;
 
     // Figure out the initial configuration.
@@ -2185,7 +2185,7 @@ class History extends Events {
     if (!this.options.silent) return this.loadUrl();
   }
 
-  // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
+  // Disable history, perhaps temporarily. Not useful in a real app,
   // but possibly useful for unit testing Routers.
   stop() {
     var removeEventListener = window.removeEventListener;
