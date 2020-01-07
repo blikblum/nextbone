@@ -2114,22 +2114,6 @@
     collection.set([{ id: 1 }, { id: 2 }]);
   });
 
-  QUnit.test('#3610 - invoke collects arguments', function(assert) {
-    assert.expect(3);
-    var Model = class extends Backbone.Model {
-      method(x, y, z) {
-        assert.equal(x, 1);
-        assert.equal(y, 2);
-        assert.equal(z, 3);
-      }
-    };
-    var Collection = class extends Backbone.Collection {
-      static model = Model;
-    };
-    var collection = new Collection([{ id: 1 }]);
-    collection.invoke('method', 1, 2, 3);
-  });
-
   QUnit.test('#3662 - triggering change without model will not error', function(assert) {
     assert.expect(1);
     var collection = new Backbone.Collection([{ id: 1 }]);

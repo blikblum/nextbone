@@ -16,7 +16,6 @@ import {
   isRegExp,
   isObject,
   negate,
-  invoke,
   max,
   min,
   first,
@@ -1293,10 +1292,6 @@ class Collection extends Events {
 
   contains(value, fromIndex) {
     return this.includes(value, fromIndex);
-  }
-
-  invoke(...args) {
-    return invoke(this.models, ...args);
   }
 
   max(iteratee, context) {
