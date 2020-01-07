@@ -40,7 +40,7 @@ class VirtualCollection extends Collection {
   }
 
   set parent(value) {
-    if (value == this._parent) return;
+    if (value == this._parent) return; // eslint-disable-line eqeqeq
     if (this._parent) this.stopListening();
     this._parent = value;
     if (value) {
@@ -337,10 +337,8 @@ const setParentCollection = (el, collection, name, key, options) => {
     if (el.isConnected) {
       bindVirtualCollection(el, virtualCollection);
     }
-  } else {
-    if (filter) {
-      virtualCollection.accepts = buildFilter(filter);
-    }
+  } else if (filter) {
+    virtualCollection.accepts = buildFilter(filter);
   }
 
   virtualCollection.parent = collection;

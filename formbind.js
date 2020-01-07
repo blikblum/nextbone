@@ -96,8 +96,8 @@ class FormState {
       this.fields.forEach(key => {
         delete this.errors[key];
       });
-    } else {
-      if (isObject(model.validationError)) Object.assign(this.errors, model.validationError);
+    } else if (isObject(model.validationError)) {
+      Object.assign(this.errors, model.validationError);
     }
   }
 }
@@ -135,9 +135,10 @@ const createClass = (ctor, options = {}) => {
       const model = typeof modelOption === 'string' ? this[modelOption] : modelOption;
 
       if (!model) {
+        // eslint-disable-next-line no-console
         console.warn(
           `formBind: could not find model "${modelOption}" in element "${this.tagName}"`
-        ); // eslint-disable-line no-console
+        );
         return;
       }
 

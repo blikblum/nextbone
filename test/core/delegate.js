@@ -163,7 +163,7 @@ class TestShadowDOM extends HTMLElement {
             assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
           }
 
-          el = await fixture(`<div><input class="one"/><input class="two"/></div>`);
+          el = await fixture('<div><input class="one"/><input class="two"/></div>');
           oneEl = el.querySelector('.one');
           twoEl = el.querySelector('.two');
           oneEl.focus();

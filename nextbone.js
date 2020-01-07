@@ -2,13 +2,12 @@ import {
   uniqueId,
   extend,
   once,
-  result,
+  result as getResult,
   defaults as getDefaults,
   escape,
   iteratee as createIteratee,
   isEqual,
   has,
-  defer,
   invert,
   omit,
   pick,
@@ -760,7 +759,7 @@ class Model extends Events {
   // using Backbone's restful methods, override this to change the endpoint
   // that will be called.
   url() {
-    var base = result(this, 'urlRoot') || result(this.collection, 'url') || urlError();
+    var base = getResult(this, 'urlRoot') || getResult(this.collection, 'url') || urlError();
     if (this.isNew()) return base;
     var id = this.get(this.constructor.idAttribute || 'id');
     return base.replace(/[^\/]$/, '$&/') + encodeURIComponent(id);
@@ -1829,7 +1828,7 @@ var sync = {
 
     // Ensure that we have a URL.
     if (!options.url) {
-      params.url = result(model, 'url') || urlError();
+      params.url = getResult(model, 'url') || urlError();
     }
 
     // Ensure that we have the appropriate request data.

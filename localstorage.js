@@ -40,7 +40,7 @@ function initializeData(instance, name, data) {
   if (!Array.isArray(data)) data = [data];
   const idAttribute =
     instance instanceof Collection
-      ? (instance.model || instance.constructor.model || {})['idAttribute'] || 'id'
+      ? (instance.model || instance.constructor.model || {}).idAttribute || 'id'
       : instance.idAttribute;
   data.forEach(item => {
     let id = item[idAttribute];
@@ -164,7 +164,7 @@ class LocalStorage {
    */
   destroy(model) {
     this._removeItem(this._itemName(model.id));
-    const newRecords = this.getRecords().filter(id => id != model.id);
+    const newRecords = this.getRecords().filter(id => id != model.id); // eslint-disable-line eqeqeq
 
     this.save(newRecords);
 
