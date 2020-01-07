@@ -22,7 +22,7 @@ import {
   first,
   initial,
   last,
-  rest,
+  drop,
   without,
   difference,
   findLastIndex,
@@ -1331,12 +1331,8 @@ class Collection extends Events {
     return last(this.models, n);
   }
 
-  rest(index) {
-    return rest(this.models, index);
-  }
-
   drop(index) {
-    return rest(this.models, index);
+    return drop(this.models, index);
   }
 
   without(...args) {

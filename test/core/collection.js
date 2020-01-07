@@ -779,9 +779,9 @@
     );
     assert.equal(col.indexOf(b), 1);
     assert.equal(col.size(), 4);
-    assert.equal(col.rest().length, 3);
-    assert.ok(!_.includes(col.rest(), a));
-    assert.ok(_.includes(col.rest(), d));
+    assert.equal(col.drop().length, 3);
+    assert.ok(!_.includes(col.drop(), a));
+    assert.ok(_.includes(col.drop(), d));
     assert.ok(!col.isEmpty());
     assert.ok(!_.includes(col.without(d), d));
     assert.deepEqual(col.difference([c, d]), [a, b]);
