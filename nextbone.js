@@ -1759,13 +1759,13 @@ const event = (eventName, selector) => (protoOrDescriptor, methodName, propertyD
   );
 };
 
-// Method decorator to define an observable model/collection to a property
+// Field decorator to define an observable model/collection to a property
 const state = (optionsOrProtoOrDescriptor, fieldName, options) => {
   const isLegacy = typeof fieldName === 'string';
   if (!isLegacy && typeof optionsOrProtoOrDescriptor.kind !== 'string') {
     // passed options
-    return function(protoOrDescriptor) {
-      return state(protoOrDescriptor, fieldName, optionsOrProtoOrDescriptor);
+    return function(protoOrDescriptor, realFieldName) {
+      return state(protoOrDescriptor, realFieldName, optionsOrProtoOrDescriptor);
     };
   }
 
