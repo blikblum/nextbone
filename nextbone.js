@@ -32,7 +32,6 @@ import {
   partition,
   sortBy,
   countBy,
-  indexBy,
   groupBy
 } from 'underscore';
 
@@ -1352,10 +1351,6 @@ class Collection extends Events {
 
   groupBy(predicate, context) {
     return groupBy(this.models, cb(predicate, this), context);
-  }
-
-  indexBy(predicate, context) {
-    return indexBy(this.models, cb(predicate, this), context);
   }
 
   sortBy(predicate, context) {

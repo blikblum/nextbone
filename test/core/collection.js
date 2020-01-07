@@ -739,7 +739,7 @@
   });
 
   QUnit.test('Underscore methods', function(assert) {
-    assert.expect(19);
+    assert.expect(18);
     var labels = '';
     col.each(function(model) {
       labels = labels.concat(model.get('label'));
@@ -806,7 +806,6 @@
       })[0],
       col.at(3)
     );
-    assert.ok(col.indexBy('id')[first.id] === first);
   });
 
   QUnit.skip('chain', function(assert) {
