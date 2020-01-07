@@ -1,11 +1,11 @@
-import { Model, Collection, ajax } from '../../nextbone';
+import { Model } from '../../nextbone';
 import { formBind } from '../../formbind';
-import { clone, uniq } from 'underscore';
+import { validation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit-element';
 
 import { expect } from 'chai';
-import { stub, spy, assert, match } from 'sinon';
+import { spy, assert } from 'sinon';
 
 @formBind
 class TestDefaultInputs extends LitElement {
@@ -163,60 +163,67 @@ describe('formBind', function() {
       assert.calledWith(setSpy, 'numberProp', 'a');
     });
 
-    it('should create a "form" property holding form state', async function() {
-      expect(el.form).to.be.instanceOf(Object);
-      expect(el.form.errors).to.be.instanceOf(Object);
-      expect(el.form.touched).to.be.instanceOf(Object);
-    });
+    describe('form state', () => {
+      @validation({
+        textProp: function(value) {
+          if (value === 'danger') return 'error';
+        },
+        strangeProp: function(value) {
+          if (value === 'danger') return 'error';
+        }
+      })
+      class ValidatedModel extends Model {}
+      beforeEach(() => {
+        myModel = new ValidatedModel();
+        el.model = myModel;
+      });
 
-    it('should set error on form state when validation fails with an object', async function() {
-      myModel.validate = function() {
-        return { textProp: 'error' };
-      };
-      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-      inputEl.value = 'zzz';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-    });
+      it('should create a "form" property holding form state', async function() {
+        expect(el.form).to.be.instanceOf(Object);
+        expect(el.form.errors).to.be.instanceOf(Object);
+        expect(el.form.touched).to.be.instanceOf(Object);
+      });
 
-    it('should set error on form state when validation fails with an string', async function() {
-      myModel.validate = function() {
-        return 'error';
-      };
-      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-      inputEl.value = 'zzz';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-    });
+      it('should set error on form state when validation fails with an object', async function() {
+        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+        inputEl.value = 'danger';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      });
 
-    it('should remove error on form state when validation succeeds', async function() {
-      myModel.validate = function() {
-        return 'error';
-      };
-      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-      inputEl.value = 'zzz';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-      myModel.validate = function() {
-        return undefined;
-      };
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      expect(el.form.errors).to.deep.equal({});
-    });
+      it('should set error on form state when validation fails with an string', async function() {
+        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+        inputEl.value = 'danger';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      });
 
-    it('should update errors on form state when form.isValid is called', async function() {
-      myModel.set({ textProp: 'xx' });
-      myModel.validate = function() {
-        return { textProp: 'error' };
-      };
-      el.form.isValid();
-      expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      it('should remove error on form state when validation succeeds', async function() {
+        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+        inputEl.value = 'danger';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
 
-      myModel.validate = function() {
-        return undefined;
-      };
-      el.form.isValid();
-      expect(el.form.errors).to.deep.equal({});
+        inputEl.value = 'safe';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        expect(el.form.errors).to.deep.equal({});
+      });
+
+      it('should update errors on form state when form.isValid is called', async function() {
+        myModel.set({ textProp: 'danger' });
+        el.form.isValid();
+        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+
+        myModel.set({ textProp: 'safe' });
+        el.form.isValid();
+        expect(el.form.errors).to.deep.equal({});
+      });
+
+      it('should set errors from fields only present in markup when form.isValid is called', async function() {
+        myModel.set({ textProp: 'danger', strangeProp: 'danger' });
+        el.form.isValid();
+        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      });
     });
 
     describe('with nested path', () => {

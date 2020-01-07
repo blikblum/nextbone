@@ -64,11 +64,24 @@ function parseNumber(value) {
 }
 
 class FormState {
-  constructor(el, model = 'model') {
+  constructor(el, model = 'model', events) {
     this.el = el;
     this.model = model;
+    this.events = events;
     this.errors = {};
     this.touched = {};
+  }
+
+  get fields() {
+    if (!this.__fields) {
+      const renderRoot = this.el.renderRoot || this.el;
+      const selector = this.events.map(event => event.selector).join(', ');
+      this.__fields = [];
+      renderRoot
+        .querySelectorAll(selector)
+        .forEach(el => this.__fields.push(el.getAttribute('name')));
+    }
+    return this.__fields;
   }
 
   getValue(attr, model) {
@@ -78,9 +91,9 @@ class FormState {
 
   isValid(model) {
     model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
-    const result = model.isValid();
+    const result = model.isValid(this.fields);
     if (result) {
-      Object.keys(model.attributes).forEach(key => {
+      this.fields.forEach(key => {
         delete this.errors[key];
       });
     } else {
@@ -106,7 +119,7 @@ const createClass = (ctor, options = {}) => {
   return class extends ctor {
     constructor() {
       super();
-      this.form = new FormState(this, options.model);
+      this.form = new FormState(this, options.model, events);
       events.forEach(({ event, selector }) =>
         delegate(this.renderRoot || this, event, selector, this.updateModel, this)
       );
