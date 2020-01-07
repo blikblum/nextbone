@@ -268,6 +268,13 @@ class Events {
     return obj;
   }
 
+  constructor() {
+    const onEvents = this.constructor.__onEvents;
+    if (onEvents) {
+      onEvents.forEach(({ eventName, listener }) => this.on(eventName, listener));
+    }
+  }
+
   // Bind an event to a `callback` function. Passing `"all"` will bind
   // the callback to all events fired.
   on(name, callback, context) {
@@ -425,6 +432,30 @@ class Listening {
 }
 
 Listening.prototype.on = Events.prototype.on;
+
+const registerOnEvent = (ctor, eventName, listener) => {
+  const onEvents = ctor.__onEvents || (ctor.__onEvents = []);
+  onEvents.push({ eventName, listener });
+};
+
+// Method decorator to listen to an event from same instance
+const on = eventName => (protoOrDescriptor, methodName, propertyDescriptor) => {
+  if (typeof methodName !== 'string') {
+    const { kind, key, placement, descriptor, initializer } = protoOrDescriptor;
+    return {
+      kind,
+      placement,
+      descriptor,
+      initializer,
+      key,
+      finisher(ctor) {
+        registerOnEvent(ctor, eventName, descriptor.value);
+      }
+    };
+  }
+  // legacy decorator spec
+  registerOnEvent(protoOrDescriptor.constructor, eventName, propertyDescriptor.value);
+};
 
 // Backbone.Model
 // --------------
@@ -2309,6 +2340,7 @@ export {
   sync,
   ajax,
   // decorators
+  on,
   view,
   event,
   state,

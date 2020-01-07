@@ -40,6 +40,28 @@
     assert.equal(obj.counter, 5, 'counter should be incremented five times.');
   });
 
+  QUnit.test('on decorator', function(assert) {
+    var counter = 0;
+    var eventThis;
+    class Test extends Backbone.Events {
+      @Backbone.on('event')
+      eventHandler() {
+        eventThis = this;
+        counter++;
+      }
+    }
+    assert.expect(3);
+    var obj = new Test();
+    obj.trigger('event');
+    assert.equal(counter, 1, 'counter should be incremented.');
+    obj.trigger('event');
+    obj.trigger('event');
+    obj.trigger('event');
+    obj.trigger('event');
+    assert.equal(counter, 5, 'counter should be incremented five times.');
+    assert.equal(eventThis, obj, 'event this should be object instance.');
+  });
+
   QUnit.test('binding and triggering multiple events', function(assert) {
     assert.expect(4);
     var obj = { counter: 0 };
