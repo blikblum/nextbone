@@ -99,6 +99,7 @@ class FormState {
     } else if (isObject(model.validationError)) {
       Object.assign(this.errors, model.validationError);
     }
+    return result;
   }
 }
 
