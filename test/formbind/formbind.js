@@ -281,6 +281,12 @@ describe('formBind', function() {
           el.form.isValid({ update: true });
           assert.calledOnce(el.requestUpdate);
         });
+
+        it('should not call "requestUpdate" when update option is ommited', function() {
+          spy(el, 'requestUpdate');
+          el.form.isValid();
+          assert.notCalled(el.requestUpdate);
+        });
       });
     });
 

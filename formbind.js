@@ -90,7 +90,7 @@ class FormState {
     return getPath(model.attributes, attr);
   }
 
-  isValid({ model = this.model, attributes = this.getAttributes() } = {}) {
+  isValid({ model = this.model, attributes = this.getAttributes(), update } = {}) {
     model = typeof model === 'string' ? this.el[model] : model;
     const result = model.isValid(attributes);
     if (result) {
@@ -100,7 +100,7 @@ class FormState {
     } else if (isObject(model.validationError)) {
       Object.assign(this.errors, model.validationError);
     }
-    if (typeof this.el[this.updateMethod] === 'function') {
+    if (update && typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
     }
     return result;
