@@ -89,9 +89,9 @@ class FormState {
     return getPath(model.attributes, attr);
   }
 
-  isValid(model) {
+  isValid({ model, attributes } = {}) {
     model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
-    const result = model.isValid(this.fields);
+    const result = model.isValid(attributes || this.fields);
     if (result) {
       this.fields.forEach(key => {
         delete this.errors[key];

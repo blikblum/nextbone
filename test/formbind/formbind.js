@@ -241,7 +241,13 @@ describe('formBind', function() {
           expect(el.form.errors).to.deep.equal({});
         });
 
-        it('should set errors only from fields present in markup when not specified', async function() {
+        it('should set errors only from attributes passed in options', async function() {
+          myModel.set({ textProp: 'danger', strangeProp: 'danger' });
+          el.form.isValid({ attributes: ['strangeProp'] });
+          expect(el.form.errors).to.deep.equal({ strangeProp: 'error' });
+        });
+
+        it('should set errors only from attributes present in markup when no option is specified', async function() {
           myModel.set({ textProp: 'danger', strangeProp: 'danger' });
           el.form.isValid();
           expect(el.form.errors).to.deep.equal({ textProp: 'error' });
