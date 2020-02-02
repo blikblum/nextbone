@@ -148,21 +148,6 @@ describe('formBind', function() {
       assert.calledWith(setSpy, 'numberProp', 'a');
     });
 
-    it('should look for model in property defined by data-model-name', async function() {
-      let inputEl = el.renderRoot.querySelector('#data-number');
-      inputEl.value = '3';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      assert.calledOnce(setSpy);
-      assert.calledWith(setSpy, 'numberProp', 3);
-
-      setSpy.resetHistory();
-
-      inputEl.value = 'a';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      assert.calledOnce(setSpy);
-      assert.calledWith(setSpy, 'numberProp', 'a');
-    });
-
     describe('form state', () => {
       @validation({
         textProp: function(value) {
@@ -209,20 +194,47 @@ describe('formBind', function() {
         expect(el.form.errors).to.deep.equal({});
       });
 
-      it('should update errors on form state when form.isValid is called', async function() {
-        myModel.set({ textProp: 'danger' });
-        el.form.isValid();
-        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      describe('getValue', () => {
+        it('should return value from the default model', () => {
+          myModel.set({ x: 'y' });
+          expect(el.form.getValue('x')).to.equal('y');
+        });
 
-        myModel.set({ textProp: 'safe' });
-        el.form.isValid();
-        expect(el.form.errors).to.deep.equal({});
+        it('should return value from el property when passing a string as model option', () => {
+          el.anotherModel = new Model({ a: 'b' });
+          expect(el.form.getValue('a', 'anotherModel')).to.equal('b');
+        });
+
+        it('should return value from passed model option when is a model instance', () => {
+          const anotherModel = new Model({ foo: 'bar' });
+          expect(el.form.getValue('foo', anotherModel)).to.equal('bar');
+        });
       });
 
-      it('should set errors from fields only present in markup when form.isValid is called', async function() {
-        myModel.set({ textProp: 'danger', strangeProp: 'danger' });
-        el.form.isValid();
-        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+      describe('isValid', () => {
+        it('should return validity state', async function() {
+          myModel.set({ textProp: 'danger' });
+          expect(el.form.isValid()).to.be.false;
+
+          myModel.set({ textProp: 'safe' });
+          expect(el.form.isValid()).to.be.true;
+        });
+
+        it('should update errors on form state', async function() {
+          myModel.set({ textProp: 'danger' });
+          el.form.isValid();
+          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+
+          myModel.set({ textProp: 'safe' });
+          el.form.isValid();
+          expect(el.form.errors).to.deep.equal({});
+        });
+
+        it('should set errors only from fields present in markup when not specified', async function() {
+          myModel.set({ textProp: 'danger', strangeProp: 'danger' });
+          el.form.isValid();
+          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+        });
       });
     });
 
