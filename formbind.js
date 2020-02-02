@@ -73,16 +73,16 @@ class FormState {
     this.touched = {};
   }
 
-  get fields() {
-    if (!this.__fields) {
-      const renderRoot = this.el.renderRoot || this.el;
-      const selector = this.events.map(event => event.selector).join(', ');
-      this.__fields = [];
-      renderRoot
-        .querySelectorAll(selector)
-        .forEach(el => this.__fields.push(el.getAttribute('name')));
+  getAttributes() {
+    if (!this.__selector) {
+      this.__selector = this.events.map(event => event.selector).join(', ');
     }
-    return this.__fields;
+    const renderRoot = this.el.renderRoot || this.el;
+    const result = [];
+    renderRoot
+      .querySelectorAll(this.__selector)
+      .forEach(el => result.push(el.getAttribute('name')));
+    return result;
   }
 
   getValue(attr, model) {
@@ -90,11 +90,11 @@ class FormState {
     return getPath(model.attributes, attr);
   }
 
-  isValid({ model, attributes } = {}) {
+  isValid({ model, attributes = this.getAttributes() } = {}) {
     model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
-    const result = model.isValid(attributes || this.fields);
+    const result = model.isValid(attributes);
     if (result) {
-      this.fields.forEach(key => {
+      attributes.forEach(key => {
         delete this.errors[key];
       });
     } else if (isObject(model.validationError)) {
