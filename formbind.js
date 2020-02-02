@@ -85,13 +85,13 @@ class FormState {
     return result;
   }
 
-  getValue(attr, model) {
-    model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
+  getValue(attr, model = this.model) {
+    model = typeof model === 'string' ? this.el[model] : model;
     return getPath(model.attributes, attr);
   }
 
-  isValid({ model, attributes = this.getAttributes() } = {}) {
-    model = model ? (typeof model === 'string' ? this.el[model] : model) : this.el[this.model];
+  isValid({ model = this.model, attributes = this.getAttributes() } = {}) {
+    model = typeof model === 'string' ? this.el[model] : model;
     const result = model.isValid(attributes);
     if (result) {
       attributes.forEach(key => {
