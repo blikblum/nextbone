@@ -1,4 +1,4 @@
-import { isObject } from 'underscore';
+import { isObject, isEqual } from 'underscore';
 import { delegate } from './nextbone';
 
 function getPathSegments(path) {
@@ -69,6 +69,7 @@ class FormState {
     this.model = model;
     this.events = events;
     this.updateMethod = updateMethod;
+    this.modelInitialData = new WeakMap();
     this.errors = {};
     this.touched = {};
   }
@@ -90,6 +91,12 @@ class FormState {
     return getPath(model.attributes, attr);
   }
 
+  isDirty({ model = this.model } = {}) {
+    model = typeof model === 'string' ? this.el[model] : model;
+    const initialData = this.modelInitialData.get(model);
+    return initialData ? !isEqual(model.attributes, initialData) : false;
+  }
+
   isValid({ model = this.model, attributes = this.getAttributes(), update } = {}) {
     model = typeof model === 'string' ? this.el[model] : model;
     const result = model.isValid(attributes);
@@ -104,6 +111,11 @@ class FormState {
       this.el[this.updateMethod]();
     }
     return result;
+  }
+
+  loadInitialData({ model = this.model } = {}) {
+    model = typeof model === 'string' ? this.el[model] : model;
+    this.modelInitialData.set(model, Object.assign({}, model.attributes));
   }
 }
 
@@ -135,6 +147,10 @@ const createClass = (ctor, options = {}) => {
       // eslint-disable-next-line no-console
       console.warn(`formBind: could not find model "${modelOption}" in element "${this.tagName}"`);
       return;
+    }
+
+    if (!this.form.modelInitialData.get(model)) {
+      this.form.loadInitialData({ model });
     }
 
     let value;

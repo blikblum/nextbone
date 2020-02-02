@@ -288,6 +288,38 @@ describe('formBind', function() {
           assert.notCalled(el.requestUpdate);
         });
       });
+
+      describe('isDirty', () => {
+        it('should return false when no form interaction is done', async function() {
+          myModel.set({ textProp: 'danger' });
+          expect(el.form.isDirty()).to.be.false;
+        });
+
+        it('should return false when value changed and then reverted back', async function() {
+          myModel.set({ textProp: 'danger' });
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.value = 'hello';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+          inputEl.value = 'danger';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.isDirty()).to.be.false;
+        });
+
+        it('should return true when value changed after first form interation', async function() {
+          myModel.set({ textProp: 'danger' });
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.value = 'hello';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.isDirty()).to.be.true;
+        });
+
+        it('should return true when no form interaction is done but after loading initial data', async function() {
+          el.form.loadInitialData();
+          myModel.set({ textProp: 'danger' });
+          expect(el.form.isDirty()).to.be.true;
+        });
+      });
     });
 
     describe('with nested path', () => {
