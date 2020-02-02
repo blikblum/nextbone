@@ -33,7 +33,7 @@ class TestDefaultInputs extends LitElement {
 
 const defaultsTag = defineCE(TestDefaultInputs);
 
-@formBind({ model: 'otherModel', update: 'forceUpdate' })
+@formBind({ model: 'otherModel', updateMethod: 'forceUpdate' })
 class TestModelOption extends LitElement {
   createRenderRoot() {
     return this;

@@ -115,7 +115,7 @@ const defaultInputs = {
 };
 
 const createClass = (ctor, options = {}) => {
-  const updateMethod = options.update || 'requestUpdate';
+  const updateMethod = options.updateMethod || 'requestUpdate';
   const inputs = options.inputs ? Object.assign({}, defaultInputs, options.inputs) : defaultInputs;
   const events = Object.keys(inputs).reduce((result, selector) => {
     inputs[selector].forEach(event => result.push({ event, selector }));
