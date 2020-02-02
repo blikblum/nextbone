@@ -111,6 +111,7 @@ const defaultInputs = {
 };
 
 const createClass = (ctor, options = {}) => {
+  const updateMethod = options.update || 'requestUpdate';
   const inputs = options.inputs ? Object.assign({}, defaultInputs, options.inputs) : defaultInputs;
   const events = Object.keys(inputs).reduce((result, selector) => {
     inputs[selector].forEach(event => result.push({ event, selector }));
@@ -168,11 +169,15 @@ const createClass = (ctor, options = {}) => {
       } else {
         model.set(prop, value);
       }
+
       if (!this.form.touched[prop]) {
         inputEl.addEventListener(
           'blur',
           () => {
             this.form.touched[prop] = true;
+            if (typeof this[updateMethod] === 'function') {
+              this[updateMethod]();
+            }
           },
           { once: true }
         );
@@ -189,6 +194,9 @@ const createClass = (ctor, options = {}) => {
         } else {
           delete this.form.errors[prop];
         }
+      }
+      if (typeof this[updateMethod] === 'function') {
+        this[updateMethod]();
       }
     }
   };

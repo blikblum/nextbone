@@ -33,11 +33,13 @@ class TestDefaultInputs extends LitElement {
 
 const defaultsTag = defineCE(TestDefaultInputs);
 
-@formBind({ model: 'otherModel' })
+@formBind({ model: 'otherModel', update: 'forceUpdate' })
 class TestModelOption extends LitElement {
   createRenderRoot() {
     return this;
   }
+
+  forceUpdate() {}
 
   render() {
     return html`
@@ -148,6 +150,15 @@ describe('formBind', function() {
       assert.calledWith(setSpy, 'numberProp', 'a');
     });
 
+    it('should call "requestUpdate" when a change occurs', async function() {
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = 'zzz';
+      spy(el, 'requestUpdate');
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      assert.calledOnce(el.requestUpdate);
+      el.requestUpdate.restore();
+    });
+
     describe('form state', () => {
       @validation({
         textProp: function(value) {
@@ -203,6 +214,18 @@ describe('formBind', function() {
 
         inputEl.blur();
         expect(el.form.touched.textProp).to.be.true;
+      });
+
+      it('should call requestUpdate when marked as touched', function() {
+        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+        inputEl.focus();
+        inputEl.value = 'danger';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+        spy(el, 'requestUpdate');
+        inputEl.blur();
+        assert.calledOnce(el.requestUpdate);
+        el.requestUpdate.restore();
       });
 
       describe('getValue', () => {
@@ -285,8 +308,8 @@ describe('formBind', function() {
     });
   });
 
-  describe('with custom model name', function() {
-    let el, otherModelSetSpy, yetAnotherModelSetSpy;
+  describe('with custom options', function() {
+    let el, otherModelSetSpy, yetAnotherModelSetSpy, forceUpdateSpy;
     beforeEach(async function() {
       el = await fixture(`<${modelOptionTag}></${modelOptionTag}>`);
       el.model = myModel;
@@ -294,9 +317,10 @@ describe('formBind', function() {
       el.yetAnotherModel = new Model();
       otherModelSetSpy = spy(el.otherModel, 'set');
       yetAnotherModelSetSpy = spy(el.yetAnotherModel, 'set');
+      forceUpdateSpy = spy(el, 'forceUpdate');
     });
 
-    it('should update the model defined by modelName option by default', async function() {
+    it('should update the model defined by model option by default', async function() {
       const inputEl = el.renderRoot.querySelector('#default');
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -316,6 +340,13 @@ describe('formBind', function() {
 
       assert.calledOnce(yetAnotherModelSetSpy);
       assert.calledWith(yetAnotherModelSetSpy, 'textProp', 'zzz');
+    });
+
+    it('should call the method passed in update option', function() {
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = 'zzz';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      assert.calledOnce(forceUpdateSpy);
     });
   });
 });
