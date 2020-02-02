@@ -320,6 +320,24 @@ describe('formBind', function() {
           expect(el.form.isDirty()).to.be.true;
         });
       });
+
+      describe('reset', () => {
+        it('should reset form state', () => {
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.focus();
+          inputEl.value = 'danger';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          inputEl.blur();
+          expect(el.form.errors).to.not.be.empty;
+          expect(el.form.touched).to.not.be.empty;
+          expect(el.form.isDirty()).to.be.true;
+
+          el.form.reset();
+          expect(el.form.errors).to.be.empty;
+          expect(el.form.touched).to.be.empty;
+          expect(el.form.isDirty()).to.be.false;
+        });
+      });
     });
 
     describe('with nested path', () => {

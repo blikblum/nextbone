@@ -69,9 +69,7 @@ class FormState {
     this.model = model;
     this.events = events;
     this.updateMethod = updateMethod;
-    this.modelInitialData = new WeakMap();
-    this.errors = {};
-    this.touched = {};
+    this.reset();
   }
 
   getAttributes() {
@@ -116,6 +114,12 @@ class FormState {
   loadInitialData({ model = this.model } = {}) {
     model = typeof model === 'string' ? this.el[model] : model;
     this.modelInitialData.set(model, Object.assign({}, model.attributes));
+  }
+
+  reset() {
+    this.errors = {};
+    this.touched = {};
+    this.modelInitialData = new WeakMap();
   }
 }
 
