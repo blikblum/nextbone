@@ -43,7 +43,7 @@ module.exports = function(config) {
 
       output: {
         format: 'iife', // Helps prevent naming collisions.
-        name: 'formbindTests', // Required for 'iife' format.
+        name: 'formTests', // Required for 'iife' format.
         sourcemap: 'inline', // Sensible for testing.
         globals: {
           underscore: '_'

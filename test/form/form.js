@@ -1,5 +1,5 @@
 import { Model } from '../../nextbone';
-import { formBind } from '../../formbind';
+import { form } from '../../form';
 import { validation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit-element';
@@ -7,7 +7,7 @@ import { LitElement, html } from 'lit-element';
 import { expect } from 'chai';
 import { spy, assert } from 'sinon';
 
-@formBind
+@form
 class TestDefaultInputs extends LitElement {
   createRenderRoot() {
     return this;
@@ -33,7 +33,7 @@ class TestDefaultInputs extends LitElement {
 
 const defaultsTag = defineCE(TestDefaultInputs);
 
-@formBind({ model: 'otherModel', updateMethod: 'forceUpdate' })
+@form({ model: 'otherModel', updateMethod: 'forceUpdate' })
 class TestModelOption extends LitElement {
   createRenderRoot() {
     return this;

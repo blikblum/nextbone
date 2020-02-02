@@ -224,7 +224,7 @@ const createClass = (ctor, options = {}) => {
   };
 };
 
-export const formBind = (optionsOrCtorOrDescriptor, options) => {
+export const form = (optionsOrCtorOrDescriptor, options) => {
   // current state of decorators sucks. Lets abuse of duck typing
   if (typeof optionsOrCtorOrDescriptor === 'function') {
     // constructor -> typescript decorator
@@ -243,6 +243,6 @@ export const formBind = (optionsOrCtorOrDescriptor, options) => {
   }
   // optionsOrCtorOrDescriptor === options
   return ctorOrDescriptor => {
-    return formBind(ctorOrDescriptor, optionsOrCtorOrDescriptor);
+    return form(ctorOrDescriptor, optionsOrCtorOrDescriptor);
   };
 };

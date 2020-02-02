@@ -1,6 +1,6 @@
 {
   "name": "nextbone",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "BackboneJS with ES classes and web components",
   "url": "https://github.com/blikblum/nextbone",
   "keywords": [
@@ -55,7 +55,7 @@
     "test:localstorage": "karma start test/localstorage/karma.conf.js",
     "test:validation": "cross-env NODE_ENV=test mocha --require @babel/register --ui exports --recursive test/validation",
     "test:virtualcollection": "karma start test/virtualcollection/karma.conf.js",
-    "test:formbind": "karma start test/formbind/karma.conf.js",
+    "test:form": "karma start test/form/karma.conf.js",
     "test:class-utils": "cross-env NODE_ENV=test mocha --require @babel/register test/class-utils",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
@@ -76,7 +76,7 @@
     "localstorage.js",
     "validation.js",
     "virtualcollection.js",
-    "formbind.js",
+    "form.js",
     "class-utils.js",
     "dom-utils.js",
     "LICENSE"
