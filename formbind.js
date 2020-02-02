@@ -64,10 +64,11 @@ function parseNumber(value) {
 }
 
 class FormState {
-  constructor(el, model = 'model', events) {
+  constructor(el, model = 'model', events, updateMethod) {
     this.el = el;
     this.model = model;
     this.events = events;
+    this.updateMethod = updateMethod;
     this.errors = {};
     this.touched = {};
   }
@@ -99,6 +100,9 @@ class FormState {
     } else if (isObject(model.validationError)) {
       Object.assign(this.errors, model.validationError);
     }
+    if (typeof this.el[this.updateMethod] === 'function') {
+      this.el[this.updateMethod]();
+    }
     return result;
   }
 }
@@ -121,7 +125,7 @@ const createClass = (ctor, options = {}) => {
   return class extends ctor {
     constructor() {
       super();
-      this.form = new FormState(this, options.model, events);
+      this.form = new FormState(this, options.model, events, updateMethod);
       events.forEach(({ event, selector }) =>
         delegate(this.renderRoot || this, event, selector, this.updateModel, this)
       );

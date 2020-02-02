@@ -275,6 +275,12 @@ describe('formBind', function() {
           el.form.isValid();
           expect(el.form.errors).to.deep.equal({ textProp: 'error' });
         });
+
+        it('should call "requestUpdate" when update option is true', function() {
+          spy(el, 'requestUpdate');
+          el.form.isValid({ update: true });
+          assert.calledOnce(el.requestUpdate);
+        });
       });
     });
 
