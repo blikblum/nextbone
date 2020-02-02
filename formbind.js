@@ -122,86 +122,84 @@ const createClass = (ctor, options = {}) => {
     return result;
   }, []);
 
+  function updateModel(e) {
+    const inputEl = e.target;
+    if (inputEl.hasAttribute('no-bind')) return;
+    const prop = inputEl.name;
+    if (!prop) return;
+    const propType = inputEl.dataset.propType || inputEl.type;
+    const modelOption = inputEl.model || inputEl.dataset.model || options.model || 'model';
+    const model = typeof modelOption === 'string' ? this[modelOption] : modelOption;
+
+    if (!model) {
+      // eslint-disable-next-line no-console
+      console.warn(`formBind: could not find model "${modelOption}" in element "${this.tagName}"`);
+      return;
+    }
+
+    let value;
+    switch (inputEl.type) {
+      case 'checkbox':
+        value = Boolean(inputEl.checked);
+        break;
+      default:
+        value = inputEl.value;
+    }
+    switch (propType) {
+      case 'number':
+        value = parseNumber(inputEl.value);
+        break;
+    }
+
+    // handle nested attributes
+    if (prop.indexOf('.') !== -1) {
+      const attrs = Object.assign({}, model.attributes);
+      setPath(attrs, prop, value);
+      model.set(attrs);
+      if (!Object.keys(model.changed).length) {
+        model.trigger('change', model, {});
+      }
+    } else {
+      model.set(prop, value);
+    }
+
+    if (!this.form.touched[prop]) {
+      inputEl.addEventListener(
+        'blur',
+        () => {
+          this.form.touched[prop] = true;
+          if (typeof this[updateMethod] === 'function') {
+            this[updateMethod]();
+          }
+        },
+        { once: true }
+      );
+    }
+
+    if (model.validate) {
+      const errors = model.validate(model.attributes, { attributes: [prop] });
+      if (errors) {
+        if (isObject(errors)) {
+          Object.assign(this.form.errors, errors);
+        } else {
+          this.form.errors[prop] = errors;
+        }
+      } else {
+        delete this.form.errors[prop];
+      }
+    }
+    if (typeof this[updateMethod] === 'function') {
+      this[updateMethod]();
+    }
+  }
+
   return class extends ctor {
     constructor() {
       super();
       this.form = new FormState(this, options.model, events, updateMethod);
       events.forEach(({ event, selector }) =>
-        delegate(this.renderRoot || this, event, selector, this.updateModel, this)
+        delegate(this.renderRoot || this, event, selector, updateModel, this)
       );
-    }
-
-    updateModel(e) {
-      const inputEl = e.target;
-      if (inputEl.hasAttribute('no-bind')) return;
-      const prop = inputEl.name;
-      if (!prop) return;
-      const propType = inputEl.dataset.propType || inputEl.type;
-      const modelOption = inputEl.model || inputEl.dataset.model || options.model || 'model';
-      const model = typeof modelOption === 'string' ? this[modelOption] : modelOption;
-
-      if (!model) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `formBind: could not find model "${modelOption}" in element "${this.tagName}"`
-        );
-        return;
-      }
-
-      let value;
-      switch (inputEl.type) {
-        case 'checkbox':
-          value = Boolean(inputEl.checked);
-          break;
-        default:
-          value = inputEl.value;
-      }
-      switch (propType) {
-        case 'number':
-          value = parseNumber(inputEl.value);
-          break;
-      }
-
-      // handle nested attributes
-      if (prop.indexOf('.') !== -1) {
-        const attrs = Object.assign({}, model.attributes);
-        setPath(attrs, prop, value);
-        model.set(attrs);
-        if (!Object.keys(model.changed).length) {
-          model.trigger('change', model, {});
-        }
-      } else {
-        model.set(prop, value);
-      }
-
-      if (!this.form.touched[prop]) {
-        inputEl.addEventListener(
-          'blur',
-          () => {
-            this.form.touched[prop] = true;
-            if (typeof this[updateMethod] === 'function') {
-              this[updateMethod]();
-            }
-          },
-          { once: true }
-        );
-      }
-
-      if (model.validate) {
-        const errors = model.validate(model.attributes, { attributes: [prop] });
-        if (errors) {
-          if (isObject(errors)) {
-            Object.assign(this.form.errors, errors);
-          } else {
-            this.form.errors[prop] = errors;
-          }
-        } else {
-          delete this.form.errors[prop];
-        }
-      }
-      if (typeof this[updateMethod] === 'function') {
-        this[updateMethod]();
-      }
     }
   };
 };
