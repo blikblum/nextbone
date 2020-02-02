@@ -168,7 +168,15 @@ const createClass = (ctor, options = {}) => {
       } else {
         model.set(prop, value);
       }
-      this.form.touched[prop] = true;
+      if (!this.form.touched[prop]) {
+        inputEl.addEventListener(
+          'blur',
+          () => {
+            this.form.touched[prop] = true;
+          },
+          { once: true }
+        );
+      }
 
       if (model.validate) {
         const errors = model.validate(model.attributes, { attributes: [prop] });

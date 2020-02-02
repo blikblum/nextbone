@@ -194,6 +194,17 @@ describe('formBind', function() {
         expect(el.form.errors).to.deep.equal({});
       });
 
+      it('should mark as touched after the first time exits from input', function() {
+        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+        inputEl.focus();
+        inputEl.value = 'danger';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        expect(el.form.touched.textProp).to.equal(undefined);
+
+        inputEl.blur();
+        expect(el.form.touched.textProp).to.be.true;
+      });
+
       describe('getValue', () => {
         it('should return value from the default model', () => {
           myModel.set({ x: 'y' });
