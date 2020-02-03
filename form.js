@@ -141,7 +141,7 @@ const createClass = (ctor, options = {}) => {
   function updateModel(e) {
     const inputEl = e.target;
     if (inputEl.hasAttribute('no-bind')) return;
-    const prop = inputEl.name;
+    const prop = inputEl.getAttribute('name');
     if (!prop) return;
     const propType = inputEl.dataset.propType || inputEl.type;
     const modelOption = inputEl.model || inputEl.dataset.model || options.model || 'model';
