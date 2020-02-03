@@ -478,6 +478,7 @@ class Model extends Events {
 
   constructor(attributes, options) {
     super();
+    this.isLoading = false;
     // The value returned during the last failed validation.
     this.validationError = null;
     var attrs = attributes || {};
@@ -693,6 +694,7 @@ class Model extends Events {
       var serverAttrs = options.parse ? model.parse(resp, options) : resp;
       if (!model.set(serverAttrs, options)) return false;
       if (success) success.call(options.context, model, resp, options);
+      model.isLoading = false;
       model.trigger('sync', model, resp, options);
     };
     wrapError(this, options);
@@ -737,6 +739,7 @@ class Model extends Events {
       if (wait) serverAttrs = extend({}, attrs, serverAttrs);
       if (serverAttrs && !model.set(serverAttrs, options)) return false;
       if (success) success.call(options.context, model, resp, options);
+      model.isLoading = false;
       model.trigger('sync', model, resp, options);
     };
     wrapError(this, options);
@@ -771,6 +774,7 @@ class Model extends Events {
     options.success = function(resp) {
       if (wait) destroy();
       if (success) success.call(options.context, model, resp, options);
+      model.isLoading = false;
       if (!model.isNew()) model.trigger('sync', model, resp, options);
     };
 
@@ -901,6 +905,7 @@ class Collection extends Events {
 
   constructor(models, options) {
     super();
+    this.isLoading = false;
     options || (options = {});
     this.preinitialize.apply(this, arguments);
     if (options.model) this.model = options.model;
@@ -1186,6 +1191,7 @@ class Collection extends Events {
       var method = options.reset ? 'reset' : 'set';
       collection[method](resp, options);
       if (success) success.call(options.context, collection, resp, options);
+      collection.isLoading = false;
       collection.trigger('sync', collection, resp, options);
     };
     wrapError(this, options);
@@ -1871,11 +1877,13 @@ var sync = {
     // Pass along `textStatus` and `errorThrown` from jQuery.
     var error = options.error;
     options.error = function(xhr, textStatus, errorThrown) {
+      model.isLoading = false;
       options.textStatus = textStatus;
       options.errorThrown = errorThrown;
       if (error) error.call(options.context, xhr, textStatus, errorThrown);
     };
 
+    model.isLoading = true;
     // Make the request, allowing the user to override any Ajax options.
     var xhr = (options.xhr = ajax.handler(extend(params, options)));
     model.trigger('request', model, xhr, options);
