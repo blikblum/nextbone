@@ -139,7 +139,7 @@ const createClass = ModelClass => {
     toJSON(...args) {
       const result = super.toJSON(...args);
       const excludeFromJSON = this[excludeFromJSONKey];
-      if (!excludeFromJSON || (args[0] && args[0].computedFields)) {
+      if (!excludeFromJSON || (args[0] && args[0].computed)) {
         return result;
       }
       return omit(result, excludeFromJSON);

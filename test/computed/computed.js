@@ -381,7 +381,7 @@ describe('nextbone/computed', function() {
       });
     });
 
-    describe('when computed is overriden by computedFields option', function() {
+    describe('when computed is overriden by computed option', function() {
       beforeEach(function() {
         @withComputed
         class TestModel extends Model {
@@ -407,7 +407,7 @@ describe('nextbone/computed', function() {
         }
 
         model = new TestModel({ netPrice: 100, vatRate: 20 });
-        json = model.toJSON({ computedFields: true });
+        json = model.toJSON({ computed: true });
       });
 
       it('should computed field be part of JSON', function() {
