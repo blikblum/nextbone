@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { computed } from '../../computed';
+import { withComputed } from '../../computed';
 import { Model, Collection } from '../../nextbone';
 
 describe('nextbone/computed', function() {
@@ -8,14 +8,16 @@ describe('nextbone/computed', function() {
     let model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          get: function() {
-            return 100;
+      @withComputed
+      class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            get: function() {
+              return 100;
+            }
           }
-        }
-      })
-      class TestModel extends Model {}
+        };
+      }
 
       model = new TestModel({ netPrice: 100, vatRate: 5 });
     });
@@ -34,12 +36,14 @@ describe('nextbone/computed', function() {
 
       beforeEach(function() {
         getSpy = sinon.spy();
-        @computed({
-          grossPrice: {
-            get: getSpy
-          }
-        })
-        class TestModel extends Model {}
+        @withComputed
+        class TestModel extends Model {
+          static computed = {
+            grossPrice: {
+              get: getSpy
+            }
+          };
+        }
 
         model = new TestModel();
       });
@@ -54,14 +58,16 @@ describe('nextbone/computed', function() {
     let model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          get: function() {
-            return 105;
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            get: function() {
+              return 105;
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 0.0,
@@ -82,15 +88,17 @@ describe('nextbone/computed', function() {
     var model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate'],
-          get: function(fields) {
-            return fields.netPrice * (1 + fields.vatRate / 100);
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate'],
+            get: function(fields) {
+              return fields.netPrice * (1 + fields.vatRate / 100);
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 0.0,
@@ -111,15 +119,17 @@ describe('nextbone/computed', function() {
     let model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate'],
-          get: function(fields) {
-            return fields.netPrice * (1 + fields.vatRate / 100);
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate'],
+            get: function(fields) {
+              return fields.netPrice * (1 + fields.vatRate / 100);
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 0.0,
@@ -163,18 +173,20 @@ describe('nextbone/computed', function() {
     var model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate'],
-          get: function(fields) {
-            return fields.netPrice * (1 + fields.vatRate / 100);
-          },
-          set: function(value, fields) {
-            fields.netPrice = value / (1 + fields.vatRate / 100);
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate'],
+            get: function(fields) {
+              return fields.netPrice * (1 + fields.vatRate / 100);
+            },
+            set: function(value, fields) {
+              fields.netPrice = value / (1 + fields.vatRate / 100);
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 0.0,
@@ -197,18 +209,20 @@ describe('nextbone/computed', function() {
     let model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate'],
-          get: function(fields) {
-            return fields.netPrice * (1 + fields.vatRate / 100);
-          },
-          set: function(value, fields) {
-            fields.netPrice = value / (1 + fields.vatRate / 100);
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate'],
+            get: function(fields) {
+              return fields.netPrice * (1 + fields.vatRate / 100);
+            },
+            set: function(value, fields) {
+              fields.netPrice = value / (1 + fields.vatRate / 100);
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 0.0,
@@ -303,18 +317,19 @@ describe('nextbone/computed', function() {
     var json, model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate'],
-          get: function(fields) {
-            return fields.netPrice * (1 + fields.vatRate / 100);
-          },
-          set: function(value, fields) {
-            fields.netPrice = value / (1 + fields.vatRate / 100);
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate'],
+            get: function(fields) {
+              return fields.netPrice * (1 + fields.vatRate / 100);
+            },
+            set: function(value, fields) {
+              fields.netPrice = value / (1 + fields.vatRate / 100);
+            }
+          }
+        };
         defaults() {
           return {
             netPrice: 0.0,
@@ -333,19 +348,21 @@ describe('nextbone/computed', function() {
 
     describe('when toJSON is true', function() {
       beforeEach(function() {
-        @computed({
-          grossPrice: {
-            depends: ['netPrice', 'vatRate'],
-            get: function(fields) {
-              return fields.netPrice * (1 + fields.vatRate / 100);
-            },
-            set: function(value, fields) {
-              fields.netPrice = value / (1 + fields.vatRate / 100);
-            },
-            toJSON: true
-          }
-        })
+        @withComputed
         class TestModel extends Model {
+          static computed = {
+            grossPrice: {
+              depends: ['netPrice', 'vatRate'],
+              get: function(fields) {
+                return fields.netPrice * (1 + fields.vatRate / 100);
+              },
+              set: function(value, fields) {
+                fields.netPrice = value / (1 + fields.vatRate / 100);
+              },
+              toJSON: true
+            }
+          };
+
           defaults() {
             return {
               netPrice: 0.0,
@@ -366,19 +383,21 @@ describe('nextbone/computed', function() {
 
     describe('when computed is overriden by computedFields option', function() {
       beforeEach(function() {
-        @computed({
-          grossPrice: {
-            depends: ['netPrice', 'vatRate'],
-            get: function(fields) {
-              return fields.netPrice * (1 + fields.vatRate / 100);
-            },
-            set: function(value, fields) {
-              fields.netPrice = value / (1 + fields.vatRate / 100);
-            },
-            toJSON: false
-          }
-        })
+        @withComputed
         class TestModel extends Model {
+          static computed = {
+            grossPrice: {
+              depends: ['netPrice', 'vatRate'],
+              get: function(fields) {
+                return fields.netPrice * (1 + fields.vatRate / 100);
+              },
+              set: function(value, fields) {
+                fields.netPrice = value / (1 + fields.vatRate / 100);
+              },
+              toJSON: false
+            }
+          };
+
           defaults() {
             return {
               netPrice: 0.0,
@@ -401,15 +420,17 @@ describe('nextbone/computed', function() {
     var model, collection;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice'],
-          get: function(fields) {
-            return fields.netPrice * 2;
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice'],
+            get: function(fields) {
+              return fields.netPrice * 2;
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 100
@@ -439,18 +460,20 @@ describe('nextbone/computed', function() {
     var model;
 
     beforeEach(function() {
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate'],
-          get: function(fields) {
-            return fields.netPrice * (1 + fields.vatRate / 100);
-          },
-          set: function(value, fields) {
-            fields.netPrice = value / (1 + fields.vatRate / 100);
-          }
-        }
-      })
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate'],
+            get: function(fields) {
+              return fields.netPrice * (1 + fields.vatRate / 100);
+            },
+            set: function(value, fields) {
+              fields.netPrice = value / (1 + fields.vatRate / 100);
+            }
+          }
+        };
+
         defaults() {
           return {
             netPrice: 0.0,
@@ -491,13 +514,16 @@ describe('nextbone/computed', function() {
       callback = function(callback) {
         this.external.on('change:value', callback);
       };
-      @computed({
-        grossPrice: {
-          depends: ['netPrice', 'vatRate', callback],
-          get: getSpy
-        }
-      })
+
+      @withComputed
       class TestModel extends Model {
+        static computed = {
+          grossPrice: {
+            depends: ['netPrice', 'vatRate', callback],
+            get: getSpy
+          }
+        };
+
         defaults() {
           return {
             name: null,
@@ -539,16 +565,18 @@ describe('nextbone/computed', function() {
       let model;
 
       beforeEach(function() {
-        @computed({
-          grossPrice: [
-            'netPrice',
-            'vatRate',
-            function(fields) {
-              return fields.netPrice * (1 + fields.vatRate / 100);
-            }
-          ]
-        })
+        @withComputed
         class TestModel extends Model {
+          static computed = {
+            grossPrice: [
+              'netPrice',
+              'vatRate',
+              function(fields) {
+                return fields.netPrice * (1 + fields.vatRate / 100);
+              }
+            ]
+          };
+
           defaults() {
             return {
               netPrice: 0.0,
@@ -592,19 +620,21 @@ describe('nextbone/computed', function() {
       var model;
 
       beforeEach(function() {
-        @computed({
-          grossPrice: [
-            'netPrice',
-            'vatRate',
-            function(fields) {
-              return fields.netPrice * (1 + fields.vatRate / 100);
-            },
-            function(value, fields) {
-              fields.netPrice = value / (1 + fields.vatRate / 100);
-            }
-          ]
-        })
+        @withComputed
         class TestModel extends Model {
+          static computed = {
+            grossPrice: [
+              'netPrice',
+              'vatRate',
+              function(fields) {
+                return fields.netPrice * (1 + fields.vatRate / 100);
+              },
+              function(value, fields) {
+                fields.netPrice = value / (1 + fields.vatRate / 100);
+              }
+            ]
+          };
+
           defaults() {
             return {
               netPrice: 0.0,
