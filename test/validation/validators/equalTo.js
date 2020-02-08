@@ -3,15 +3,17 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        password: {
-          required: true
-        },
-        passwordRepeat: {
-          equalTo: 'password'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          password: {
+            required: true
+          },
+          passwordRepeat: {
+            equalTo: 'password'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

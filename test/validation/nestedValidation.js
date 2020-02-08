@@ -5,13 +5,15 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        @validation({
-          'address.street': {
-            required: true,
-            msg: 'error'
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            'address.street': {
+              required: true,
+              msg: 'error'
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;
@@ -93,13 +95,15 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        @validation({
-          'foo.bar.baz': {
-            required: true,
-            msg: 'error'
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            'foo.bar.baz': {
+              required: true,
+              msg: 'error'
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;
@@ -185,17 +189,19 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        @validation({
-          'foo.bar.baz': {
-            required: true,
-            msg: 'error'
-          },
-          'foo.foo': {
-            required: true,
-            msg: 'error'
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            'foo.bar.baz': {
+              required: true,
+              msg: 'error'
+            },
+            'foo.foo': {
+              required: true,
+              msg: 'error'
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;
@@ -289,17 +295,19 @@ module.exports = {
         this.valid = sinon.spy();
         this.invalid = sinon.spy();
 
-        @validation({
-          'foo.bar': {
-            fn: 'validateBazAndQux',
-            msg: 'bazQuxError1'
-          },
-          'foo.foo': {
-            fn: 'validateBazAndQux',
-            msg: 'bazQuxError2'
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            'foo.bar': {
+              fn: 'validateBazAndQux',
+              msg: 'bazQuxError1'
+            },
+            'foo.foo': {
+              fn: 'validateBazAndQux',
+              msg: 'bazQuxError2'
+            }
+          };
+
           validateBazAndQux(value, attr, computedState) {
             if (!value || !value.baz || !value.qux) {
               return 'error';

@@ -2,18 +2,20 @@ module.exports = {
   'Label formatters': {
     'Attribute names on the model can be formatted in error messages using': {
       beforeEach: function() {
-        @validation({
-          someAttribute: {
-            required: true
-          },
-          some_attribute: {
-            required: true
-          },
-          some_other_attribute: {
-            required: true
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            someAttribute: {
+              required: true
+            },
+            some_attribute: {
+              required: true
+            },
+            some_other_attribute: {
+              required: true
+            }
+          };
+
           labels = {
             someAttribute: 'Custom label'
           };
@@ -50,12 +52,14 @@ module.exports = {
         },
 
         'returns sentence cased name when label attribute is not defined': function() {
-          @validation({
-            someAttribute: {
-              required: true
-            }
-          })
+          @withValidation
           class Model extends Backbone.Model {
+            static validation = {
+              someAttribute: {
+                required: true
+              }
+            };
+
             set(...args) {
               super.set(...args);
               return this.validationError === null;

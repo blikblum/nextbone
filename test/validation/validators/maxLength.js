@@ -6,8 +6,9 @@ module.exports = {
           maxLength: 2
         }
       };
-      @validation(this.validation)
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = this.validation;
         set(...args) {
           super.set(...args);
           return this.validationError === null;

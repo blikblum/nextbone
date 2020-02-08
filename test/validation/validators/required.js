@@ -3,26 +3,28 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        name: {
-          required: true
-        },
-        agree: {
-          required: true
-        },
-        posts: {
-          required: true
-        },
-        dependsOnName: {
-          required: function(val, attr, computed) {
-            that.ctx = this;
-            that.attr = attr;
-            that.computed = computed;
-            return this.get('name') === 'name';
-          }
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            required: true
+          },
+          agree: {
+            required: true
+          },
+          posts: {
+            required: true
+          },
+          dependsOnName: {
+            required: function(val, attr, computed) {
+              that.ctx = this;
+              that.attr = attr;
+              that.computed = computed;
+              return this.get('name') === 'name';
+            }
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

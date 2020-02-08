@@ -1,21 +1,23 @@
 module.exports = {
   'Setting options.attributes': {
     beforeEach: function() {
-      @validation({
-        age: {
-          required: true
-        },
-        name: {
-          required: true
-        },
-        password: {
-          required: true
-        },
-        email: {
-          pattern: 'email'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: {
+            required: true
+          },
+          name: {
+            required: true
+          },
+          password: {
+            required: true
+          },
+          email: {
+            pattern: 'email'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

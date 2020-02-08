@@ -6,21 +6,23 @@ module.exports = {
 
     'per validator': {
       beforeEach: function() {
-        @validation({
-          email: [
-            {
-              required: true,
-              msg: 'required'
-            },
-            {
-              pattern: 'email',
-              msg: function() {
-                return 'pattern';
-              }
-            }
-          ]
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            email: [
+              {
+                required: true,
+                msg: 'required'
+              },
+              {
+                pattern: 'email',
+                msg: function() {
+                  return 'pattern';
+                }
+              }
+            ]
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;
@@ -44,14 +46,16 @@ module.exports = {
 
     'per attribute': {
       beforeEach: function() {
-        @validation({
-          email: {
-            required: true,
-            pattern: 'email',
-            msg: 'error'
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            email: {
+              required: true,
+              pattern: 'email',
+              msg: 'error'
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;

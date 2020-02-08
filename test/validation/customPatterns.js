@@ -5,12 +5,14 @@ module.exports = {
         custom: /^test/
       });
 
-      @validation({
-        name: {
-          pattern: 'custom'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            pattern: 'custom'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -48,12 +50,14 @@ module.exports = {
         email: /^test/
       });
 
-      @validation({
-        name: {
-          pattern: 'email'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            pattern: 'email'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

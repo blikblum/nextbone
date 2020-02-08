@@ -11,12 +11,14 @@ module.exports = {
         }
       });
 
-      @validation({
-        age: {
-          custom: 1
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: {
+            custom: 1
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -48,10 +50,12 @@ module.exports = {
 
   'Defining a custom validator as a string': {
     beforeEach: function() {
-      @validation({
-        age: 'validateAge'
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: 'validateAge'
+        };
+
         validateAge(value, attr, computedState) {
           if (value != 1) return 'Age invalid';
         }
@@ -100,10 +104,12 @@ module.exports = {
 
   'Defining a custom validator as a string array': {
     beforeEach: function() {
-      @validation({
-        age: ['validateAge', 'validateNumber']
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: ['validateAge', 'validateNumber']
+        };
+
         validateAge(value, attr, computedState) {
           if (value != 1) return 'Age invalid';
         }
@@ -160,12 +166,14 @@ module.exports = {
         }
       });
 
-      @validation({
-        age: {
-          min: 1
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: {
+            min: 1
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -214,12 +222,14 @@ module.exports = {
         }
       });
 
-      @validation({
-        name: {
-          custom: 'custom'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            custom: 'custom'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -256,12 +266,14 @@ module.exports = {
         }
       });
 
-      @validation({
-        name: {
-          custom: 'custom'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            custom: 'custom'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

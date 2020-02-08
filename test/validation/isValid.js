@@ -12,12 +12,14 @@ module.exports = {
 
     'when model has defined validation': {
       beforeEach: function() {
-        @validation({
-          name: {
-            required: true
-          }
-        })
-        class Model extends Backbone.Model {}
+        @withValidation
+        class Model extends Backbone.Model {
+          static validation = {
+            name: {
+              required: true
+            }
+          };
+        }
 
         this.model = new Model();
       },
@@ -54,15 +56,17 @@ module.exports = {
 
       'and passing name of attribute': {
         beforeEach: function() {
-          @validation({
-            name: {
-              required: true
-            },
-            age: {
-              required: true
-            }
-          })
-          class Model extends Backbone.Model {}
+          @withValidation
+          class Model extends Backbone.Model {
+            static validation = {
+              name: {
+                required: true
+              },
+              age: {
+                required: true
+              }
+            };
+          }
           this.model = new Model();
         },
 
@@ -86,18 +90,20 @@ module.exports = {
 
       'and passing array of attributes': {
         beforeEach: function() {
-          @validation({
-            name: {
-              required: true
-            },
-            age: {
-              required: true
-            },
-            phone: {
-              required: true
-            }
-          })
-          class Model extends Backbone.Model {}
+          @withValidation
+          class Model extends Backbone.Model {
+            static validation = {
+              name: {
+                required: true
+              },
+              age: {
+                required: true
+              },
+              phone: {
+                required: true
+              }
+            };
+          }
           this.model = new Model();
         },
 

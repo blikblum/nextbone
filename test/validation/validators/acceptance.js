@@ -3,12 +3,14 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        agree: {
-          acceptance: true
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          agree: {
+            acceptance: true
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

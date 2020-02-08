@@ -440,7 +440,14 @@ var validators = {
 Object.defineProperty(validators, 'format', { value: format });
 Object.defineProperty(validators, 'formatLabel', { value: formatLabel });
 
-const createClass = (ModelClass, rules) => {
+const getRules = ctor => {
+  if (ctor.hasOwnProperty('__validationRules')) {
+    return ctor.__validationRules;
+  }
+  return (ctor.__validationRules = ctor.validation);
+};
+
+const createClass = ModelClass => {
   return class extends ModelClass {
     // Check whether or not a value, or a hash of values
     // passes validation without updating the model
@@ -448,7 +455,8 @@ const createClass = (ModelClass, rules) => {
       var self = this,
         result = {},
         error,
-        allAttrs = extend({}, this.attributes);
+        allAttrs = extend({}, this.attributes),
+        rules = getRules(this.constructor);
 
       if (isObject(attr)) {
         // if multiple attributes are passed at once we would like for the validation functions to
@@ -465,7 +473,7 @@ const createClass = (ModelClass, rules) => {
 
         return isEmpty(result) ? undefined : result;
       } else {
-        return validateAttr(this, attr, value, allAttrs, rules);
+        return validateAttr(self, attr, value, allAttrs, rules);
       }
     }
 
@@ -492,6 +500,7 @@ const createClass = (ModelClass, rules) => {
     // entire model.
     validate(attrs, setOptions) {
       var model = this,
+        rules = getRules(this.constructor),
         validateAll = !attrs,
         opt = extend({}, options, setOptions),
         validatedAttrs = getValidatedAttrs(opt.attributes, rules),
@@ -529,18 +538,18 @@ const createClass = (ModelClass, rules) => {
 };
 
 // decorator
-const validation = rules => ctorOrDescriptor => {
+const withValidation = ctorOrDescriptor => {
   if (typeof ctorOrDescriptor === 'function') {
-    return createClass(ctorOrDescriptor, rules);
+    return createClass(ctorOrDescriptor);
   }
   const { kind, elements } = ctorOrDescriptor;
   return {
     kind,
     elements,
     finisher(ctor) {
-      return createClass(ctor, rules);
+      return createClass(ctor);
     }
   };
 };
 
-export { validation, labelFormatters, messages, validators, patterns, options };
+export { withValidation, labelFormatters, messages, validators, patterns, options };

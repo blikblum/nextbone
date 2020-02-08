@@ -12,14 +12,16 @@ module.exports = {
         invalid: this.invalid
       });
 
-      @validation({
-        age: function(val) {
-          if (val === 0) {
-            return 'Age is invalid';
-          }
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: function(val) {
+            if (val === 0) {
+              return 'Age is invalid';
+            }
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

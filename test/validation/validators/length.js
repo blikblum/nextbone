@@ -6,14 +6,16 @@ module.exports = {
           length: 2
         }
       };
-      @validation(this.validation)
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = this.validation;
         set(...args) {
           super.set(...args);
           return this.validationError === null;
         }
       }
 
+      Model.validation = this.validation;
       this.model = new Model();
     },
 

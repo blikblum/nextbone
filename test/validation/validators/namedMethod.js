@@ -3,12 +3,14 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        name: {
-          fn: 'validateName'
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            fn: 'validateName'
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -56,10 +58,12 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        name: 'validateName'
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: 'validateName'
+        };
+
         validateName(val, attr, computed) {
           that.ctx = this;
           that.attr = attr;

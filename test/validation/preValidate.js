@@ -2,8 +2,9 @@ module.exports = {
   preValidate: {
     'when model has not defined any validation': {
       beforeEach: function() {
-        @validation({})
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {};
           set(...args) {
             super.set(...args);
             return this.validationError === null;
@@ -19,18 +20,20 @@ module.exports = {
 
     'when model has defined validation': {
       beforeEach: function() {
-        @validation({
-          name: {
-            required: true
-          },
-          address: {
-            required: true
-          },
-          authenticated: {
-            required: false
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            name: {
+              required: true
+            },
+            address: {
+              required: true
+            },
+            authenticated: {
+              required: false
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;
@@ -84,18 +87,20 @@ module.exports = {
           AMEX: 1
         };
 
-        @validation({
-          card_type: {
-            required: true
-          },
-          security_code: function(value, attr, computedState) {
-            var requiredLength = computedState.card_type === CARD_TYPES.AMEX ? 4 : 3;
-            if (value && _.isString(value) && value.length !== requiredLength) {
-              return 'Please enter a valid security code.';
-            }
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            card_type: {
+              required: true
+            },
+            security_code: function(value, attr, computedState) {
+              var requiredLength = computedState.card_type === CARD_TYPES.AMEX ? 4 : 3;
+              if (value && _.isString(value) && value.length !== requiredLength) {
+                return 'Please enter a valid security code.';
+              }
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;

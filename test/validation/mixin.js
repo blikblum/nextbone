@@ -1,22 +1,23 @@
 module.exports = {
   'Mixin validation': {
     beforeEach: function() {
-      this.Model =
-        @validation({
+      @withValidation
+      class Model extends Backbone.Model {
+        static validation = {
           name: function(val) {
             if (!val) {
               return 'error';
             }
           }
-        })
-        class extends Backbone.Model {
-          set(...args) {
-            super.set(...args);
-            return this.validationError === null;
-          }
         };
 
-      this.model = new this.Model();
+        set(...args) {
+          super.set(...args);
+          return this.validationError === null;
+        }
+      }
+
+      this.model = new Model();
     },
 
     'isValid is false when model is invalid': function() {

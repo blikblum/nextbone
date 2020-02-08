@@ -1,19 +1,21 @@
 module.exports = {
   'Backbone.Validation events': {
     beforeEach: function() {
-      @validation({
-        age: function(val) {
-          if (!val) {
-            return 'age';
-          }
-        },
-        name: function(val) {
-          if (!val) {
-            return 'name';
-          }
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: function(val) {
+            if (!val) {
+              return 'age';
+            }
+          },
+          name: function(val) {
+            if (!val) {
+              return 'name';
+            }
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

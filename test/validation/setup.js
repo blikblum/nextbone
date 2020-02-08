@@ -6,7 +6,7 @@ const Validation = require('../../validation');
 global.sinon = require('sinon');
 
 global.Backbone.Validation = Validation;
-global.validation = Validation.validation;
+global.withValidation = Validation.withValidation;
 
 global.assert = assert;
 

@@ -3,19 +3,21 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        name: {
-          fn: function(val, attr, computed) {
-            that.ctx = this;
-            that.attr = attr;
-            that.computed = computed;
-            if (name !== 'backbone') {
-              return 'Error';
+      @withValidation
+      class Model extends Backbone.Model {
+        static validation = {
+          name: {
+            fn: function(val, attr, computed) {
+              that.ctx = this;
+              that.attr = attr;
+              that.computed = computed;
+              if (name !== 'backbone') {
+                return 'Error';
+              }
             }
           }
-        }
-      })
-      class Model extends Backbone.Model {
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -82,17 +84,19 @@ module.exports = {
     beforeEach: function() {
       var that = this;
 
-      @validation({
-        name: function(val, attr, computed) {
-          that.ctx = this;
-          that.attr = attr;
-          that.computed = computed;
-          if (name !== 'backbone') {
-            return 'Error';
-          }
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: function(val, attr, computed) {
+            that.ctx = this;
+            that.attr = attr;
+            that.computed = computed;
+            if (name !== 'backbone') {
+              return 'Error';
+            }
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;
@@ -157,12 +161,14 @@ module.exports = {
 module.exports = {
   'method validator using other built in validator(s)': {
     beforeEach: function() {
-      @validation({
-        name: function(val, attr, computed) {
-          return Backbone.Validation.validators.length(val, attr, 4, this);
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          name: function(val, attr, computed) {
+            return Backbone.Validation.validators.length(val, attr, 4, this);
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError === null;

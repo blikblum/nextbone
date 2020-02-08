@@ -1,19 +1,21 @@
 module.exports = {
   'Backbone.Validation': {
     beforeEach: function() {
-      @validation({
-        age: function(val) {
-          if (!val) {
-            return 'Age is invalid';
-          }
-        },
-        name: function(val) {
-          if (!val) {
-            return 'Name is invalid';
-          }
-        }
-      })
+      @withValidation
       class Model extends Backbone.Model {
+        static validation = {
+          age: function(val) {
+            if (!val) {
+              return 'Age is invalid';
+            }
+          },
+          name: function(val) {
+            if (!val) {
+              return 'Name is invalid';
+            }
+          }
+        };
+
         set(...args) {
           super.set(...args);
           return this.validationError ? null : this;
@@ -212,17 +214,19 @@ module.exports = {
         beforeEach: function() {
           this.invalid = sinon.spy();
           this.valid = sinon.spy();
-          @validation({
-            age: {
-              min: 1,
-              msg: 'error'
-            },
-            name: {
-              required: true,
-              msg: 'error'
-            }
-          })
+          @withValidation
           class Model extends Backbone.Model {
+            static validation = {
+              age: {
+                min: 1,
+                msg: 'error'
+              },
+              name: {
+                required: true,
+                msg: 'error'
+              }
+            };
+
             set(...args) {
               super.set(...args);
               return this.validationError === null;
@@ -282,17 +286,18 @@ module.exports = {
 
     'when bound to model with three validators on one attribute': {
       beforeEach: function() {
-        this.Model =
-          @validation({
+        @withValidation
+        class Model extends Backbone.Model {
+          static validation = {
             postalCode: {
               minLength: 2,
               pattern: 'digits',
               maxLength: 4
             }
-          })
-          class extends Backbone.Model {};
+          };
+        }
 
-        this.model = new this.Model();
+        this.model = new Model();
       },
 
       'and violating the first validator the model is invalid': function() {
@@ -322,19 +327,21 @@ module.exports = {
 
     'when bound to model with two dependent attribute validations': {
       beforeEach: function() {
-        @validation({
-          one: function(val, attr, computed) {
-            if (val < computed.two) {
-              return 'error';
-            }
-          },
-          two: function(val, attr, computed) {
-            if (val > computed.one) {
-              return 'error';
-            }
-          }
-        })
+        @withValidation
         class Model extends Backbone.Model {
+          static validation = {
+            one: function(val, attr, computed) {
+              if (val < computed.two) {
+                return 'error';
+              }
+            },
+            two: function(val, attr, computed) {
+              if (val > computed.one) {
+                return 'error';
+              }
+            }
+          };
+
           set(...args) {
             super.set(...args);
             return this.validationError === null;
