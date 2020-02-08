@@ -20,7 +20,14 @@
       "request": "launch",
       "name": "Validation Tests",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-      "args": ["-u", "exports", "--require", "@babel/register", "${workspaceRoot}/test/validation"],
+      "args": [
+        "-u",
+        "exports",
+        "--require",
+        "@babel/register",
+        "--recursive",
+        "${workspaceRoot}/test/validation"
+      ],
       "env": {
         "NODE_ENV": "test"
       },
