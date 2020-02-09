@@ -1654,11 +1654,17 @@ const undelegate = function(el, handler) {
   }
 };
 
-const bindViewState = (el, value) => {
+const bindViewState = (el, value, name, proxyEvents) => {
   if (value instanceof Model) {
     el.listenTo(value, 'change sync request', () => el.requestUpdate());
   } else if (value instanceof Collection) {
     el.listenTo(value, 'sort update reset change sync request', () => el.requestUpdate());
+  } else {
+    // not state. nothing more to do
+    return;
+  }
+  if (proxyEvents) {
+    el.listenTo(value, 'all', (event, ...args) => el.trigger(`${name}:${event}`, args));
   }
 };
 
@@ -1667,9 +1673,9 @@ const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
   classEvents.push({ eventName, selector, listener });
 };
 
-const registerStateProperty = (ctor, name, key, options = {}) => {
-  const classStates = ctor.__states || (ctor.__states = new Set());
-  classStates.add(name);
+const registerStateProperty = (ctor, name, key, { copy, proxyEvents } = {}) => {
+  const classStates = ctor.__states || (ctor.__states = []);
+  classStates.push({ name, proxyEvents });
   const desc = {
     get() {
       return this[key];
@@ -1677,7 +1683,7 @@ const registerStateProperty = (ctor, name, key, options = {}) => {
     set(value) {
       const oldValue = this[key];
       if (value === oldValue) return;
-      if (options.copy) {
+      if (copy) {
         if (oldValue instanceof Model) {
           oldValue.assign(value);
           return;
@@ -1686,7 +1692,7 @@ const registerStateProperty = (ctor, name, key, options = {}) => {
         }
       }
       if (this.isConnected) {
-        bindViewState(this, value);
+        bindViewState(this, value, name, proxyEvents);
       }
       if (isState(oldValue)) {
         this.stopListening(oldValue);
@@ -1719,8 +1725,8 @@ const createViewClass = ElementClass => {
       super.connectedCallback && super.connectedCallback();
       const states = this.constructor.__states;
       if (states) {
-        states.forEach(name => {
-          bindViewState(this, this[name]);
+        states.forEach(({ name, proxyEvents }) => {
+          bindViewState(this, this[name], name, proxyEvents);
         });
       }
     }

@@ -155,7 +155,7 @@ const elHTML = html`
     });
 
     QUnit.test(`state${suffix}`, async function(assert) {
-      assert.expect(17);
+      assert.expect(18);
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
       @classDecorator
@@ -172,7 +172,7 @@ const elHTML = html`
         @Backbone.state
         model = new Backbone.Model();
 
-        @Backbone.state
+        @Backbone.state({ proxyEvents: true })
         collection = new Backbone.Collection();
 
         @Backbone.state({ copy: true })
@@ -256,6 +256,12 @@ const elHTML = html`
 
       el.unitializedCopyModel.set('test', 'x');
       assert.equal(enqueueUpdateCount, 8);
+
+      // state with proxyEvents option proxies its events
+      el.on('collection:my:event', val => {
+        assert.equal(val, 'x');
+      });
+      el.collection.trigger('my:event', 'x');
 
       assert.equal(createPropertyCount, 4);
     });
