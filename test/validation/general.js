@@ -404,6 +404,27 @@ module.exports = {
         this.model.validate();
         assert(this.model.isValid());
       }
+    },
+
+    'when bound to model without validation rules': {
+      beforeEach: function() {
+        @withValidation
+        class Model extends Backbone.Model {}
+
+        this.model = new Model();
+      },
+
+      isValid: function() {        
+        assert(this.model.isValid());
+      },
+
+      validate: function() {        
+        refute(this.model.validate());
+      },
+
+      preValidate: function() {        
+        refute(this.model.preValidate());
+      },
     }
   }
 };

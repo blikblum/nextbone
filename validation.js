@@ -452,11 +452,12 @@ const createClass = ModelClass => {
     // Check whether or not a value, or a hash of values
     // passes validation without updating the model
     preValidate(attr, value) {
+      var rules = getRules(this.constructor);
+      if (!rules) return;
       var self = this,
         result = {},
         error,
-        allAttrs = extend({}, this.attributes),
-        rules = getRules(this.constructor);
+        allAttrs = extend({}, this.attributes);
 
       if (isObject(attr)) {
         // if multiple attributes are passed at once we would like for the validation functions to
@@ -499,8 +500,9 @@ const createClass = ModelClass => {
     // You can call it manually without any parameters to validate the
     // entire model.
     validate(attrs, setOptions) {
+      var rules = getRules(this.constructor);
+      if (!rules) return;
       var model = this,
-        rules = getRules(this.constructor),
         validateAll = !attrs,
         opt = extend({}, options, setOptions),
         validatedAttrs = getValidatedAttrs(opt.attributes, rules),
