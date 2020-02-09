@@ -1,8 +1,6 @@
 module.exports = {
   'named method validator': {
     beforeEach: function() {
-      var that = this;
-
       @withValidation
       class Model extends Backbone.Model {
         static validation = {

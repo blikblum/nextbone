@@ -7,8 +7,7 @@ module.exports = {
         }
       };
       @withValidation
-      class Model extends Backbone.Model {
-        static validation = this.validation;
+      class Model extends Backbone.Model {        
         set(...args) {
           super.set(...args);
           return this.validationError === null;
