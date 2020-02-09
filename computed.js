@@ -41,6 +41,7 @@ const createFieldFromArray = arr => {
 };
 
 const createNormalizedOptions = options => {
+  if (!options) return;
   const excludeFromJSON = reduce(
     options,
     (result, def, key) => {
@@ -118,22 +119,24 @@ class ComputedFields {
 
 const excludeFromJSONKey = Symbol('excludeFromJSON');
 
-const bindComputed = (instance, ctor) => {
-  const computed = ctor.computed;
-  if (!computed) return;
-  const options =
-    ctor.__computedOptions || (ctor.__computedOptions = createNormalizedOptions(computed));
-  instance.computedFields = new ComputedFields(instance, options.fields);
-  if (options.excludeFromJSON.length) {
-    instance[excludeFromJSONKey] = options.excludeFromJSON;
+const getComputedOptions = ctor => {
+  if (ctor.hasOwnProperty('__computedOptions')) {
+    return ctor.__computedOptions;
   }
+  return (ctor.__computedOptions = createNormalizedOptions(ctor.computed));
 };
 
 const createClass = ModelClass => {
   return class extends ModelClass {
     constructor(...args) {
       super(...args);
-      bindComputed(this, this.constructor);
+      const options = getComputedOptions(this.constructor);
+      if (options) {
+        this.computedFields = new ComputedFields(this, options.fields);
+        if (options.excludeFromJSON.length) {
+          this[excludeFromJSONKey] = options.excludeFromJSON;
+        }
+      }
     }
 
     toJSON(...args) {
