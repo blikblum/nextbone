@@ -95,7 +95,7 @@ class FormState {
     return initialData ? !isEqual(model.attributes, initialData) : false;
   }
 
-  isValid({ model = this.model, attributes = this.getAttributes(), update } = {}) {
+  isValid({ model = this.model, attributes = this.getAttributes(), update, touch } = {}) {
     model = typeof model === 'string' ? this.el[model] : model;
     const result = model.isValid(attributes);
     if (result) {
@@ -104,6 +104,9 @@ class FormState {
       });
     } else if (isObject(model.validationError)) {
       Object.assign(this.errors, model.validationError);
+    }
+    if (touch) {
+      Object.keys(this.errors).forEach(key => (this.touched[key] = true));
     }
     if (update && typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();

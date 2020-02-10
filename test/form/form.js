@@ -1,6 +1,6 @@
 import { Model } from '../../nextbone';
 import { form } from '../../form';
-import { validation } from '../../validation';
+import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit-element';
 
@@ -51,7 +51,7 @@ class TestModelOption extends LitElement {
 
 const modelOptionTag = defineCE(TestModelOption);
 
-describe('formBind', function() {
+describe('form', function() {
   let myModel;
   let setSpy;
 
@@ -160,15 +160,17 @@ describe('formBind', function() {
     });
 
     describe('form state', () => {
-      @validation({
-        textProp: function(value) {
-          if (value === 'danger') return 'error';
-        },
-        strangeProp: function(value) {
-          if (value === 'danger') return 'error';
-        }
-      })
-      class ValidatedModel extends Model {}
+      @withValidation
+      class ValidatedModel extends Model {
+        static validation = {
+          textProp: function(value) {
+            if (value === 'danger') return 'error';
+          },
+          strangeProp: function(value) {
+            if (value === 'danger') return 'error';
+          }
+        };
+      }
       beforeEach(() => {
         myModel = new ValidatedModel();
         el.model = myModel;
@@ -286,6 +288,12 @@ describe('formBind', function() {
           spy(el, 'requestUpdate');
           el.form.isValid();
           assert.notCalled(el.requestUpdate);
+        });
+
+        it('should mark invalid attributes as touched when touch option is true', function() {
+          myModel.set({ textProp: 'danger' });
+          el.form.isValid({ touch: true });
+          expect(el.form.touched).to.deep.equal({ textProp: true });
         });
       });
 
