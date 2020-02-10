@@ -57,7 +57,7 @@
     "test:virtualcollection": "karma start test/virtualcollection/karma.conf.js",
     "test:form": "karma start test/form/karma.conf.js",
     "test:class-utils": "cross-env NODE_ENV=test mocha --require @babel/register test/class-utils",
-    "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection",
+    "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js form.js test/core/*.js",
     "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write"
