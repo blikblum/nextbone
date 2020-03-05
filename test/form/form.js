@@ -19,7 +19,7 @@ class TestDefaultInputs extends LitElement {
       <input type="text" name="nested.textProp" />
       <input type="text" name="noBind" no-bind />
       <input type="number" name="numberProp" />
-      <input id="data-number" data-prop-type="number" name="numberProp" />
+      <input id="data-number" data-format="number" name="numberProp" />
       <input type="radio" name="radioProp" value="a" />
       <input type="radio" name="radioProp" value="b" checked />
       <input type="checkbox" name="checkProp" />

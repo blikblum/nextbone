@@ -146,7 +146,7 @@ const createClass = (ctor, options = {}) => {
     if (inputEl.hasAttribute('no-bind')) return;
     const prop = inputEl.getAttribute('name');
     if (!prop) return;
-    const propType = inputEl.dataset.propType || inputEl.type;
+    const format = inputEl.dataset.format || inputEl.type;
     const modelOption = inputEl.model || inputEl.dataset.model || options.model || 'model';
     const model = typeof modelOption === 'string' ? this[modelOption] : modelOption;
 
@@ -168,9 +168,9 @@ const createClass = (ctor, options = {}) => {
       default:
         value = inputEl.value;
     }
-    switch (propType) {
+    switch (format) {
       case 'number':
-        value = parseNumber(inputEl.value);
+        value = parseNumber(value);
         break;
     }
 
