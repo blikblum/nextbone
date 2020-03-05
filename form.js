@@ -63,6 +63,10 @@ function parseNumber(value) {
   return isNumeric ? n : toNull(value);
 }
 
+const formats = {
+  number: parseNumber
+};
+
 class FormState {
   constructor(el, model = 'model', events, updateMethod) {
     this.el = el;
@@ -146,7 +150,7 @@ const createClass = (ctor, options = {}) => {
     if (inputEl.hasAttribute('no-bind')) return;
     const prop = inputEl.getAttribute('name');
     if (!prop) return;
-    const format = inputEl.dataset.format || inputEl.type;
+    const formatter = formats[inputEl.dataset.format || inputEl.type];
     const modelOption = inputEl.model || inputEl.dataset.model || options.model || 'model';
     const model = typeof modelOption === 'string' ? this[modelOption] : modelOption;
 
@@ -168,10 +172,8 @@ const createClass = (ctor, options = {}) => {
       default:
         value = inputEl.value;
     }
-    switch (format) {
-      case 'number':
-        value = parseNumber(value);
-        break;
+    if (formatter) {
+      value = formatter(value);
     }
 
     // handle nested attributes
@@ -225,6 +227,10 @@ const createClass = (ctor, options = {}) => {
       );
     }
   };
+};
+
+export const registerFormat = (name, fn) => {
+  formats[name] = fn;
 };
 
 export const form = (optionsOrCtorOrDescriptor, options) => {

@@ -1,11 +1,13 @@
 import { Model } from '../../nextbone';
-import { form } from '../../form';
+import { form, registerFormat } from '../../form';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit-element';
 
 import { expect } from 'chai';
 import { spy, assert } from 'sinon';
+
+registerFormat('bracket', value => `[${value}]`);
 
 @form
 class TestDefaultInputs extends LitElement {
@@ -20,6 +22,7 @@ class TestDefaultInputs extends LitElement {
       <input type="text" name="noBind" no-bind />
       <input type="number" name="numberProp" />
       <input id="data-number" data-format="number" name="numberProp" />
+      <input id="custom-format" data-format="bracket" name="bracketProp" />
       <input type="radio" name="radioProp" value="a" />
       <input type="radio" name="radioProp" value="b" checked />
       <input type="checkbox" name="checkProp" />
@@ -135,7 +138,7 @@ describe('form', function() {
       assert.calledWith(setSpy, 'numberProp', null);
     });
 
-    it('should convert value to number for input with data-prop-type = "number"', async function() {
+    it('should convert value to number for input with data-format = "number"', async function() {
       let inputEl = el.renderRoot.querySelector('#data-number');
       inputEl.value = '3';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -148,6 +151,14 @@ describe('form', function() {
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
       assert.calledWith(setSpy, 'numberProp', 'a');
+    });
+
+    it('should convert value using custom format registered through registerFormat', async function() {
+      let inputEl = el.renderRoot.querySelector('#custom-format');
+      inputEl.value = 'xxx';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'bracketProp', '[xxx]');
     });
 
     it('should call "requestUpdate" when a change occurs', async function() {
