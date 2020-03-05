@@ -133,6 +133,7 @@ class FormState {
 const defaultInputs = {
   select: ['input'],
   input: ['input'],
+  textarea: ['change'],
   'input[type=radio]': ['change'],
   'input[type=checkbox]': ['change']
 };
