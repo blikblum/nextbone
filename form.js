@@ -21,11 +21,11 @@ function getPathSegments(path) {
 
 // todo: use lodash `get/set` when/if using lodash instead of underscore
 
-export const getPath = (object, path, value) => {
+export const getPath = (object, path) => {
   // Check if path is string or array. Regex : ensure that we do not have '.' and brackets
   const pathArray = Array.isArray(path) ? path : path.split(/[,[\].]/g).filter(Boolean);
   // Find value if exist return otherwise return undefined value;
-  return pathArray.reduce((prevObj, key) => prevObj && prevObj[key], object) || value;
+  return pathArray.reduce((prevObj, key) => prevObj && prevObj[key], object);
 };
 
 export const setPath = (obj, path, value) => {

@@ -247,6 +247,11 @@ describe('form', function() {
           expect(el.form.getValue('x')).to.equal('y');
         });
 
+        it('should return falsy value from the default model', () => {
+          myModel.set({ x: 0 });
+          expect(el.form.getValue('x')).to.equal(0);
+        });
+
         it('should return value from el property when passing a string as model option', () => {
           el.anotherModel = new Model({ a: 'b' });
           expect(el.form.getValue('a', 'anotherModel')).to.equal('b');
