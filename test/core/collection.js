@@ -511,7 +511,7 @@
   QUnit.test('model destroy removes from all collections', function(assert) {
     assert.expect(3);
     var m = new Backbone.Model({ id: 5, title: 'Othello' });
-    m.sync = function(method, model, options) {
+    m.sync = function(method, options) {
       options.success();
     };
     var col1 = new Backbone.Collection([m]);
@@ -527,7 +527,7 @@
   ) {
     assert.expect(3);
     var m = new Backbone.Model({ title: 'Othello' });
-    m.sync = function(method, model, options) {
+    m.sync = function(method, options) {
       throw 'should not be called';
     };
     var col1 = new Backbone.Collection([m]);
@@ -557,7 +557,7 @@
     collection.on('error', function() {
       assert.ok(true);
     });
-    collection.sync = function(method, model, options) {
+    collection.sync = function(method, options) {
       options.error();
     };
     collection.fetch();
@@ -585,7 +585,7 @@
         assert.equal(this, obj);
       }
     };
-    collection.sync = function(method, model, opts) {
+    collection.sync = function(method, opts) {
       opts.error.call(opts.context);
     };
     collection.fetch(options);
@@ -637,9 +637,9 @@
     assert.expect(1);
     var done = assert.async();
     var Model = class extends Backbone.Model {
-      sync(method, model, options) {
+      sync(method, options) {
         _.extend(options, { specialSync: true });
-        return Backbone.Model.prototype.sync.call(this, method, model, options);
+        return super.sync(method, options);
       }
     };
 
@@ -1129,7 +1129,7 @@
         assert.ok(options.opts);
       }
     };
-    collection.sync = m.sync = function(method, coll, options) {
+    collection.sync = m.sync = function(method, options) {
       options.success({});
     };
     collection.fetch(opts);
@@ -1203,7 +1203,7 @@
     assert.expect(1);
     var collection = new Backbone.Collection();
     var model = new Backbone.Model();
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success();
     };
     collection.on('add', function() {
@@ -1601,9 +1601,9 @@
     var done = assert.async();
     var SpecialSyncCollection = class extends Backbone.Collection {
       url = '/test';
-      sync(method, collection, options) {
+      sync(method, options) {
         _.extend(options, { specialSync: true });
-        return Backbone.Collection.prototype.sync.call(this, method, collection, options);
+        return super.sync(method, options);
       }
     };
 

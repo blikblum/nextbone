@@ -520,8 +520,8 @@ class Model extends Events {
 
   // Proxy `sync.handler` by default -- but override this if you need
   // custom syncing semantics for *this* particular model.
-  sync() {
-    return sync.handler.apply(this, arguments);
+  sync(method, options) {
+    return sync.handler(method, this, options);
   }
 
   // Get the value of an attribute.
@@ -697,7 +697,7 @@ class Model extends Events {
       model.trigger('sync', model, resp, options);
     };
     wrapError(this, options);
-    return this.sync('read', this, options);
+    return this.sync('read', options);
   }
 
   // Set a hash of model attributes, and sync the model to the server.
@@ -747,7 +747,7 @@ class Model extends Events {
 
     var method = this.isNew() ? 'create' : options.patch ? 'patch' : 'update';
     if (method === 'patch' && !options.attrs) options.attrs = attrs;
-    var xhr = this.sync(method, this, options);
+    var xhr = this.sync(method, options);
 
     // Restore attributes.
     this.attributes = attributes;
@@ -780,7 +780,7 @@ class Model extends Events {
       result = Promise.resolve().then(options.success);
     } else {
       wrapError(this, options);
-      result = this.sync('delete', this, options);
+      result = this.sync('delete', options);
     }
     if (!wait) destroy();
     return result;
@@ -929,8 +929,8 @@ class Collection extends Events {
   }
 
   // Proxy `sync.handler` by default.
-  sync() {
-    return sync.handler.apply(this, arguments);
+  sync(method, options) {
+    return sync.handler(method, this, options);
   }
 
   // Add a model, or list of models to the set. `models` may be Nextbone
@@ -1191,7 +1191,7 @@ class Collection extends Events {
       collection.trigger('sync', collection, resp, options);
     };
     wrapError(this, options);
-    return this.sync('read', this, options);
+    return this.sync('read', options);
   }
 
   // Create a new instance of a model in this collection. Add the model to the

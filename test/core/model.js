@@ -642,7 +642,7 @@
     model.validate = function(attrs) {
       if (attrs.admin) return "Can't change admin status.";
     };
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success.call(this, { admin: true });
     };
     model.on('invalid', function(m, error) {
@@ -667,7 +667,7 @@
     model.on('error', function() {
       assert.ok(true);
     });
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.error();
     };
     model.save({ data: 2, id: 1 });
@@ -685,7 +685,7 @@
         assert.equal(this, obj);
       }
     };
-    model.sync = function(method, m, opts) {
+    model.sync = function(method, opts) {
       opts.success.call(opts.context);
     };
     model.save({ data: 2, id: 1 }, options);
@@ -703,7 +703,7 @@
         assert.equal(this, obj);
       }
     };
-    model.sync = function(method, m, opts) {
+    model.sync = function(method, opts) {
       opts.error.call(opts.context);
     };
     model.save({ data: 2, id: 1 }, options);
@@ -718,7 +718,7 @@
     model.parse = function() {
       assert.ok(false);
     };
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success({ i: ++i });
     };
     model.fetch({ parse: false });
@@ -752,7 +752,7 @@
   QUnit.test('save in positional style', function(assert) {
     assert.expect(1);
     var model = new Backbone.Model();
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success();
     };
     model.save('title', 'Twelfth Night');
@@ -762,7 +762,7 @@
   QUnit.test('save with non-object success response', function(assert) {
     assert.expect(2);
     var model = new Backbone.Model();
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success('', options);
       options.success(null, options);
     };
@@ -789,9 +789,9 @@
     assert.expect(1);
     var done = assert.async();
     var SpecialSyncModel = class extends Backbone.Model {
-      sync(method, m, options) {
+      sync(method, options) {
         _.extend(options, { specialSync: true });
-        return Backbone.Model.prototype.sync.call(this, method, m, options);
+        return super.sync(method, options);
       }
       urlRoot = '/test';
     };
@@ -817,9 +817,9 @@
     assert.expect(1);
     var done = assert.async();
     var SpecialSyncModel = class extends Backbone.Model {
-      sync(method, m, options) {
+      sync(method, options) {
         _.extend(options, { specialSync: true });
-        return Backbone.Model.prototype.sync.call(this, method, m, options);
+        return super.sync(method, options);
       }
       urlRoot = '/test';
     };
@@ -864,9 +864,9 @@
     assert.expect(1);
     var done = assert.async();
     var SpecialSyncModel = class extends Backbone.Model {
-      sync(method, m, options) {
+      sync(method, options) {
         _.extend(options, { specialSync: true });
-        return Backbone.Model.prototype.sync.call(this, method, m, options);
+        return super.sync(method, options);
       }
       urlRoot = '/test';
     };
@@ -1206,7 +1206,7 @@
     function(assert) {
       assert.expect(2);
       var model = new Backbone.Model({ x: 1, y: 2 });
-      model.sync = function(method, m, options) {
+      model.sync = function(method, options) {
         options.success();
       };
       model.on('change:x', function() {
@@ -1228,7 +1228,7 @@
 
   QUnit.test('save turns on parse flag', function(assert) {
     var Model = class extends Backbone.Model {
-      sync(method, m, options) {
+      sync(method, options) {
         assert.ok(options.parse);
       }
     };
@@ -1428,7 +1428,7 @@
         assert.ok(options);
       }
     };
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success();
     };
     model.save({ id: 1 }, opts);
@@ -1439,7 +1439,7 @@
   QUnit.test("#1412 - Trigger 'sync' event.", function(assert) {
     assert.expect(3);
     var model = new Backbone.Model({ id: 1 });
-    model.sync = function(method, m, options) {
+    model.sync = function(method, options) {
       options.success();
     };
     model.on('sync', function() {
@@ -1484,7 +1484,7 @@
     assert.expect(2);
     var Model = class extends Backbone.Model {
       url = '/test/';
-      sync(method, m, options) {
+      sync(method, options) {
         options.success();
       }
       validate() {
@@ -1519,7 +1519,7 @@
     var done = assert.async();
     assert.expect(0);
     var Model = class extends Backbone.Model {
-      sync(method, m, options) {
+      sync(method, options) {
         setTimeout(function() {
           options.success();
           done();
