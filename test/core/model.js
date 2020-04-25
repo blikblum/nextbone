@@ -787,6 +787,7 @@
 
   QUnit.test('save will pass extra options to success callback', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, m, options) {
         _.extend(options, { specialSync: true });
@@ -799,10 +800,10 @@
 
     var onSuccess = function(m, response, options) {
       assert.ok(options.specialSync, 'Options were passed correctly to callback');
+      done();
     };
 
     model.save(null, { success: onSuccess });
-    this.ajaxSettings.success();
   });
 
   QUnit.test('fetch', function(assert) {
@@ -814,6 +815,7 @@
 
   QUnit.test('fetch will pass extra options to success callback', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, m, options) {
         _.extend(options, { specialSync: true });
@@ -826,10 +828,22 @@
 
     var onSuccess = function(m, response, options) {
       assert.ok(options.specialSync, 'Options were passed correctly to callback');
+      done();
     };
 
     model.fetch({ success: onSuccess });
-    this.ajaxSettings.success();
+  });
+
+  QUnit.test('`fetch` promise should resolve after success callback', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
+    var successCalled = false;
+    var model = new Backbone.Model({ x: 1, y: 2 });
+    model.url = '/x';
+    model.fetch({ success: () => (successCalled = true) }).then(() => {
+      assert.ok(successCalled);
+      done();
+    });
   });
 
   QUnit.test('destroy', function(assert) {
@@ -848,6 +862,7 @@
 
   QUnit.test('destroy will pass extra options to success callback', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, m, options) {
         _.extend(options, { specialSync: true });
@@ -860,10 +875,21 @@
 
     var onSuccess = function(m, response, options) {
       assert.ok(options.specialSync, 'Options were passed correctly to callback');
+      done();
     };
 
     model.destroy({ success: onSuccess });
-    this.ajaxSettings.success();
+  });
+
+  QUnit.test('`destroy` promise should resolve after success callback', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
+    var successCalled = false;
+    var model = new Backbone.Model({ x: 1, y: 2 });
+    model.destroy({ success: () => (successCalled = true) }).then(() => {
+      assert.ok(successCalled);
+      done();
+    });
   });
 
   QUnit.test('non-persisted destroy', function(assert) {
@@ -1207,6 +1233,18 @@
       }
     };
     new Model().save();
+  });
+
+  QUnit.test('`save` promise should resolve after success callback', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
+    var successCalled = false;
+    var model = new Backbone.Model({ x: 1, y: 2 });
+    model.url = '/x';
+    model.save({ x: 3 }, { success: () => (successCalled = true) }).then(() => {
+      assert.ok(successCalled);
+      done();
+    });
   });
 
   QUnit.test("nested `set` during `'change:attr'`", function(assert) {

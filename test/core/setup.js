@@ -22,6 +22,12 @@ window.Backbone = Backbone;
     // Capture ajax settings for comparison.
     Backbone.ajax.handler = function(settings) {
       env.ajaxSettings = settings;
+      return Promise.resolve().then(() => {
+        if (settings.success) {
+          settings.success(env.ajaxResponse);
+        }
+        env.ajaxResponse = undefined;
+      });
     };
 
     // Capture the arguments to Backbone.sync for comparison.
@@ -31,7 +37,7 @@ window.Backbone = Backbone;
         model: model,
         options: options
       };
-      sync.apply(this, arguments);
+      return sync.apply(this, arguments);
     };
   });
 

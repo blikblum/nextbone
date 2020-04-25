@@ -563,6 +563,18 @@
     collection.fetch();
   });
 
+  QUnit.test('`fetch` promise should resolve after success callback', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
+    var successCalled = false;
+    var collection = new Backbone.Collection();
+    collection.url = '/x';
+    collection.fetch({ success: () => (successCalled = true) }).then(() => {
+      assert.ok(successCalled);
+      done();
+    });
+  });
+
   QUnit.test('#3283 - fetch with an error response calls error with context', function(assert) {
     assert.expect(1);
     var collection = new Backbone.Collection();
@@ -623,6 +635,7 @@
 
   QUnit.test('create will pass extra options to success callback', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var Model = class extends Backbone.Model {
       sync(method, model, options) {
         _.extend(options, { specialSync: true });
@@ -639,10 +652,10 @@
 
     var success = function(model, response, options) {
       assert.ok(options.specialSync, 'Options were passed correctly to callback');
+      done();
     };
 
     collection.create({}, { success: success });
-    this.ajaxSettings.success();
   });
 
   QUnit.test('create with wait:true should not call collection.parse', function(assert) {
@@ -1573,6 +1586,7 @@
 
   QUnit.test('fetch will pass extra options to success callback', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var SpecialSyncCollection = class extends Backbone.Collection {
       url = '/test';
       sync(method, collection, options) {
@@ -1585,10 +1599,10 @@
 
     var onSuccess = function(coll, resp, options) {
       assert.ok(options.specialSync, 'Options were passed correctly to callback');
+      done();
     };
 
     collection.fetch({ success: onSuccess });
-    this.ajaxSettings.success();
   });
 
   QUnit.test('`add` only `sort`s when necessary', function(assert) {
@@ -1666,17 +1680,19 @@
 
   QUnit.test('#2606 - Collection#create, success arguments', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var collection = new Backbone.Collection();
+    this.ajaxResponse = 'response';
     collection.url = 'test';
     collection.create(
       {},
       {
         success: function(model, resp, options) {
           assert.strictEqual(resp, 'response');
+          done();
         }
       }
     );
-    this.ajaxSettings.success('response');
   });
 
   QUnit.test('#2612 - nested `parse` works with `Collection#set`', function(assert) {
