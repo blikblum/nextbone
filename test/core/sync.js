@@ -99,6 +99,7 @@
     assert.expect(1);
     Backbone.ajax.handler = function(settings) {
       assert.strictEqual(settings.url, '/test');
+      return Promise.resolve();
     };
     var model = new Backbone.Model();
     model.url = '/test';

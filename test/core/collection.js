@@ -1136,22 +1136,11 @@
     collection.create(m, opts);
   });
 
-  QUnit.test("#1412 - Trigger 'request' and 'sync' events.", function(assert) {
-    assert.expect(4);
+  QUnit.test("#1412 - Trigger 'request' and 'sync' events on create.", function(assert) {
+    assert.expect(2);
+    var done = assert.async();
     var collection = new Backbone.Collection();
     collection.url = '/test';
-    Backbone.ajax.handler = function(settings) {
-      settings.success();
-    };
-
-    collection.on('request', function(obj, xhr, options) {
-      assert.ok(obj === collection, "collection has correct 'request' event after fetching");
-    });
-    collection.on('sync', function(obj, response, options) {
-      assert.ok(obj === collection, "collection has correct 'sync' event after fetching");
-    });
-    collection.fetch();
-    collection.off();
 
     collection.on('request', function(obj, xhr, options) {
       assert.ok(
@@ -1164,23 +1153,45 @@
         obj === collection.get(1),
         "collection has correct 'sync' event after one of its models save"
       );
+      collection.off();
+      done();
     });
     collection.create({ id: 1 });
-    collection.off();
+  });
+
+  QUnit.test("#1412 - Trigger 'request' and 'sync' events on fetch.", function(assert) {
+    assert.expect(2);
+    var done = assert.async();
+    var collection = new Backbone.Collection();
+    collection.url = '/test';
+
+    collection.on('request', function(obj, xhr, options) {
+      assert.ok(obj === collection, "collection has correct 'request' event after fetching");
+    });
+    collection.on('sync', function(obj, response, options) {
+      assert.ok(obj === collection, "collection has correct 'sync' event after fetching");
+      collection.off();
+      done();
+    });
+    collection.fetch();
   });
 
   QUnit.test('#3283 - fetch, create calls success with context', function(assert) {
     assert.expect(2);
+    var done = assert.async();
+    var count = 0;
     var collection = new Backbone.Collection();
     collection.url = '/test';
-    Backbone.ajax.handler = function(settings) {
-      settings.success.call(settings.context);
-    };
+
     var obj = {};
     var options = {
       context: obj,
       success: function() {
         assert.equal(this, obj);
+        count++;
+        if (count === 2) {
+          done();
+        }
       }
     };
 
@@ -1573,8 +1584,9 @@
     }();
     var ajax = Backbone.ajax.handler;
     Backbone.ajax.handler = function(params) {
-      _.defer(params.success, []);
-      return { someHeader: 'headerValue' };
+      var promise = Promise.resolve([]);
+      promise.someHeader = 'headerValue';
+      return promise;
     };
     collection.fetch({
       success: function() {

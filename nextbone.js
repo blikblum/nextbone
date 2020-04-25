@@ -1893,6 +1893,14 @@ var sync = {
     // Make the request, allowing the user to override any Ajax options.
     var xhr = (options.xhr = ajax.handler(extend(params, options)));
     model.trigger('request', model, xhr, options);
+    xhr.then(
+      function(data) {
+        if (options.success) options.success(data);
+      },
+      function(error) {
+        if (options.error) options.error(error);
+      }
+    );
     return xhr;
   }
 };
@@ -1946,14 +1954,12 @@ var ajax = {
         var data = getData(text, options.dataType);
 
         if (response.ok) {
-          if (options.success) options.success(data);
           return data;
         }
 
         var error = new Error(response.statusText);
         error.response = response;
         error.responseData = data;
-        if (options.error) options.error(error);
         throw error;
       });
     });

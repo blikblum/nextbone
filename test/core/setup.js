@@ -22,12 +22,9 @@ window.Backbone = Backbone;
     // Capture ajax settings for comparison.
     Backbone.ajax.handler = function(settings) {
       env.ajaxSettings = settings;
-      return Promise.resolve().then(() => {
-        if (settings.success) {
-          settings.success(env.ajaxResponse);
-        }
-        env.ajaxResponse = undefined;
-      });
+      var response = env.ajaxResponse;
+      env.ajaxResponse = undefined;
+      return Promise.resolve(response);
     };
 
     // Capture the arguments to Backbone.sync for comparison.
