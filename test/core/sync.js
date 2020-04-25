@@ -119,14 +119,24 @@
   });
 
   QUnit.test('#2928 - Pass along `textStatus` and `errorThrown`.', function(assert) {
-    assert.expect(2);
+    assert.expect(3);
+    var done = assert.async();
     var model = new Backbone.Model();
     model.url = '/test';
-    model.on('error', function(m, xhr, options) {
-      assert.strictEqual(options.textStatus, 'textStatus');
-      assert.strictEqual(options.errorThrown, 'errorThrown');
+    model.on('error', function(m, error) {
+      assert.ok(error instanceof Error);
+      assert.deepEqual(error.responseData, { message: 'oh no!' });
+      assert.strictEqual(error.textStatus, 'textStatus');
+      done();
     });
+    var ajax = Backbone.ajax.handler;
+    Backbone.ajax.handler = function() {
+      var error = new Error('not found');
+      error.textStatus = 'textStatus';
+      error.responseData = { message: 'oh no!' };
+      return Promise.reject(error);
+    };
     model.fetch();
-    this.ajaxSettings.error({}, 'textStatus', 'errorThrown');
+    Backbone.ajax.handler = ajax;
   });
 })(QUnit);

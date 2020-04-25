@@ -1875,15 +1875,6 @@ var sync = {
       params.data = JSON.stringify(options.attrs || model.toJSON(options));
     }
 
-    // Pass along `textStatus` and `errorThrown` from jQuery.
-    var error = options.error;
-    options.error = function(xhr, textStatus, errorThrown) {
-      model.isLoading = false;
-      options.textStatus = textStatus;
-      options.errorThrown = errorThrown;
-      if (error) error.call(options.context, xhr, textStatus, errorThrown);
-    };
-
     model.isLoading = true;
     // Make the request, allowing the user to override any Ajax options.
     var xhr = (options.xhr = ajax.handler(extend(params, options)));
@@ -1893,7 +1884,8 @@ var sync = {
         if (options.success) options.success(data);
       },
       function(error) {
-        if (options.error) options.error(error);
+        model.isLoading = false;
+        if (options.error) options.error.call(options.context, error);
       }
     );
     return xhr;
