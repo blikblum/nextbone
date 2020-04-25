@@ -694,7 +694,6 @@ class Model extends Events {
       var serverAttrs = options.parse ? model.parse(resp, options) : resp;
       if (!model.set(serverAttrs, options)) return false;
       if (success) success.call(options.context, model, resp, options);
-      model.isLoading = false;
       model.trigger('sync', model, resp, options);
     };
     wrapError(this, options);
@@ -739,7 +738,6 @@ class Model extends Events {
       if (wait) serverAttrs = extend({}, attrs, serverAttrs);
       if (serverAttrs && !model.set(serverAttrs, options)) return false;
       if (success) success.call(options.context, model, resp, options);
-      model.isLoading = false;
       model.trigger('sync', model, resp, options);
     };
     wrapError(this, options);
@@ -774,7 +772,6 @@ class Model extends Events {
     options.success = function(resp) {
       if (wait) destroy();
       if (success) success.call(options.context, model, resp, options);
-      model.isLoading = false;
       if (!model.isNew()) model.trigger('sync', model, resp, options);
     };
 
@@ -1191,7 +1188,6 @@ class Collection extends Events {
       var method = options.reset ? 'reset' : 'set';
       collection[method](resp, options);
       if (success) success.call(options.context, collection, resp, options);
-      collection.isLoading = false;
       collection.trigger('sync', collection, resp, options);
     };
     wrapError(this, options);
@@ -1881,6 +1877,7 @@ var sync = {
     model.trigger('request', model, xhr, options);
     xhr.then(
       function(data) {
+        model.isLoading = false;
         if (options.success) options.success(data);
       },
       function(error) {
