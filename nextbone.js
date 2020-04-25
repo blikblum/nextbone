@@ -1875,11 +1875,6 @@ var sync = {
       params.data = JSON.stringify(options.attrs || model.toJSON(options));
     }
 
-    // Don't process data on a non-GET request.
-    if (params.type !== 'GET') {
-      params.processData = false;
-    }
-
     // Pass along `textStatus` and `errorThrown` from jQuery.
     var error = options.error;
     options.error = function(xhr, textStatus, errorThrown) {
