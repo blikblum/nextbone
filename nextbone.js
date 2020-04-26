@@ -456,6 +456,45 @@ const on = eventName => (protoOrDescriptor, methodName, propertyDescriptor) => {
   registerOnEvent(protoOrDescriptor.constructor, eventName, propertyDescriptor.value);
 };
 
+const registerObservableProperty = (ctor, name, key) => {
+  const desc = {
+    get() {
+      return this[key];
+    },
+    set(value) {
+      const oldValue = this[key];
+      if (value === oldValue) return;
+      this[key] = value;
+      this.trigger(`change:${name}`, this, value, oldValue);
+      this.trigger('change', this);
+    },
+    configurable: true,
+    enumerable: true
+  };
+  Object.defineProperty(ctor.prototype, name, desc);
+};
+
+// Class field decorator to make it observable
+const observable = (protoOrDescriptor, fieldName, propertyDescriptor) => {
+  const isLegacy = typeof fieldName === 'string';
+  const name = isLegacy ? fieldName : protoOrDescriptor.key;
+  const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+  if (!isLegacy) {
+    const { kind, placement, descriptor, initializer } = protoOrDescriptor;
+    return {
+      kind,
+      placement,
+      descriptor,
+      initializer,
+      key,
+      finisher(ctor) {
+        registerObservableProperty(ctor, name, key);
+      }
+    };
+  }
+  registerObservableProperty(protoOrDescriptor.constructor, name, key);
+};
+
 // Model
 // --------------
 
@@ -2336,6 +2375,7 @@ export {
   ajax,
   // decorators
   on,
+  observable,
   view,
   event,
   state,
