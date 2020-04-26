@@ -118,6 +118,22 @@
     this.ajaxSettings.error();
   });
 
+  QUnit.test('Call provided custom request handler.', function(assert) {
+    assert.expect(3);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var response = Backbone.sync.handler('read', model, {}, function(options) {
+      assert.equal(this, model);
+      assert.equal(options.url, '/test');
+      return Promise.resolve({ x: 'y' });
+    });
+    response.then(function(data) {
+      assert.deepEqual(data, { x: 'y' });
+      done();
+    });
+  });
+
   QUnit.test('#2928 - Pass along `textStatus` and `errorThrown`.', function(assert) {
     assert.expect(3);
     var done = assert.async();

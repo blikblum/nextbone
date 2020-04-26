@@ -1848,7 +1848,7 @@ var methodMap = {
 };
 
 var sync = {
-  handler: function(method, model, options) {
+  handler: function(method, model, options, requestHandler) {
     var type = methodMap[method];
 
     options || (options = {});
@@ -1873,7 +1873,7 @@ var sync = {
 
     model.isLoading = true;
     // Make the request, allowing the user to override any Ajax options.
-    var xhr = (options.xhr = ajax.handler(extend(params, options)));
+    var xhr = (options.xhr = (requestHandler || ajax.handler).call(model, extend(params, options)));
     model.trigger('request', model, xhr, options);
     xhr.then(
       function(data) {
