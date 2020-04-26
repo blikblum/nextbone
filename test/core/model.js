@@ -846,6 +846,33 @@
     });
   });
 
+  QUnit.test('sync can be customized with a custom request handler', function(assert) {
+    assert.expect(3);
+    var done = assert.async();
+    var model;
+    var SpecialSyncModel = class extends Backbone.Model {
+      customRequest(options) {
+        assert.equal(this, model);
+        assert.equal(options.url, '/test');
+        return Promise.resolve({ x: 'y' });
+      }
+
+      sync(method, options) {
+        return super.sync(method, options, this.customRequest);
+      }
+      urlRoot = '/test';
+    };
+
+    model = new SpecialSyncModel();
+
+    var onSuccess = function(m, response, options) {
+      assert.deepEqual(response, { x: 'y' });
+      done();
+    };
+
+    model.fetch({ success: onSuccess });
+  });
+
   QUnit.test('destroy', function(assert) {
     assert.expect(3);
     var done = assert.async();

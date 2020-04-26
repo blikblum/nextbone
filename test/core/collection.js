@@ -1617,6 +1617,34 @@
     collection.fetch({ success: onSuccess });
   });
 
+  QUnit.test('sync can be customized with a custom request handler', function(assert) {
+    assert.expect(3);
+    var done = assert.async();
+    var collection;
+    var SpecialSyncCollection = class extends Backbone.Collection {
+      url = '/test';
+
+      customRequest(options) {
+        assert.equal(this, collection);
+        assert.equal(options.url, '/test');
+        return Promise.resolve([{ x: 'y' }]);
+      }
+
+      sync(method, options) {
+        return super.sync(method, options, this.customRequest);
+      }
+    };
+
+    collection = new SpecialSyncCollection();
+
+    var onSuccess = function(coll, resp, options) {
+      assert.deepEqual(resp, [{ x: 'y' }]);
+      done();
+    };
+
+    collection.fetch({ success: onSuccess });
+  });
+
   QUnit.test('`add` only `sort`s when necessary', function(assert) {
     assert.expect(2);
     var collection = new class extends Backbone.Collection {

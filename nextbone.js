@@ -520,8 +520,8 @@ class Model extends Events {
 
   // Proxy `sync.handler` by default -- but override this if you need
   // custom syncing semantics for *this* particular model.
-  sync(method, options) {
-    return sync.handler(method, this, options);
+  sync(method, options, requestHandler) {
+    return sync.handler(method, this, options, requestHandler);
   }
 
   // Get the value of an attribute.
@@ -929,8 +929,8 @@ class Collection extends Events {
   }
 
   // Proxy `sync.handler` by default.
-  sync(method, options) {
-    return sync.handler(method, this, options);
+  sync(method, options, requestHandler) {
+    return sync.handler(method, this, options, requestHandler);
   }
 
   // Add a model, or list of models to the set. `models` may be Nextbone
