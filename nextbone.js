@@ -557,6 +557,24 @@ class Model extends Events {
     return this.constructor.idAttribute || 'id';
   }
 
+  _sync(method, options) {
+    var model = this;
+    this.isLoading = true;
+    var response = this.sync(method, options);
+    model.trigger('request', model, response, options);
+    response.then(
+      function(data) {
+        model.isLoading = false;
+        if (options.success) options.success(data);
+      },
+      function(error) {
+        model.isLoading = false;
+        if (options.error) options.error.call(options.context, error);
+      }
+    );
+    return response;
+  }
+
   // Proxy `sync.handler` by default -- but override this if you need
   // custom syncing semantics for *this* particular model.
   sync(method, options, requestHandler) {
@@ -736,7 +754,7 @@ class Model extends Events {
       model.trigger('sync', model, resp, options);
     };
     wrapError(this, options);
-    return this.sync('read', options);
+    return this._sync('read', options);
   }
 
   // Set a hash of model attributes, and sync the model to the server.
@@ -786,7 +804,7 @@ class Model extends Events {
 
     var method = this.isNew() ? 'create' : options.patch ? 'patch' : 'update';
     if (method === 'patch' && !options.attrs) options.attrs = attrs;
-    var xhr = this.sync(method, options);
+    var xhr = this._sync(method, options);
 
     // Restore attributes.
     this.attributes = attributes;
@@ -819,7 +837,7 @@ class Model extends Events {
       result = Promise.resolve().then(options.success);
     } else {
       wrapError(this, options);
-      result = this.sync('delete', options);
+      result = this._sync('delete', options);
     }
     if (!wait) destroy();
     return result;
@@ -967,9 +985,27 @@ class Collection extends Events {
     });
   }
 
+  _sync(method, options) {
+    var collection = this;
+    this.isLoading = true;
+    var response = this.sync(method, options);
+    collection.trigger('request', collection, response, options);
+    response.then(
+      function(data) {
+        collection.isLoading = false;
+        if (options.success) options.success(data);
+      },
+      function(error) {
+        collection.isLoading = false;
+        if (options.error) options.error.call(options.context, error);
+      }
+    );
+    return response;
+  }
+
   // Proxy `sync.handler` by default.
-  sync(method, options, requestHandler) {
-    return sync.handler(method, this, options, requestHandler);
+  sync(method, options) {
+    return sync.handler(method, this, options);
   }
 
   // Add a model, or list of models to the set. `models` may be Nextbone
@@ -1230,7 +1266,7 @@ class Collection extends Events {
       collection.trigger('sync', collection, resp, options);
     };
     wrapError(this, options);
-    return this.sync('read', options);
+    return this._sync('read', options);
   }
 
   // Create a new instance of a model in this collection. Add the model to the
@@ -1887,7 +1923,7 @@ var methodMap = {
 };
 
 var sync = {
-  handler: function(method, model, options, requestHandler) {
+  handler: function(method, model, options) {
     var type = methodMap[method];
 
     options || (options = {});
@@ -1910,20 +1946,8 @@ var sync = {
       params.data = JSON.stringify(options.attrs || model.toJSON(options));
     }
 
-    model.isLoading = true;
     // Make the request, allowing the user to override any Ajax options.
-    var xhr = (options.xhr = (requestHandler || ajax.handler).call(model, extend(params, options)));
-    model.trigger('request', model, xhr, options);
-    xhr.then(
-      function(data) {
-        model.isLoading = false;
-        if (options.success) options.success(data);
-      },
-      function(error) {
-        model.isLoading = false;
-        if (options.error) options.error.call(options.context, error);
-      }
-    );
+    var xhr = (options.xhr = ajax.handler.call(model, extend(params, options)));
     return xhr;
   }
 };

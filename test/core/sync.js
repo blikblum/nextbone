@@ -118,20 +118,28 @@
     this.ajaxSettings.error();
   });
 
-  QUnit.test('Call provided custom request handler.', function(assert) {
-    assert.expect(3);
+  QUnit.test('isLoading with customized sync method.', function(assert) {
+    assert.expect(4);
     var done = assert.async();
-    var model = new Backbone.Model();
+    class SpecialSyncModel extends Backbone.Model {
+      sync() {
+        return Promise.resolve({ x: 'y' });
+      }
+    }
+    var model = new SpecialSyncModel();
     model.url = '/test';
-    var response = Backbone.sync.handler('read', model, {}, function(options) {
-      assert.equal(this, model);
-      assert.equal(options.url, '/test');
-      return Promise.resolve({ x: 'y' });
-    });
-    response.then(function(data) {
-      assert.deepEqual(data, { x: 'y' });
-      done();
-    });
+    assert.equal(model.isLoading, false);
+    model
+      .fetch({
+        success() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .then(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
   });
 
   QUnit.test('#2928 - Pass along `textStatus` and `errorThrown`.', function(assert) {

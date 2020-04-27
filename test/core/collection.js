@@ -513,6 +513,7 @@
     var m = new Backbone.Model({ id: 5, title: 'Othello' });
     m.sync = function(method, options) {
       options.success();
+      return Promise.resolve();
     };
     var col1 = new Backbone.Collection([m]);
     var col2 = new Backbone.Collection([m]);
@@ -559,6 +560,7 @@
     });
     collection.sync = function(method, options) {
       options.error();
+      return Promise.resolve();
     };
     collection.fetch();
   });
@@ -615,7 +617,7 @@
           assert.equal(collection.isLoading, false);
         }
       })
-      .catch(function() {
+      ['catch'](function() {
         assert.equal(collection.isLoading, false);
         done();
       });
@@ -625,17 +627,18 @@
 
   QUnit.test('#3283 - fetch with an error response calls error with context', function(assert) {
     assert.expect(1);
+    var done = assert.async();
     var collection = new Backbone.Collection();
+    collection.url = '/test';
     var obj = {};
     var options = {
       context: obj,
       error: function() {
         assert.equal(this, obj);
+        done();
       }
     };
-    collection.sync = function(method, opts) {
-      opts.error.call(opts.context);
-    };
+    this.ajaxResponse = Promise.reject();
     collection.fetch(options);
   });
 
@@ -1169,19 +1172,20 @@
 
   QUnit.test('#1355 - `options` is passed to success callbacks', function(assert) {
     assert.expect(2);
+    var done = assert.async();
     var m = new Backbone.Model({ x: 1 });
     var collection = new Backbone.Collection();
+    m.url = collection.url = '/test';
     var opts = {
       opts: true,
       success: function(coll, resp, options) {
         assert.ok(options.opts);
       }
     };
-    collection.sync = m.sync = function(method, options) {
-      options.success({});
-    };
-    collection.fetch(opts);
-    collection.create(m, opts);
+
+    Promise.all([collection.fetch(opts), collection.create(m, opts)]).then(function() {
+      done();
+    });
   });
 
   QUnit.test("#1412 - Trigger 'request' and 'sync' events on create.", function(assert) {
@@ -1251,7 +1255,7 @@
     assert.expect(1);
     var collection = new Backbone.Collection();
     var model = new Backbone.Model();
-    model.sync = function(method, options) {
+    model.sync = async function(method, options) {
       options.success();
     };
     collection.on('add', function() {
@@ -1665,21 +1669,17 @@
     collection.fetch({ success: onSuccess });
   });
 
-  QUnit.test('sync can be customized with a custom request handler', function(assert) {
+  QUnit.test('customized sync', function(assert) {
     assert.expect(3);
     var done = assert.async();
     var collection;
     var SpecialSyncCollection = class extends Backbone.Collection {
       url = '/test';
 
-      customRequest(options) {
-        assert.equal(this, collection);
-        assert.equal(options.url, '/test');
-        return Promise.resolve([{ x: 'y' }]);
-      }
-
       sync(method, options) {
-        return super.sync(method, options, this.customRequest);
+        assert.equal(this, collection);
+        assert.equal(method, 'read');
+        return Promise.resolve([{ x: 'y' }]);
       }
     };
 
@@ -1937,7 +1937,7 @@
     assert.expect(1);
     var collection = new Backbone.Collection();
     var model = new Backbone.Model({ id: 1 });
-    model.sync = function() {
+    model.sync = async function() {
       assert.equal(this.collection, collection);
     };
     collection.create(model, { wait: true });

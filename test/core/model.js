@@ -637,21 +637,23 @@
 
   QUnit.test('validate after save', function(assert) {
     assert.expect(2);
+    var done = assert.async();
     var lastError,
       model = new Backbone.Model();
     model.validate = function(attrs) {
       if (attrs.admin) return "Can't change admin status.";
     };
-    model.sync = function(method, options) {
-      options.success.call(this, { admin: true });
+    model.sync = async function(method, options) {
+      return { admin: true };
     };
     model.on('invalid', function(m, error) {
       lastError = error;
     });
-    model.save(null);
-
-    assert.equal(lastError, "Can't change admin status.");
-    assert.equal(model.validationError, "Can't change admin status.");
+    model.save(null).then(function() {
+      assert.equal(lastError, "Can't change admin status.");
+      assert.equal(model.validationError, "Can't change admin status.");
+      done();
+    });
   });
 
   QUnit.test('save', function(assert) {
@@ -663,30 +665,42 @@
 
   QUnit.test('save, fetch, destroy triggers error event when an error occurs', function(assert) {
     assert.expect(3);
+    var done = assert.async();
+    var count = 0;
     var model = new Backbone.Model();
+    model.url = '/test';
     model.on('error', function() {
       assert.ok(true);
+      count++;
+      if (count === 3) {
+        done();
+      }
     });
-    model.sync = function(method, options) {
-      options.error();
-    };
+
+    this.ajaxResponse = Promise.reject();
     model.save({ data: 2, id: 1 });
+    this.ajaxResponse = Promise.reject();
     model.fetch();
+    this.ajaxResponse = Promise.reject();
     model.destroy();
   });
 
   QUnit.test('#3283 - save, fetch, destroy calls success with context', function(assert) {
     assert.expect(3);
+    var done = assert.async();
+    var count = 0;
     var model = new Backbone.Model();
+    model.url = '/test';
     var obj = {};
     var options = {
       context: obj,
       success: function() {
         assert.equal(this, obj);
+        count++;
+        if (count === 3) {
+          done();
+        }
       }
-    };
-    model.sync = function(method, opts) {
-      opts.success.call(opts.context);
     };
     model.save({ data: 2, id: 1 }, options);
     model.fetch(options);
@@ -695,36 +709,49 @@
 
   QUnit.test('#3283 - save, fetch, destroy calls error with context', function(assert) {
     assert.expect(3);
+    var done = assert.async();
+    var count = 0;
     var model = new Backbone.Model();
+    model.url = '/test';
     var obj = {};
     var options = {
       context: obj,
       error: function() {
         assert.equal(this, obj);
+        count++;
+        if (count === 3) {
+          done();
+        }
       }
     };
-    model.sync = function(method, opts) {
-      opts.error.call(opts.context);
-    };
+    this.ajaxResponse = Promise.reject();
     model.save({ data: 2, id: 1 }, options);
+    this.ajaxResponse = Promise.reject();
     model.fetch(options);
+    this.ajaxResponse = Promise.reject();
     model.destroy(options);
   });
 
   QUnit.test('#3470 - save and fetch with parse false', function(assert) {
     assert.expect(2);
+    var done = assert.async();
     var i = 0;
     var model = new Backbone.Model();
+    model.url = '/test';
     model.parse = function() {
       assert.ok(false);
     };
-    model.sync = function(method, options) {
-      options.success({ i: ++i });
+    model.sync = async function(method, options) {
+      return { i: ++i };
     };
-    model.fetch({ parse: false });
-    assert.equal(model.get('i'), i);
-    model.save(null, { parse: false });
-    assert.equal(model.get('i'), i);
+    model.fetch({ parse: false }).then(function() {
+      assert.equal(model.get('i'), 1);
+    });
+
+    model.save(null, { parse: false }).then(function() {
+      assert.equal(model.get('i'), 2);
+      done();
+    });
   });
 
   QUnit.test('save with PATCH', function(assert) {
@@ -752,25 +779,40 @@
   QUnit.test('save in positional style', function(assert) {
     assert.expect(1);
     var model = new Backbone.Model();
-    model.sync = function(method, options) {
-      options.success();
-    };
+    model.url = '/test';
     model.save('title', 'Twelfth Night');
     assert.equal(model.get('title'), 'Twelfth Night');
   });
 
-  QUnit.test('save with non-object success response', function(assert) {
-    assert.expect(2);
+  QUnit.test('save with non-object (empty string) success response', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
     var model = new Backbone.Model();
-    model.sync = function(method, options) {
-      options.success('', options);
-      options.success(null, options);
-    };
+    model.url = '/test';
+    this.ajaxResponse = '';
     model.save(
       { testing: 'empty' },
       {
         success: function(m) {
           assert.deepEqual(m.attributes, { testing: 'empty' });
+          done();
+        }
+      }
+    );
+  });
+
+  QUnit.test('save with non-object (null) success response', function(assert) {
+    assert.expect(1);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    this.ajaxResponse = null;
+    model.save(
+      { testing: 'empty' },
+      {
+        success: function(m) {
+          assert.deepEqual(m.attributes, { testing: 'empty' });
+          done();
         }
       }
     );
@@ -846,19 +888,15 @@
     });
   });
 
-  QUnit.test('sync can be customized with a custom request handler', function(assert) {
+  QUnit.test('customized sync', function(assert) {
     assert.expect(3);
     var done = assert.async();
     var model;
     var SpecialSyncModel = class extends Backbone.Model {
-      customRequest(options) {
-        assert.equal(this, model);
-        assert.equal(options.url, '/test');
-        return Promise.resolve({ x: 'y' });
-      }
-
       sync(method, options) {
-        return super.sync(method, options, this.customRequest);
+        assert.equal(this, model);
+        assert.equal(method, 'read');
+        return Promise.resolve({ x: 'y' });
       }
       urlRoot = '/test';
     };
@@ -969,7 +1007,7 @@
           assert.equal(model.isLoading, false);
         }
       })
-      .catch(function() {
+      ['catch'](function() {
         assert.equal(model.isLoading, false);
         done();
       });
@@ -1017,7 +1055,7 @@
           assert.equal(model.isLoading, false);
         }
       })
-      .catch(function() {
+      ['catch'](function() {
         assert.equal(model.isLoading, false);
         done();
       });
@@ -1065,7 +1103,7 @@
           assert.equal(model.isLoading, false);
         }
       })
-      .catch(function() {
+      ['catch'](function() {
         assert.equal(model.isLoading, false);
         done();
       });
@@ -1321,14 +1359,18 @@
   });
 
   QUnit.test("save doesn't validate twice", function(assert) {
+    var done = assert.async();
     var model = new Backbone.Model();
     var times = 0;
-    model.sync = function() {};
+    model.url = '/test';
+
     model.validate = function() {
       ++times;
     };
-    model.save({});
-    assert.equal(times, 1);
+    model.save({}).then(function() {
+      assert.equal(times, 1);
+      done();
+    });
   });
 
   QUnit.test('`hasChanged` for falsey keys', function(assert) {
@@ -1375,16 +1417,17 @@
   QUnit.test(
     '#1030 - `save` with `wait` results in correct attributes if success is called during sync',
     function(assert) {
+      var done = assert.async();
       assert.expect(2);
       var model = new Backbone.Model({ x: 1, y: 2 });
-      model.sync = function(method, options) {
-        options.success();
-      };
+      model.url = '/test';
       model.on('change:x', function() {
         assert.ok(true);
       });
-      model.save({ x: 3 }, { wait: true });
-      assert.equal(model.get('x'), 3);
+      model.save({ x: 3 }, { wait: true }).then(function() {
+        assert.equal(model.get('x'), 3);
+        done();
+      });
     }
   );
 
@@ -1399,7 +1442,7 @@
 
   QUnit.test('save turns on parse flag', function(assert) {
     var Model = class extends Backbone.Model {
-      sync(method, options) {
+      async sync(method, options) {
         assert.ok(options.parse);
       }
     };
@@ -1593,32 +1636,34 @@
 
   QUnit.test('#1355 - `options` is passed to success callbacks', function(assert) {
     assert.expect(3);
+    var done = assert.async();
     var model = new Backbone.Model();
     var opts = {
       success: function(m, resp, options) {
         assert.ok(options);
       }
     };
-    model.sync = function(method, options) {
-      options.success();
-    };
-    model.save({ id: 1 }, opts);
-    model.fetch(opts);
-    model.destroy(opts);
+
+    model.url = '/test';
+
+    Promise.all([model.save({ id: 1 }, opts), model.fetch(opts), model.destroy(opts)]).then(
+      function() {
+        done();
+      }
+    );
   });
 
   QUnit.test("#1412 - Trigger 'sync' event.", function(assert) {
     assert.expect(3);
+    var done = assert.async();
     var model = new Backbone.Model({ id: 1 });
-    model.sync = function(method, options) {
-      options.success();
-    };
+    model.url = '/test';
     model.on('sync', function() {
       assert.ok(true);
     });
-    model.fetch();
-    model.save();
-    model.destroy();
+    Promise.all([model.fetch(), model.save(), model.destroy()]).then(function() {
+      done();
+    });
   });
 
   QUnit.test('#1365 - Destroy: New models execute success callback.', function(assert) {
@@ -1691,10 +1736,14 @@
     assert.expect(0);
     var Model = class extends Backbone.Model {
       sync(method, options) {
-        setTimeout(function() {
-          options.success();
-          done();
-        }, 0);
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            options.success();
+
+            done();
+            resolve();
+          }, 0);
+        });
       }
     };
     new Model({ x: true })
