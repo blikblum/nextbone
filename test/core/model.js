@@ -929,6 +929,150 @@
     assert.ok(true, 'non-persisted model should not call sync');
   });
 
+  QUnit.test('isLoading with successful fetch', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var resolve;
+    this.ajaxResponse = new Promise(function(res) {
+      resolve = res;
+    });
+    assert.equal(model.isLoading, false);
+    model
+      .fetch({
+        success() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .then(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
+    resolve({ a: 1 });
+  });
+
+  QUnit.test('isLoading with failed fetch', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var reject;
+    this.ajaxResponse = new Promise(function(res, rej) {
+      reject = rej;
+    });
+    assert.equal(model.isLoading, false);
+    model
+      .fetch({
+        error() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .catch(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
+    reject({ fail: true });
+  });
+
+  QUnit.test('isLoading with successful save', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var resolve;
+    this.ajaxResponse = new Promise(function(res) {
+      resolve = res;
+    });
+    assert.equal(model.isLoading, false);
+    model
+      .save(null, {
+        success() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .then(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
+    resolve({ a: 1 });
+  });
+
+  QUnit.test('isLoading with failed save', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var reject;
+    this.ajaxResponse = new Promise(function(res, rej) {
+      reject = rej;
+    });
+    assert.equal(model.isLoading, false);
+    model
+      .save(null, {
+        error() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .catch(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
+    reject({ fail: true });
+  });
+
+  QUnit.test('isLoading with successful destroy', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var model = new Backbone.Model({ id: 1 });
+    model.url = '/test';
+    var resolve;
+    this.ajaxResponse = new Promise(function(res) {
+      resolve = res;
+    });
+    assert.equal(model.isLoading, false);
+    model
+      .destroy({
+        success() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .then(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
+    resolve({ a: 1 });
+  });
+
+  QUnit.test('isLoading with failed destroy', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var model = new Backbone.Model({ id: 1 });
+    model.url = '/test';
+    var reject;
+    this.ajaxResponse = new Promise(function(res, rej) {
+      reject = rej;
+    });
+    assert.equal(model.isLoading, false);
+    model
+      .destroy({
+        error() {
+          assert.equal(model.isLoading, false);
+        }
+      })
+      .catch(function() {
+        assert.equal(model.isLoading, false);
+        done();
+      });
+    assert.equal(model.isLoading, true);
+    reject({ fail: true });
+  });
+
   QUnit.test('validate', function(assert) {
     var lastError;
     var model = new Backbone.Model();

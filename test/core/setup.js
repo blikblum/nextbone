@@ -24,7 +24,9 @@ window.Backbone = Backbone;
       env.ajaxSettings = settings;
       var response = env.ajaxResponse;
       env.ajaxResponse = undefined;
-      return Promise.resolve(response);
+      return Promise.resolve().then(function() {
+        return response;
+      });
     };
 
     // Capture the arguments to Backbone.sync for comparison.

@@ -575,6 +575,54 @@
     });
   });
 
+  QUnit.test('isLoading with successful fetch', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var collection = new Backbone.Collection();
+    collection.url = '/test';
+    var resolve;
+    this.ajaxResponse = new Promise(function(res) {
+      resolve = res;
+    });
+    assert.equal(collection.isLoading, false);
+    collection
+      .fetch({
+        success() {
+          assert.equal(collection.isLoading, false);
+        }
+      })
+      .then(function() {
+        assert.equal(collection.isLoading, false);
+        done();
+      });
+    assert.equal(collection.isLoading, true);
+    resolve({ a: 1 });
+  });
+
+  QUnit.test('isLoading with failed fetch', function(assert) {
+    assert.expect(4);
+    var done = assert.async();
+    var collection = new Backbone.Collection();
+    collection.url = '/test';
+    var reject;
+    this.ajaxResponse = new Promise(function(res, rej) {
+      reject = rej;
+    });
+    assert.equal(collection.isLoading, false);
+    collection
+      .fetch({
+        error() {
+          assert.equal(collection.isLoading, false);
+        }
+      })
+      .catch(function() {
+        assert.equal(collection.isLoading, false);
+        done();
+      });
+    assert.equal(collection.isLoading, true);
+    reject({ fail: true });
+  });
+
   QUnit.test('#3283 - fetch with an error response calls error with context', function(assert) {
     assert.expect(1);
     var collection = new Backbone.Collection();
