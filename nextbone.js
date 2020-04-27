@@ -495,6 +495,22 @@ const observable = (protoOrDescriptor, fieldName, propertyDescriptor) => {
   registerObservableProperty(protoOrDescriptor.constructor, name, key);
 };
 
+var wrapSync = function(model, response, options) {
+  model.isLoading = true;
+  model.trigger('request', model, response, options);
+  response.then(
+    function(data) {
+      model.isLoading = false;
+      if (options.success) options.success(data);
+    },
+    function(error) {
+      model.isLoading = false;
+      if (options.error) options.error.call(options.context, error);
+    }
+  );
+  return response;
+};
+
 // Model
 // --------------
 
@@ -558,21 +574,7 @@ class Model extends Events {
   }
 
   _sync(method, options) {
-    var model = this;
-    this.isLoading = true;
-    var response = this.sync(method, options);
-    model.trigger('request', model, response, options);
-    response.then(
-      function(data) {
-        model.isLoading = false;
-        if (options.success) options.success(data);
-      },
-      function(error) {
-        model.isLoading = false;
-        if (options.error) options.error.call(options.context, error);
-      }
-    );
-    return response;
+    return wrapSync(this, this.sync(method, options), options);
   }
 
   // Proxy `sync.handler` by default -- but override this if you need
@@ -986,21 +988,7 @@ class Collection extends Events {
   }
 
   _sync(method, options) {
-    var collection = this;
-    this.isLoading = true;
-    var response = this.sync(method, options);
-    collection.trigger('request', collection, response, options);
-    response.then(
-      function(data) {
-        collection.isLoading = false;
-        if (options.success) options.success(data);
-      },
-      function(error) {
-        collection.isLoading = false;
-        if (options.error) options.error.call(options.context, error);
-      }
-    );
-    return response;
+    return wrapSync(this, this.sync(method, options), options);
   }
 
   // Proxy `sync.handler` by default.
