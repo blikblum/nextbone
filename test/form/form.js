@@ -289,6 +289,19 @@ describe('form', function() {
         });
       });
 
+      describe('setData', () => {
+        it('should store form metadata', () => {
+          el.form.setData('x', 'b');
+          expect(el.form.getData('x')).to.equal('b');
+        });
+
+        it('should call updateMethod', () => {
+          const updateMethodSpy = spy(el, 'requestUpdate');
+          el.form.setData('x', 'b');
+          assert.calledOnce(updateMethodSpy);
+        });
+      });
+
       describe('isValid', () => {
         it('should return validity state', async function() {
           myModel.set({ textProp: 'danger' });

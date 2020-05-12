@@ -69,6 +69,7 @@ const formats = {
 
 class FormState {
   constructor(el, model = 'model', events, updateMethod) {
+    this._data = {};
     this.el = el;
     this.model = model;
     this.events = events;
@@ -96,6 +97,17 @@ class FormState {
   setValue(attr, value, model = this.model) {
     model = typeof model === 'string' ? this.el[model] : model;
     model.set(attr, value);
+    if (typeof this.el[this.updateMethod] === 'function') {
+      this.el[this.updateMethod]();
+    }
+  }
+
+  getData(prop) {
+    return this._data[prop];
+  }
+
+  setData(prop, value) {
+    this._data[prop] = value;
     if (typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
     }
