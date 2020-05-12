@@ -164,9 +164,10 @@ var validateAttr = function(model, attr, value, computed, rules) {
     function(memo, validator) {
       var result = validator.fn.call(validators, value, attr, validator.val, model, computed);
 
-      if (result === false || memo === false) {
+      if (result === false) {
         return false;
       }
+
       if (result && !memo) {
         return getResult(validator, 'msg') || result;
       }

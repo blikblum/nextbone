@@ -263,6 +263,32 @@ describe('form', function() {
         });
       });
 
+      describe('setValue', () => {
+        it('should set value to the default model', () => {
+          myModel.set({ x: 'y' });
+          el.form.setValue('x', 'b');
+          expect(myModel.get('x')).to.equal('b');
+        });
+
+        it('should set value to el property when passing a string as model option', () => {
+          el.anotherModel = new Model({ a: 'b' });
+          el.form.setValue('a', 'x', 'anotherModel');
+          expect(el.anotherModel.get('a')).to.equal('x');
+        });
+
+        it('should set value to passed model option when is a model instance', () => {
+          const anotherModel = new Model({ foo: 'bar' });
+          el.form.setValue('foo', 'baz', anotherModel);
+          expect(anotherModel.get('foo')).to.equal('baz');
+        });
+
+        it('should call updateMethod', () => {
+          const updateMethodSpy = spy(el, 'requestUpdate');
+          el.form.setValue('x', 'b');
+          assert.calledOnce(updateMethodSpy);
+        });
+      });
+
       describe('isValid', () => {
         it('should return validity state', async function() {
           myModel.set({ textProp: 'danger' });

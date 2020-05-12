@@ -93,6 +93,14 @@ class FormState {
     return getPath(model.attributes, attr);
   }
 
+  setValue(attr, value, model = this.model) {
+    model = typeof model === 'string' ? this.el[model] : model;
+    model.set(attr, value);
+    if (typeof this.el[this.updateMethod] === 'function') {
+      this.el[this.updateMethod]();
+    }
+  }
+
   isDirty({ model = this.model } = {}) {
     model = typeof model === 'string' ? this.el[model] : model;
     const initialData = this.modelInitialData.get(model);
