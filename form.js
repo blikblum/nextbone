@@ -181,6 +181,8 @@ const createClass = (ctor, options = {}) => {
       return;
     }
 
+    e.stopPropagation();
+
     if (!this.form.modelInitialData.get(model)) {
       this.form.loadInitialData({ model });
     }

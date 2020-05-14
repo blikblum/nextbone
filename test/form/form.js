@@ -170,6 +170,17 @@ describe('form', function() {
       el.requestUpdate.restore();
     });
 
+    it('should stop propagation of handled input events', async function() {
+      const parentEl = document.createElement('div');
+      const inputSpy = spy();
+      const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+
+      parentEl.addEventListener('input', inputSpy);
+      parentEl.appendChild(el);
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      assert.notCalled(inputSpy);
+    });
+
     describe('form state', () => {
       @withValidation
       class ValidatedModel extends Model {
