@@ -96,7 +96,7 @@ class FormState {
 
   setValue(attr, value, model = this.model) {
     model = typeof model === 'string' ? this.el[model] : model;
-    model.set(attr, value);
+    setModelValue(model, attr, value);
     if (typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
     }
@@ -199,17 +199,7 @@ const createClass = (ctor, options = {}) => {
       value = formatter(value);
     }
 
-    // handle nested attributes
-    if (prop.indexOf('.') !== -1) {
-      const attrs = Object.assign({}, model.attributes);
-      setPath(attrs, prop, value);
-      model.set(attrs);
-      if (!Object.keys(model.changed).length) {
-        model.trigger('change', model, {});
-      }
-    } else {
-      model.set(prop, value);
-    }
+    setModelValue(model, prop, value);
 
     if (!this.form.touched[prop]) {
       inputEl.addEventListener(
@@ -278,3 +268,16 @@ export const form = (optionsOrCtorOrDescriptor, options) => {
     return form(ctorOrDescriptor, optionsOrCtorOrDescriptor);
   };
 };
+function setModelValue(model, prop, value) {
+  // handle nested attributes
+  if (prop.indexOf('.') !== -1) {
+    const attrs = Object.assign({}, model.attributes);
+    setPath(attrs, prop, value);
+    model.set(attrs);
+    if (!Object.keys(model.changed).length) {
+      model.trigger('change', model, {});
+    }
+  } else {
+    model.set(prop, value);
+  }
+}

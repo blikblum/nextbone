@@ -281,6 +281,12 @@ describe('form', function() {
           expect(myModel.get('x')).to.equal('b');
         });
 
+        it('should set nested value', () => {
+          myModel.set({ inner: { x: 'y' } });
+          el.form.setValue('inner.x', 'b');
+          expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
+        });
+
         it('should set value to el property when passing a string as model option', () => {
           el.anotherModel = new Model({ a: 'b' });
           el.form.setValue('a', 'x', 'anotherModel');
