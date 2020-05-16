@@ -195,6 +195,31 @@
     c.clone();
   });
 
+  QUnit.test('clone nested object / array', function(assert) {
+    assert.expect(8);
+    var a = new Backbone.Model({ foo: { x: 1 }, bar: ['a'], x: 'a', y: 1, w: null, z: undefined });
+    var b = a.clone();
+    assert.deepEqual(a.get('foo'), { x: 1 });
+    assert.deepEqual(a.get('bar'), ['a']);
+
+    assert.deepEqual(b.get('foo'), a.get('foo'), 'Foo should be the same on the clone.');
+    assert.deepEqual(b.get('bar'), a.get('bar'), 'Bar should be the same on the clone.');
+
+    var foo = a.get('foo');
+    foo.x = 100;
+    assert.deepEqual(a.get('foo'), { x: 100 });
+    assert.deepEqual(
+      b.get('foo'),
+      { x: 1 },
+      'Changing a parent attribute does not change the clone.'
+    );
+
+    var bar = a.get('bar');
+    bar[0] = 'b';
+    assert.deepEqual(a.get('bar'), ['b']);
+    assert.deepEqual(b.get('bar'), ['a'], 'Changing a parent attribute does not change the clone.');
+  });
+
   QUnit.test('isNew', function(assert) {
     assert.expect(6);
     var a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });

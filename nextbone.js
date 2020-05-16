@@ -45,6 +45,22 @@ var cloneObject = function(obj) {
   return Object.assign({}, obj);
 };
 
+// clone that deep copy array and object one level
+var deepCloneLite = function(obj) {
+  var result = {};
+  Object.keys(obj).forEach(key => {
+    var value = obj[key];
+    if (Array.isArray(value)) {
+      result[key] = value.slice(0);
+    } else if (isObject(value)) {
+      result[key] = cloneObject(value);
+    } else {
+      result[key] = value;
+    }
+  });
+  return result;
+};
+
 var isArray = Array.isArray;
 
 // Returns whether an object has a given set of `key:value` pairs.
@@ -871,13 +887,13 @@ class Model extends Events {
     if (source instanceof Model) {
       source.assignTo(this, options);
     } else if (isObject(source)) {
-      this.set(source, options);
+      this.set(deepCloneLite(source), options);
     }
   }
 
   // inversion of control for assign
   assignTo(target, options) {
-    target.set(this.attributes, options);
+    target.set(deepCloneLite(this.attributes), options);
   }
 
   // A model is new if it has never been saved to the server, and lacks an id.
