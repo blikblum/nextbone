@@ -29,10 +29,6 @@ export const getPath = (object, path) => {
 };
 
 export const setPath = (obj, path, value) => {
-  if (!isObject(obj) || typeof path !== 'string') {
-    return obj;
-  }
-
   const pathArr = getPathSegments(path);
 
   for (let i = 0; i < pathArr.length; i++) {
