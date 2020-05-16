@@ -447,6 +447,16 @@ describe('form', function() {
         inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
         assert.calledOnce(changeSpy);
       });
+
+      it('should trigger change:attr event when path is already set', () => {
+        myModel.set({ nested: { textProp: 1 } });
+        const changeSpy = spy();
+        const inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+        myModel.on('change:nested', changeSpy);
+        inputEl.value = 'zzz';
+        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        assert.calledOnce(changeSpy);
+      });
     });
   });
 

@@ -33,7 +33,6 @@ export const setPath = (obj, path, value) => {
     return obj;
   }
 
-  const root = obj;
   const pathArr = getPathSegments(path);
 
   for (let i = 0; i < pathArr.length; i++) {
@@ -50,7 +49,7 @@ export const setPath = (obj, path, value) => {
     obj = obj[p];
   }
 
-  return root;
+  return pathArr[0];
 };
 
 function toNull(value) {
@@ -271,10 +270,12 @@ export const form = (optionsOrCtorOrDescriptor, options) => {
 function setModelValue(model, prop, value) {
   // handle nested attributes
   if (prop.indexOf('.') !== -1) {
+    // optimize to avoid cloning and setting entire attributes
     const attrs = Object.assign({}, model.attributes);
-    setPath(attrs, prop, value);
+    const rootAttr = setPath(attrs, prop, value);
     model.set(attrs);
     if (!Object.keys(model.changed).length) {
+      model.trigger(`change:${rootAttr}`, model, {});
       model.trigger('change', model, {});
     }
   } else {
