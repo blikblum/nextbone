@@ -220,6 +220,15 @@
     assert.deepEqual(b.get('bar'), ['a'], 'Changing a parent attribute does not change the clone.');
   });
 
+  QUnit.test('clone date', function(assert) {
+    assert.expect(2);
+    var date = new Date();
+    var a = new Backbone.Model({ foo: date });
+    var b = a.clone();
+    assert.equal(a.get('foo'), date);
+    assert.equal(b.get('foo'), a.get('foo'), 'Foo should be the same on the clone.');
+  });
+
   QUnit.test('isNew', function(assert) {
     assert.expect(6);
     var a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });

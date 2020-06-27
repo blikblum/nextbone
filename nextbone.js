@@ -30,7 +30,8 @@ import {
   partition,
   sortBy,
   countBy,
-  groupBy
+  groupBy,
+  isDate
 } from 'underscore';
 
 // Initial Setup
@@ -52,7 +53,7 @@ var deepCloneLite = function(obj) {
     var value = obj[key];
     if (Array.isArray(value)) {
       result[key] = value.slice(0);
-    } else if (isObject(value)) {
+    } else if (isObject(value) && !isDate(value)) {
       result[key] = cloneObject(value);
     } else {
       result[key] = value;
