@@ -150,7 +150,7 @@ describe('LocalStorage Model', function() {
 
       const item = root.localStorage.getItem(`SavedModel-${mySavedModel.id}`);
 
-      expect(item).to.not.be.null;
+      expect(item).to.not.be['null'];
 
       const parsed = JSON.parse(item);
 
@@ -174,7 +174,7 @@ describe('LocalStorage Model', function() {
 
       const item = root.localStorage.getItem(`SavedModel-${mySavedModel.id}`);
 
-      expect(item).to.not.be.null;
+      expect(item).to.not.be['null'];
 
       const parsed = JSON.parse(item);
 
@@ -191,9 +191,9 @@ describe('LocalStorage Model', function() {
       mySavedModel.destroy();
 
       const item = root.localStorage.getItem('SavedModel-10');
-      const localRecords = root.localStorage.getItem(`SavedModel`);
+      const localRecords = root.localStorage.getItem('SavedModel');
 
-      expect(item).to.be.null;
+      expect(item).to.be['null'];
       expect(localRecords).to.be.equal('');
     });
   });
@@ -224,7 +224,7 @@ describe('LocalStorage Model', function() {
 
   describe('using ajaxSync: true', function() {
     beforeEach(function() {
-      stub(ajax, 'handler');
+      stub(ajax, 'handler').resolves({});
     });
 
     afterEach(function() {
@@ -234,7 +234,7 @@ describe('LocalStorage Model', function() {
     it('calls ajax.handler for fetch', function() {
       mySavedModel.fetch({ ajaxSync: true });
 
-      expect(ajax.handler.called).to.be.true;
+      expect(ajax.handler.called).to.be['true'];
       expect(ajax.handler.getCall(0).args[0].url).to.be.equal('/test/10');
       expect(ajax.handler.getCall(0).args[0].type).to.be.equal('GET');
     });
@@ -242,7 +242,7 @@ describe('LocalStorage Model', function() {
     it('calls ajax.handler for save', function() {
       mySavedModel.save({}, { ajaxSync: true });
 
-      expect(ajax.handler.called).to.be.true;
+      expect(ajax.handler.called).to.be['true'];
       expect(ajax.handler.getCall(0).args[0].type).to.be.equal('PUT');
       expect(ajax.handler.getCall(0).args[0].url).to.be.equal('/test/10');
 
@@ -275,7 +275,7 @@ describe('Model with different idAttribute', function() {
     const item = root.localStorage.getItem('DifferentId-1337');
     const parsed = JSON.parse(item);
 
-    expect(item).to.not.be.null;
+    expect(item).to.not.be['null'];
     expect(parsed.string).to.be.a('string');
   });
 
@@ -384,7 +384,7 @@ describe('LocalStorage Collection', function() {
     });
 
     it('saves into the localStorage', function() {
-      expect(item).to.not.be.null;
+      expect(item).to.not.be['null'];
     });
 
     it('saves the right data', function() {
@@ -408,9 +408,9 @@ describe('LocalStorage Collection', function() {
       newModel.destroy();
 
       const removed = root.localStorage.getItem(`SavedCollection-${parsed.id}`);
-      const localRecords = root.localStorage.getItem(`SavedCollection`);
+      const localRecords = root.localStorage.getItem('SavedCollection');
 
-      expect(removed).to.be.null;
+      expect(removed).to.be['null'];
       expect(mySavedCollection.length).to.be.equal(0);
       expect(localRecords).to.be.equal('');
     });
@@ -483,7 +483,7 @@ describe('Initial data', () => {
     const collectionWithData = new SavedCollectionWithData();
     collectionWithData.fetch();
 
-    const localRecords = root.localStorage.getItem(`SavedCollectionWithData`);
+    const localRecords = root.localStorage.getItem('SavedCollectionWithData');
 
     expect(collectionWithData.length).to.equal(3);
     expect(localRecords).to.match(/1,\S{8}-\S{4}-\S{4}-\S{4}-\S{12},2/);
@@ -500,7 +500,7 @@ describe('Initial data', () => {
     const modelWithData = new SavedModelWithData({ id: 1 });
     modelWithData.fetch();
 
-    const localRecords = root.localStorage.getItem(`SavedModelWithData`);
+    const localRecords = root.localStorage.getItem('SavedModelWithData');
 
     expect(modelWithData.get('id')).to.equal(1);
     expect(modelWithData.get('name')).to.equal('John');
@@ -522,7 +522,7 @@ describe('Initial data', () => {
     const modelWithData = new SavedModelWithData({ id: 2 });
     modelWithData.fetch();
 
-    const localRecords = root.localStorage.getItem(`NewSavedModelWithData`);
+    const localRecords = root.localStorage.getItem('NewSavedModelWithData');
 
     expect(modelWithData.get('id')).to.equal(2);
     expect(modelWithData.get('name')).to.equal('Jim');
