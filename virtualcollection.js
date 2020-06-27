@@ -97,7 +97,10 @@ class VirtualCollection extends Collection {
 
   _proxyParentEvents(collection, events) {
     events.forEach(eventName => {
-      this.listenTo(collection, eventName, (...args) => this.trigger(eventName, ...args));
+      this.listenTo(collection, eventName, (...args) => {
+        this.isLoading = collection.isLoading;
+        this.trigger(eventName, ...args);
+      });
     });
   }
 

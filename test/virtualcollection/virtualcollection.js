@@ -258,8 +258,7 @@ describe('VirtualCollection', function() {
 
   describe('#comparator', function() {
     it('should sort the virtual collection upon instantiation', function() {
-      var vc,
-        collection = new Backbone.Collection(
+      var collection = new Backbone.Collection(
           [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
           {
             comparator: 'id'
@@ -271,8 +270,7 @@ describe('VirtualCollection', function() {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1]);
     });
     it('should not order the virtual collection when the comparator is falsey', function() {
-      var vc,
-        collection = new Backbone.Collection(
+      var collection = new Backbone.Collection(
           [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
           {
             comparator: 'name'
@@ -285,8 +283,7 @@ describe('VirtualCollection', function() {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1, 4]);
     });
     it('should accept a comparator()', function() {
-      var vc,
-        collection = new Backbone.Collection(
+      var collection = new Backbone.Collection(
           [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
           {
             comparator: 'id'
@@ -300,8 +297,7 @@ describe('VirtualCollection', function() {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1]);
     });
     it('should accept a comparator() that compares two models', function() {
-      var vc,
-        collection = new Backbone.Collection(
+      var collection = new Backbone.Collection(
           [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
           {
             comparator: 'id'
@@ -316,8 +312,7 @@ describe('VirtualCollection', function() {
       assert.deepEqual(vc.pluck('id'), [1, 3, 2]);
     });
     it('should keep the virtual collection sorted when adding items', function() {
-      var vc,
-        collection = new Backbone.Collection([{ id: 1, name: 'ccc' }, { id: 3, name: 'bbb' }], {
+      var collection = new Backbone.Collection([{ id: 1, name: 'ccc' }, { id: 3, name: 'bbb' }], {
           comparator: 'id'
         }),
         vc = new VirtualCollection(collection, { comparator: 'name' });
@@ -1041,6 +1036,65 @@ describe('VirtualCollection', function() {
 
       // assert the changed evenet on vc isnt triggered
       assert(called === 0);
+    });
+  });
+
+  describe('isLoading', function() {
+    it('should be reflected with successful fetch', function(done) {
+      var resolve;
+      var ajaxResponse = new Promise(function(res) {
+        resolve = res;
+      });
+      var collection = new Backbone.Collection();
+      collection.url = '/test';
+      collection.sync = function() {
+        return ajaxResponse;
+      };
+      var vc = new VirtualCollection(collection);
+      assert.equal(collection.isLoading, false);
+      assert.equal(vc.isLoading, false);
+      vc.on('sync', function() {
+        assert.equal(collection.isLoading, false);
+        assert.equal(vc.isLoading, false);
+      });
+      collection
+        .fetch()
+        .then(function() {
+          assert.equal(collection.isLoading, false);
+          assert.equal(vc.isLoading, false);
+          done();
+        });
+      assert.equal(collection.isLoading, true);
+      assert.equal(vc.isLoading, true);
+      resolve({ a: 1 });
+    });
+
+    it('should be reflected with failed fetch', function(done) {
+      var reject;
+      var ajaxResponse = new Promise(function(res, rej) {
+        reject = rej;
+      });
+      var collection = new Backbone.Collection();
+      collection.url = '/test';
+      collection.sync = function() {
+        return ajaxResponse;
+      };
+      var vc = new VirtualCollection(collection);
+      assert.equal(collection.isLoading, false);
+      assert.equal(vc.isLoading, false);
+      vc.on('error', function() {
+        assert.equal(collection.isLoading, false);
+        assert.equal(vc.isLoading, false);
+      });
+      collection
+      .fetch()['catch'](function() {
+        assert.equal(collection.isLoading, false);
+        assert.equal(vc.isLoading, false);
+        done();
+      });
+      assert.equal(collection.isLoading, true);
+      assert.equal(vc.isLoading, true);
+      reject({ fail: true });
     });
   });
 });
