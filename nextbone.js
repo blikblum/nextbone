@@ -32,7 +32,7 @@ import {
   countBy,
   groupBy,
   isDate
-} from 'underscore';
+} from 'lodash-es';
 
 // Initial Setup
 // -------------
@@ -616,7 +616,7 @@ class Model extends Events {
     return this.get(attr) != null;
   }
 
-  // Special-cased proxy to underscore's `matches` method.
+  // Special-cased proxy to lodash-es's `matches` method.
   matches(attrs) {
     return !!createIteratee(attrs, this)(this.attributes);
   }

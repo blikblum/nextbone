@@ -16,7 +16,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      '../../node_modules/underscore/underscore.js',
       '../../node_modules/jquery/dist/jquery.js',
       'setup.js',
       '*.js'
@@ -36,18 +35,14 @@ module.exports = function(config) {
         babel({
           exclude: ['node_modules/**']
         }),
-        nodeResolve({
-          only: [/^(?!.*?underscore).*/]
-        })
+        nodeResolve({})
       ],
 
       output: {
         format: 'iife', // Helps prevent naming collisions.
         name: 'nextboneTests', // Required for 'iife' format.
-        sourcemap: 'inline', // Sensible for testing.
-        globals: {
-          underscore: '_'
-        }
+        sourcemap: 'inline' // Sensible for testing.
+
       }
     },
 

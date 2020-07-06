@@ -1,5 +1,5 @@
 import { Collection, Events } from './nextbone';
-import { isFunction, sortedIndex, extend } from 'underscore';
+import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
@@ -181,7 +181,7 @@ class VirtualCollection extends Collection {
         };
 
     if (iterator.length === 1) {
-      return sortedIndex(this.models, model, iterator.bind(context));
+      return sortedIndexBy(this.models, model, iterator.bind(context));
     }
     return sortedIndexTwo(this.models, model, iterator, context);
   }

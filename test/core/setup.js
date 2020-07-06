@@ -1,6 +1,9 @@
 import * as Backbone from '../../nextbone';
+import * as _ from 'lodash-es';
 
 window.Backbone = Backbone;
+window._ = _;
+
 
 (function(QUnit) {
   var sync = Backbone.sync.handler;

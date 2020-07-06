@@ -14,7 +14,7 @@
   ],
   "author": "Luiz Américo Pereira Câmara",
   "dependencies": {
-    "underscore": ">=1.8.3"
+    "lodash-es": "^4.17.15"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
@@ -50,8 +50,8 @@
   },
   "scripts": {
     "test": "karma start test/core/karma.conf.js",
-    "test:computed": "cross-env NODE_ENV=test mocha --require @babel/register test/computed",
-    "test:fetch": "cross-env NODE_ENV=test mocha --require @babel/register test/fetch",
+    "test:computed": "cross-env NODE_ENV=test mocha --require @babel/register test/computed/setup.js test/computed/*.js",
+    "test:fetch": "cross-env NODE_ENV=test mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
     "test:localstorage": "karma start test/localstorage/karma.conf.js",
     "test:validation": "cross-env NODE_ENV=test mocha --require @babel/register --ui exports --recursive test/validation",
     "test:virtualcollection": "karma start test/virtualcollection/karma.conf.js",

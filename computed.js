@@ -1,4 +1,4 @@
-import { isEmpty, reduce, omit } from 'underscore';
+import { isEmpty, reduce, omit } from 'lodash-es';
 
 const computeFieldValue = (computedField, model) => {
   if (computedField && computedField.get) {

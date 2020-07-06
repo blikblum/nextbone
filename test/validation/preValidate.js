@@ -95,7 +95,7 @@ module.exports = {
             },
             security_code: function(value, attr, computedState) {
               var requiredLength = computedState.card_type === CARD_TYPES.AMEX ? 4 : 3;
-              if (value && _.isString(value) && value.length !== requiredLength) {
+              if (value && typeof value === 'string' && value.length !== requiredLength) {
                 return 'Please enter a valid security code.';
               }
             }

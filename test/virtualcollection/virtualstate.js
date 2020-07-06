@@ -2,7 +2,7 @@
 
 import chai from 'chai';
 import sinon from 'sinon';
-import _ from 'underscore';
+import * as _ from 'lodash-es';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit-element';
 import { Collection } from '../../nextbone';

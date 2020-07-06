@@ -1,4 +1,4 @@
-import { isObject, isEqual } from 'underscore';
+import { isObject, isEqual } from 'lodash-es';
 import { delegate } from './nextbone';
 
 function getPathSegments(path) {

@@ -1,6 +1,15 @@
+require('@babel/register')({
+  // This will override `node_modules` ignoring
+  ignore: [
+    function(filepath) {
+      const result = (filepath.indexOf('node_modules') !== -1 && !filepath.match(/lodash-es/));
+      return result;
+    }
+  ]
+});
+
 const assert = require('chai').assert;
 
-global._ = require('underscore');
 global.Backbone = require('../../nextbone');
 const Validation = require('../../validation');
 global.sinon = require('sinon');
@@ -14,7 +23,7 @@ assert.defined = assert.isDefined;
 assert.equals = assert.deepEqual;
 assert.contains = assert.include;
 assert.same = assert.strictEqual;
-assert.exception = assert.throws;
+assert.exception = assert['throws'];
 assert.called = sinon.assert.called;
 assert.calledWith = sinon.assert.calledWith;
 

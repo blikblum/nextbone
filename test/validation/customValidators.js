@@ -2,7 +2,7 @@ module.exports = {
   'Extending Backbone.Validation with custom validator': {
     beforeEach: function() {
       var that = this;
-      _.extend(Backbone.Validation.validators, {
+      Object.assign(Backbone.Validation.validators, {
         custom: function(value, attr, customValue) {
           that.context = this;
           if (value !== customValue) {
@@ -158,7 +158,7 @@ module.exports = {
     beforeEach: function() {
       this.builtinMin = Backbone.Validation.validators.min;
 
-      _.extend(Backbone.Validation.validators, {
+      Object.assign(Backbone.Validation.validators, {
         min: function(value, attr, customValue) {
           if (value !== customValue) {
             return 'error';
@@ -209,7 +209,7 @@ module.exports = {
 
   'Chaining built-in validators with custom': {
     beforeEach: function() {
-      _.extend(Backbone.Validation.validators, {
+      Object.assign(Backbone.Validation.validators, {
         custom2: function(value, attr, customValue, model) {
           if (value !== customValue) {
             return 'error';
@@ -254,7 +254,7 @@ module.exports = {
 
   'Formatting custom validator messages': {
     beforeEach: function() {
-      _.extend(Backbone.Validation.validators, {
+      Object.assign(Backbone.Validation.validators, {
         custom: function(value, attr, customValue, model) {
           if (value !== customValue) {
             return this.format(

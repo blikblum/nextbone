@@ -175,7 +175,7 @@ module.exports = {
         }
       }
 
-      _.extend(Model.prototype, Backbone.Validation.mixin);
+      Object.assign(Model.prototype, Backbone.Validation.mixin);
       this.model = new Model();
     },
 

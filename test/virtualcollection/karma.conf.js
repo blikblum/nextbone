@@ -16,7 +16,7 @@ module.exports = function(config) {
     plugins: ['karma-mocha', 'karma-rollup-preprocessor', 'karma-chrome-launcher'],
 
     // list of files / patterns to load in the browser
-    files: ['../../node_modules/underscore/underscore.js', '*.js'],
+    files: ['*.js'],
 
     preprocessors: {
       './*.js': ['rollup']
@@ -36,9 +36,7 @@ module.exports = function(config) {
             chai: ['expect']
           }
         }),
-        nodeResolve({
-          only: [/^(?!.*?underscore).*/]
-        })
+        nodeResolve()
       ],
 
       output: {

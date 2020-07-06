@@ -9,10 +9,10 @@ import {
   result as getResult,
   reduce,
   each,
-  include,
+  includes,
   extend,
   pick
-} from 'underscore';
+} from 'lodash-es';
 
 var keys = Object.keys;
 
@@ -405,7 +405,7 @@ var validators = {
   // Validates that the value has to be equal to one of the elements in
   // the specified array. Case sensitive matching
   oneOf: function(value, attr, values, model) {
-    if (!include(values, value)) {
+    if (!includes(values, value)) {
       return this.format(messages.oneOf, this.formatLabel(attr, model), values.join(', '));
     }
   },
@@ -474,9 +474,9 @@ const createClass = ModelClass => {
         });
 
         return isEmpty(result) ? undefined : result;
-      } else {
-        return validateAttr(self, attr, value, allAttrs, rules);
       }
+        return validateAttr(self, attr, value, allAttrs, rules);
+
     }
 
     // Check to see if an attribute, an array of attributes or the

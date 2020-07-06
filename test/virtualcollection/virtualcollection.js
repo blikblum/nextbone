@@ -2,7 +2,7 @@
 
 import chai from 'chai';
 import sinon from 'sinon';
-import _ from 'underscore';
+import * as _ from 'lodash-es';
 import * as Backbone from '../../nextbone';
 import { VirtualCollection, buildFilter } from '../../virtualcollection';
 
