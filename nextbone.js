@@ -14,6 +14,7 @@ import {
   isString,
   isFunction,
   isRegExp,
+  isPlainObject,
   isObject,
   negate,
   max,
@@ -53,7 +54,7 @@ var deepCloneLite = function(obj) {
     var value = obj[key];
     if (Array.isArray(value)) {
       result[key] = value.slice(0);
-    } else if (isObject(value) && !isDate(value)) {
+    } else if (isPlainObject(value)) {
       result[key] = cloneObject(value);
     } else {
       result[key] = value;

@@ -229,6 +229,22 @@
     assert.equal(b.get('foo'), a.get('foo'), 'Foo should be the same on the clone.');
   });
 
+  QUnit.test('clone class', function(assert) {
+    class FooClass {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+    }
+    assert.expect(3);
+    var foo = new FooClass(1, 2);
+    var a = new Backbone.Model({ foo: foo });
+    var b = a.clone();
+    assert.ok(b.get('foo') instanceof FooClass, 'Foo should be instance of FooClass');
+    assert.equal(a.get('foo'), foo);
+    assert.equal(b.get('foo'), a.get('foo'), 'Foo should be the same on the clone.');
+  });
+
   QUnit.test('isNew', function(assert) {
     assert.expect(6);
     var a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });
