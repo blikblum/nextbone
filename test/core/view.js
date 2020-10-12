@@ -154,9 +154,10 @@ const elHTML = html`
     });
 
     QUnit.test(`state${suffix}`, async function(assert) {
-      assert.expect(18);
+      assert.expect(21);
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
+      let el;
       @classDecorator
       class Test extends LitElement {
         static createProperty(...args) {
@@ -171,7 +172,16 @@ const elHTML = html`
         @Backbone.state
         model = new Backbone.Model();
 
-        @Backbone.state({ proxyEvents: true })
+        @Backbone.state({
+          proxyEvents: true,
+          events: {
+            'the:event': 'onEvent',
+            'other:event': function(params) {
+              assert.equal(params, 2);
+              assert.equal(this, el);
+            }
+          }
+        })
         collection = new Backbone.Collection();
 
         @Backbone.state({ copy: true })
@@ -184,10 +194,15 @@ const elHTML = html`
           enqueueUpdateCount++;
           super._enqueueUpdate(...args);
         }
+
+        onEvent(params) {
+          assert.equal(params, 1);
+          assert.equal(this, el);
+        }
       }
 
       const tag = defineCE(Test);
-      const el = await fixture(`<${tag}></${tag}>`);
+      el = await fixture(`<${tag}></${tag}>`);
       const parentEl = el.parentNode;
       assert.equal(enqueueUpdateCount, 1);
 
@@ -256,11 +271,9 @@ const elHTML = html`
       el.unitializedCopyModel.set('test', 'x');
       assert.equal(enqueueUpdateCount, 8);
 
-      // state with proxyEvents option proxies its events
-      el.on('collection:my:event', val => {
-        assert.equal(val, 'x');
-      });
-      el.collection.trigger('my:event', 'x');
+      // state with events option listen to event and trigger callback
+      el.collection.trigger('the:event', 1);
+      el.collection.trigger('other:event', 2);
 
       assert.equal(createPropertyCount, 4);
     });
