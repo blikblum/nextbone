@@ -14,8 +14,7 @@ const elHTML = html`
 (function(QUnit) {
   QUnit.module('Backbone.view');
 
-  QUnit.skip('decorated class name', assert => {
-    // chrome changed its behavior and now seems is not possible to keep original class name
+  QUnit.test('decorated class name', assert => {
     assert.expect(1);
 
     @Backbone.view

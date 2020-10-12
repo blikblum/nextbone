@@ -320,6 +320,7 @@ const ensureVirtualClass = ElementClass => {
   ElementClass[isClassDecorated] = true;
   const VirtualClass = createVirtualClass(ElementClass);
   Events.extend(VirtualClass.prototype);
+  Object.defineProperty(VirtualClass, 'name', { value: ElementClass.name, configurable: true });
   return VirtualClass;
 };
 

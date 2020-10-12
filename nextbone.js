@@ -1820,6 +1820,7 @@ const ensureViewClass = ElementClass => {
   ElementClass[isClassDecorated] = true;
   const ViewClass = createViewClass(ElementClass);
   Events.extend(ViewClass.prototype);
+  Object.defineProperty(ViewClass, 'name', { value: ElementClass.name, configurable: true });
   return ViewClass;
 };
 

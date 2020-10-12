@@ -12,7 +12,7 @@ const assert = chai.assert;
 const expect = chai.expect;
 
 describe('virtualState', () => {
-  it.skip('should preserve decorated class name', async () => {
+  it('should preserve decorated class name', async () => {
     class Test extends LitElement {
       @virtualState
       virtualProp;
