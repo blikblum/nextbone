@@ -31,8 +31,7 @@ import {
   partition,
   sortBy,
   countBy,
-  groupBy,
-  isDate
+  groupBy
 } from 'lodash-es';
 
 // Initial Setup
