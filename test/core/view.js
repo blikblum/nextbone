@@ -280,4 +280,34 @@ const elHTML = html`
       assert.equal(!!Backbone.isView(el), classDecorator === Backbone.view);
     });
   });
+
+  QUnit.test('on decorator', async function(assert) {
+    var counter = 0;
+    var eventThis;
+    assert.expect(3);
+    @Backbone.view
+    class Test extends LitElement {
+      @Backbone.on('event')
+      eventHandler() {
+        eventThis = this;
+        counter++;
+      }
+
+      render() {
+        return elHTML;
+      }
+    }
+
+    const tag = defineCE(Test);
+    const el = await fixture(`<${tag}></${tag}>`);
+
+    el.trigger('event');
+    assert.equal(counter, 1, 'counter should be incremented.');
+    el.trigger('event');
+    el.trigger('event');
+    el.trigger('event');
+    el.trigger('event');
+    assert.equal(counter, 5, 'counter should be incremented five times.');
+    assert.equal(eventThis, el, 'event this should be element instance.');
+  });
 })(QUnit);

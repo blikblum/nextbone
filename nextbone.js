@@ -1790,11 +1790,14 @@ const createViewClass = ElementClass => {
   return class extends ElementClass {
     constructor() {
       super();
-      const events = this.constructor.__events;
-      if (events) {
-        events.forEach(({ eventName, selector, listener }) => {
+      const { __events, __onEvents } = this.constructor;
+      if (__events) {
+        __events.forEach(({ eventName, selector, listener }) => {
           delegate(selector ? this.renderRoot || this : this, eventName, selector, listener, this);
         });
+      }
+      if (__onEvents) {
+        __onEvents.forEach(({ eventName, listener }) => this.on(eventName, listener));
       }
     }
 
