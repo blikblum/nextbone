@@ -223,9 +223,9 @@ var offApi = function(events, name, callback, options) {
 // `offer` unbinds the `onceWrapper` after it has been called.
 var onceMap = function(map, name, callback, offer) {
   if (callback) {
-    var fn = (map[name] = once(function() {
+    var fn = (map[name] = once(function(...args) {
       offer(name, fn);
-      callback.apply(this, arguments);
+      callback.apply(this, args);
     }));
     fn._callback = callback;
   }
@@ -396,12 +396,8 @@ class Events {
   // passed the same arguments as `trigger` is, apart from the event name
   // (unless you're listening on `"all"`, which will cause your callback to
   // receive the true name of the event as the first argument).
-  trigger(name) {
+  trigger(name, ...args) {
     if (!this._events) return this;
-
-    var length = Math.max(0, arguments.length - 1);
-    var args = Array(length);
-    for (var i = 0; i < length; i++) args[i] = arguments[i + 1];
 
     eventsApi(triggerApi, this._events, name, void 0, args);
     return this;
