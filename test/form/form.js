@@ -2,7 +2,7 @@ import { Model } from '../../nextbone';
 import { form, registerFormat } from '../../form';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
-import { LitElement, html } from 'lit-element';
+import { LitElement, html, property } from 'lit-element';
 
 import { expect } from 'chai';
 import { spy, assert } from 'sinon';
@@ -53,6 +53,37 @@ class TestModelOption extends LitElement {
 }
 
 const modelOptionTag = defineCE(TestModelOption);
+
+class CustomInput extends LitElement {
+  @property({ type: String })
+  name;
+
+  createRenderRoot() {
+    return this;
+  }
+
+  render() {
+    return html`
+      <input type="text" name="x" />
+    `;
+  }
+}
+
+const customInputTag = defineCE(CustomInput);
+
+@form({ inputs: { [`${customInputTag}`]: ['change'], input: ['change'] } })
+class TestNestedInput extends HTMLElement {
+  model = new Model();
+
+  connectedCallback() {
+    this.innerHTML = `
+    <${customInputTag} name="y"></${customInputTag}>
+  `;
+  }
+
+  requestUpdate() {}
+}
+const testNestedTag = defineCE(TestNestedInput);
 
 describe('form', function() {
   let myModel;
@@ -237,7 +268,7 @@ describe('form', function() {
         expect(el.form.touched.textProp).to.equal(undefined);
 
         inputEl.blur();
-        expect(el.form.touched.textProp).to.be.true;
+        expect(el.form.touched.textProp).to.be['true'];
       });
 
       it('should call requestUpdate when marked as touched', function() {
@@ -322,10 +353,10 @@ describe('form', function() {
       describe('isValid', () => {
         it('should return validity state', async function() {
           myModel.set({ textProp: 'danger' });
-          expect(el.form.isValid()).to.be.false;
+          expect(el.form.isValid()).to.be['false'];
 
           myModel.set({ textProp: 'safe' });
-          expect(el.form.isValid()).to.be.true;
+          expect(el.form.isValid()).to.be['true'];
         });
 
         it('should update errors on form state', async function() {
@@ -372,7 +403,7 @@ describe('form', function() {
       describe('isDirty', () => {
         it('should return false when no form interaction is done', async function() {
           myModel.set({ textProp: 'danger' });
-          expect(el.form.isDirty()).to.be.false;
+          expect(el.form.isDirty()).to.be['false'];
         });
 
         it('should return false when value changed and then reverted back', async function() {
@@ -383,7 +414,7 @@ describe('form', function() {
 
           inputEl.value = 'danger';
           inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          expect(el.form.isDirty()).to.be.false;
+          expect(el.form.isDirty()).to.be['false'];
         });
 
         it('should return true when value changed after first form interation', async function() {
@@ -391,13 +422,13 @@ describe('form', function() {
           const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
           inputEl.value = 'hello';
           inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          expect(el.form.isDirty()).to.be.true;
+          expect(el.form.isDirty()).to.be['true'];
         });
 
         it('should return true when no form interaction is done but after loading initial data', async function() {
           el.form.loadInitialData();
           myModel.set({ textProp: 'danger' });
-          expect(el.form.isDirty()).to.be.true;
+          expect(el.form.isDirty()).to.be['true'];
         });
       });
 
@@ -410,12 +441,12 @@ describe('form', function() {
           inputEl.blur();
           expect(el.form.errors).to.not.be.empty;
           expect(el.form.touched).to.not.be.empty;
-          expect(el.form.isDirty()).to.be.true;
+          expect(el.form.isDirty()).to.be['true'];
 
           el.form.reset();
           expect(el.form.errors).to.be.empty;
           expect(el.form.touched).to.be.empty;
-          expect(el.form.isDirty()).to.be.false;
+          expect(el.form.isDirty()).to.be['false'];
         });
       });
     });
@@ -499,6 +530,25 @@ describe('form', function() {
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(forceUpdateSpy);
+    });
+  });
+
+  describe('with nested input', () => {
+    let el;
+    beforeEach(async function() {
+      el = await fixture(`<${testNestedTag}></${testNestedTag}>`);
+      el.model = new Model();
+    });
+
+    it('should call "requestUpdate" once when a change occurs', async function() {
+      const customInput = el.querySelector(customInputTag);
+      await customInput.updateComplete;
+      const inputEl = customInput.querySelector('input');
+      inputEl.value = 'zzz';
+      spy(el, 'requestUpdate');
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(el.requestUpdate);
+      el.requestUpdate.restore();
     });
   });
 });
