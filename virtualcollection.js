@@ -44,6 +44,7 @@ class VirtualCollection extends Collection {
     if (this._parent) this.stopListening();
     this._parent = value;
     if (value) {
+      this.isLoading = value.isLoading;
       if (value.constructor.model) this.model = value.constructor.model;
       this._rebuildIndex();
       this.listenTo(value, 'add', this._onAdd);

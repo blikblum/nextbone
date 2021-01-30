@@ -1057,13 +1057,11 @@ describe('VirtualCollection', function() {
         assert.equal(collection.isLoading, false);
         assert.equal(vc.isLoading, false);
       });
-      collection
-        .fetch()
-        .then(function() {
-          assert.equal(collection.isLoading, false);
-          assert.equal(vc.isLoading, false);
-          done();
-        });
+      collection.fetch().then(function() {
+        assert.equal(collection.isLoading, false);
+        assert.equal(vc.isLoading, false);
+        done();
+      });
       assert.equal(collection.isLoading, true);
       assert.equal(vc.isLoading, true);
       resolve({ a: 1 });
@@ -1086,8 +1084,7 @@ describe('VirtualCollection', function() {
         assert.equal(collection.isLoading, false);
         assert.equal(vc.isLoading, false);
       });
-      collection
-      .fetch()['catch'](function() {
+      collection.fetch()['catch'](function() {
         assert.equal(collection.isLoading, false);
         assert.equal(vc.isLoading, false);
         done();
@@ -1095,6 +1092,28 @@ describe('VirtualCollection', function() {
       assert.equal(collection.isLoading, true);
       assert.equal(vc.isLoading, true);
       reject({ fail: true });
+    });
+
+    it('should be reflected when created while parent is loading', function(done) {
+      var resolve;
+      var ajaxResponse = new Promise(function(res) {
+        resolve = res;
+      });
+      var collection = new Backbone.Collection();
+      collection.url = '/test';
+      collection.sync = function() {
+        return ajaxResponse;
+      };
+      var vc;
+      collection.fetch().then(function() {
+        assert.equal(collection.isLoading, false);
+        assert.equal(vc.isLoading, false);
+        done();
+      });
+      assert.equal(collection.isLoading, true);
+      vc = new VirtualCollection(collection);
+      assert.equal(vc.isLoading, true);
+      resolve({ a: 1 });
     });
   });
 });
