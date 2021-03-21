@@ -332,6 +332,79 @@ const elHTML = html`
       assert.equal(createPropertyCount, 4);
     });
 
+    QUnit.test(`state subclassing${suffix}`, async function(assert) {
+      assert.expect(7);
+      let subEl, otherSubEl;
+      let eventCounter = 0;
+      let subEventCounter = 0;
+      let eventThis;
+      let subEventThis;
+
+      @classDecorator
+      class Test extends LitElement {
+        render() {
+          return elHTML;
+        }
+
+        @Backbone.state({
+          events: {
+            'the:event': 'onEvent'
+          }
+        })
+        model = new Backbone.Model();
+
+        onEvent() {
+          eventThis = this;
+          eventCounter++;
+        }
+      }
+
+      class SubTest extends Test {
+        @Backbone.state({
+          events: {
+            'the:sub:event': 'onSubEvent'
+          }
+        })
+        subModel = new Backbone.Model();
+
+        onSubEvent() {
+          subEventThis = this;
+          subEventCounter++;
+        }
+      }
+
+      class OtherSubTest extends Test {
+        subModel = new Backbone.Model();
+
+        onSubEvent() {
+          subEventThis = this;
+          subEventCounter++;
+        }
+      }
+
+      const subTag = defineCE(SubTest);
+      const otherSubTag = defineCE(OtherSubTest);
+      subEl = await fixture(`<${subTag}></${subTag}>`);
+      otherSubEl = await fixture(`<${otherSubTag}></${otherSubTag}>`);
+
+      subEl.model.trigger('the:event');
+      assert.equal(eventCounter, 1, 'counter should be incremented.');
+      subEl.subModel.trigger('the:sub:event');
+      assert.equal(subEventCounter, 1, 'sub class counter should be incremented.');
+      assert.equal(eventThis, subEl, 'event this should be object instance.');
+      assert.equal(subEventThis, subEl, 'sub class event this should be object instance.');
+
+      otherSubEl.model.trigger('the:event');
+      assert.equal(eventCounter, 2, 'counter should be incremented.');
+      assert.equal(eventThis, otherSubEl, 'event this should be other object instance.');
+      otherSubEl.subModel.trigger('the:sub:event');
+      assert.equal(
+        subEventCounter,
+        1,
+        'sub class counter should not be incremented on other sub class.'
+      );
+    });
+
     QUnit.test(`isView${suffix}`, async function(assert) {
       assert.expect(1);
       @classDecorator

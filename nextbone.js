@@ -1762,7 +1762,7 @@ const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
 };
 
 const registerStateProperty = (ctor, name, key, { copy, events } = {}) => {
-  const classStates = ctor.__states || (ctor.__states = []);
+  const classStates = ensureClassProperty(ctor, '__states');
   classStates.push({ name, events });
   const desc = {
     get() {
