@@ -62,6 +62,50 @@
     assert.equal(eventThis, obj, 'event this should be object instance.');
   });
 
+  QUnit.test('on decorator subclassing', function(assert) {
+    var eventCounter = 0;
+    var subEventCounter = 0;
+    var eventThis;
+    var subEventThis;
+    class Test extends Backbone.Events {
+      @Backbone.on('event')
+      eventHandler() {
+        eventThis = this;
+        eventCounter++;
+      }
+    }
+
+    class SubTest extends Test {
+      @Backbone.on('subevent')
+      subEventHandler() {
+        subEventThis = this;
+        subEventCounter++;
+      }
+    }
+
+    class OtherSubTest extends Test {}
+
+    assert.expect(7);
+    var subObj = new SubTest();
+    var otherSubObj = new OtherSubTest();
+    subObj.trigger('event');
+    assert.equal(eventCounter, 1, 'counter should be incremented.');
+    subObj.trigger('subevent');
+    assert.equal(subEventCounter, 1, 'sub class counter should be incremented.');
+    assert.equal(eventThis, subObj, 'event this should be object instance.');
+    assert.equal(subEventThis, subObj, 'sub class event this should be object instance.');
+
+    otherSubObj.trigger('event');
+    assert.equal(eventCounter, 2, 'counter should be incremented.');
+    assert.equal(eventThis, otherSubObj, 'event this should be other object instance.');
+    otherSubObj.trigger('subevent');
+    assert.equal(
+      subEventCounter,
+      1,
+      'sub class counter should not be incremented on other sub class.'
+    );
+  });
+
   QUnit.test('binding and triggering multiple events', function(assert) {
     assert.expect(4);
     var obj = { counter: 0 };

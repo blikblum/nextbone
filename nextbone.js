@@ -96,6 +96,14 @@ var getClassProp = function(obj, prop) {
   return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
 };
 
+var ensureClassProperty = function(ctor, prop) {
+  if (!ctor.hasOwnProperty(prop)) {
+    var superProperties = Object.getPrototypeOf(ctor)[prop];
+    ctor[prop] = superProperties ? [...superProperties] : [];
+  }
+  return ctor[prop];
+};
+
 // Events
 // ---------------
 
@@ -446,7 +454,7 @@ class Listening {
 Listening.prototype.on = Events.prototype.on;
 
 const registerOnEvent = (ctor, eventName, listener) => {
-  const onEvents = ctor.__onEvents || (ctor.__onEvents = []);
+  const onEvents = ensureClassProperty(ctor, '__onEvents');
   onEvents.push({ eventName, listener });
 };
 
