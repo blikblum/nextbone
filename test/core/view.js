@@ -153,6 +153,60 @@ const elHTML = html`
       el.dispatchEvent(new CustomEvent('my-event'));
     });
 
+    QUnit.test(`event subclassing${suffix}`, async function(assert) {
+      assert.expect(7);
+      let subEl, otherSubEl;
+      let eventCounter = 0;
+      let subEventCounter = 0;
+      let eventThis;
+      let subEventThis;
+
+      @classDecorator
+      class Test extends HTMLElement {
+        connectedCallback() {
+          render(elHTML, this);
+        }
+
+        @Backbone.event('my-event')
+        selfClick(e) {
+          eventThis = this;
+          eventCounter++;
+        }
+      }
+
+      class SubTest extends Test {
+        @Backbone.event('my-sub-event')
+        selfClick(e) {
+          subEventThis = this;
+          subEventCounter++;
+        }
+      }
+
+      class OtherSubTest extends Test {}
+
+      const subTag = defineCE(SubTest);
+      const otherSubTag = defineCE(OtherSubTest);
+      subEl = await fixture(`<${subTag}></${subTag}>`);
+      otherSubEl = await fixture(`<${otherSubTag}></${otherSubTag}>`);
+
+      subEl.dispatchEvent(new CustomEvent('my-event'));
+      assert.equal(eventCounter, 1, 'counter should be incremented.');
+      subEl.dispatchEvent(new CustomEvent('my-sub-event'));
+      assert.equal(subEventCounter, 1, 'sub class counter should be incremented.');
+      assert.equal(eventThis, subEl, 'event this should be object instance.');
+      assert.equal(subEventThis, subEl, 'sub class event this should be object instance.');
+
+      otherSubEl.dispatchEvent(new CustomEvent('my-event'));
+      assert.equal(eventCounter, 2, 'counter should be incremented.');
+      assert.equal(eventThis, otherSubEl, 'event this should be other object instance.');
+      otherSubEl.dispatchEvent(new CustomEvent('my-sub-event'));
+      assert.equal(
+        subEventCounter,
+        1,
+        'sub class counter should not be incremented on other sub class.'
+      );
+    });
+
     QUnit.test(`state${suffix}`, async function(assert) {
       assert.expect(21);
       let enqueueUpdateCount = 0;

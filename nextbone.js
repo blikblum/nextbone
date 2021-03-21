@@ -1757,7 +1757,7 @@ const bindViewState = (el, value, name, events) => {
 };
 
 const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
-  const classEvents = ctor.__events || (ctor.__events = []);
+  const classEvents = ensureClassProperty(ctor, '__events');
   classEvents.push({ eventName, selector, listener });
 };
 
