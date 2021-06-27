@@ -1,16 +1,9 @@
-global.XMLHttpRequest = function() {
-  this.withCredentials = true;
-};
+import sinon from 'sinon';
+import { expect } from 'chai';
+import 'whatwg-fetch';
+import * as Backbone from '../../nextbone.js';
 
-var sinon = require('sinon');
-var expect = require('chai').expect;
-var Backbone = require('../../nextbone');
-
-(function() {
-  if (typeof window === 'undefined') global.self = {};
-  require('whatwg-fetch');
-  global.fetch = sinon.spy(self.fetch);
-})();
+global.fetch = sinon.spy(self.fetch);
 
 var ajax = Backbone.ajax.handler;
 

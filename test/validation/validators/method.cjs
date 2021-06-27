@@ -165,7 +165,7 @@ module.exports = {
       class Model extends Backbone.Model {
         static validation = {
           name: function(val, attr, computed) {
-            return Backbone.Validation.validators.length(val, attr, 4, this);
+            return Validation.validators.length(val, attr, 4, this);
           }
         };
 
@@ -175,7 +175,7 @@ module.exports = {
         }
       }
 
-      Object.assign(Model.prototype, Backbone.Validation.mixin);
+      Object.assign(Model.prototype, Validation.mixin);
       this.model = new Model();
     },
 

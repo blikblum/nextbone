@@ -25,12 +25,12 @@ module.exports = {
 
       afterEach: function() {
         // Reset to default formatter
-        Backbone.Validation.options.labelFormatter = 'sentenceCase';
+        Validation.options.labelFormatter = 'sentenceCase';
       },
 
       'no formatting': {
         beforeEach: function() {
-          Backbone.Validation.options.labelFormatter = 'none';
+          Validation.options.labelFormatter = 'none';
         },
 
         'returns the attribute name': function() {
@@ -40,7 +40,7 @@ module.exports = {
 
       'label formatting': {
         beforeEach: function() {
-          Backbone.Validation.options.labelFormatter = 'label';
+          Validation.options.labelFormatter = 'label';
         },
 
         'looks up a label on the model': function() {
@@ -73,7 +73,7 @@ module.exports = {
 
       'sentence formatting': {
         beforeEach: function() {
-          Backbone.Validation.options.labelFormatter = 'sentenceCase';
+          Validation.options.labelFormatter = 'sentenceCase';
         },
 
         'sentence cases camel cased attribute name': function() {

@@ -1,20 +1,12 @@
-require('@babel/register')({
-  // This will override `node_modules` ignoring
-  ignore: [
-    function(filepath) {
-      const result = (filepath.indexOf('node_modules') !== -1 && !filepath.match(/lodash-es/));
-      return result;
-    }
-  ]
-});
+import { assert } from 'chai';
+import * as Backbone from '../../nextbone.js';
+import * as Validation from '../../validation.js';
+import sinon from 'sinon';
 
-const assert = require('chai').assert;
+global.sinon = sinon;
+global.Backbone = Backbone;
 
-global.Backbone = require('../../nextbone');
-const Validation = require('../../validation');
-global.sinon = require('sinon');
-
-global.Backbone.Validation = Validation;
+global.Validation = Validation;
 global.withValidation = Validation.withValidation;
 
 global.assert = assert;

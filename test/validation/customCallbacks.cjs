@@ -2,12 +2,12 @@ module.exports = {
   'Overriding default callbacks in Backbone.Validation': {
     beforeEach: function() {
       this.originalOptions = {};
-      Object.assign(this.originalOptions, Backbone.Validation.options);
+      Object.assign(this.originalOptions, Validation.options);
 
       this.valid = sinon.spy();
       this.invalid = sinon.spy();
 
-      Object.assign(Backbone.Validation.options, {
+      Object.assign(Validation.options, {
         valid: this.valid,
         invalid: this.invalid
       });
@@ -32,7 +32,7 @@ module.exports = {
     },
 
     afterEach: function() {
-      Object.assign(Backbone.Validation.options, this.originalOptions);
+      Object.assign(Validation.options, this.originalOptions);
     },
 
     'validate should call overridden valid callback': function() {

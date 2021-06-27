@@ -1,7 +1,7 @@
 module.exports = {
   'Extending Backbone.Validation with custom pattern': {
     beforeEach: function() {
-      Object.assign(Backbone.Validation.patterns, {
+      Object.assign(Validation.patterns, {
         custom: /^test/
       });
 
@@ -44,9 +44,9 @@ module.exports = {
 
   'Overriding builtin pattern in Backbone.Validation': {
     beforeEach: function() {
-      this.builtinEmail = Backbone.Validation.patterns.email;
+      this.builtinEmail = Validation.patterns.email;
 
-      Object.assign(Backbone.Validation.patterns, {
+      Object.assign(Validation.patterns, {
         email: /^test/
       });
 
@@ -68,7 +68,7 @@ module.exports = {
     },
 
     afterEach: function() {
-      Backbone.Validation.patterns.email = this.builtinEmail;
+      Validation.patterns.email = this.builtinEmail;
     },
 
     'should execute the custom pattern validator': function() {

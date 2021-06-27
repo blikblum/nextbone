@@ -12,7 +12,7 @@ module.exports = {
     },
 
     'email pattern matches all valid email addresses': function() {
-      this.pattern = Backbone.Validation.patterns.email;
+      this.pattern = Validation.patterns.email;
 
       this.valid('name@example.com');
       this.valid('name@example.com');
@@ -35,14 +35,14 @@ module.exports = {
     },
 
     'email pattern is case insensitive': function() {
-      this.pattern = Backbone.Validation.patterns.email;
+      this.pattern = Validation.patterns.email;
 
       this.valid('NaMe@example.COM');
       this.valid('NAME@EXAMPLE.COM');
     },
 
     'url pattern matches all valid urls': function() {
-      this.pattern = Backbone.Validation.patterns.url;
+      this.pattern = Validation.patterns.url;
 
       this.valid('http://thedersen.com');
       this.valid('http://www.thedersen.com/');
@@ -63,14 +63,14 @@ module.exports = {
     },
 
     'url pattern is case insensitive': function() {
-      this.pattern = Backbone.Validation.patterns.url;
+      this.pattern = Validation.patterns.url;
 
       this.valid('http://Thedersen.com');
       this.valid('HTTP://THEDERSEN.COM');
     },
 
     'number pattern matches all numbers, including decimal numbers': function() {
-      this.pattern = Backbone.Validation.patterns.number;
+      this.pattern = Validation.patterns.number;
 
       this.valid('123');
       this.valid('-123');
@@ -93,7 +93,7 @@ module.exports = {
     },
 
     'digits pattern matches single or multiple digits': function() {
-      this.pattern = Backbone.Validation.patterns.digits;
+      this.pattern = Validation.patterns.digits;
 
       this.valid('1');
       this.valid('123');

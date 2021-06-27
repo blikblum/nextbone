@@ -1,15 +1,14 @@
 import sinon from 'sinon';
-import { expect } from 'chai';
-import { withComputed } from '../../computed';
-import { Model, Collection } from '../../nextbone';
+import { expect } from '@esm-bundle/chai';
+import { withComputed } from '../../computed.js';
+import { Model, Collection } from '../../nextbone.js';
 
 describe('nextbone/computed', function() {
   describe('when ComputedFields initialized', function() {
     let model;
 
     beforeEach(function() {
-      @withComputed
-      class TestModel extends Model {
+      class TestModel extends withComputed(Model) {
         static computed = {
           grossPrice: {
             get: function() {
@@ -36,8 +35,8 @@ describe('nextbone/computed', function() {
 
       beforeEach(function() {
         getSpy = sinon.spy();
-        @withComputed
-        class TestModel extends Model {
+
+        class TestModel extends withComputed(Model) {
           static computed = {
             grossPrice: {
               get: getSpy
@@ -58,8 +57,7 @@ describe('nextbone/computed', function() {
     let model;
 
     beforeEach(function() {
-      @withComputed
-      class TestModel extends Model {
+      class TestModel extends withComputed(Model) {
         static computed = {
           grossPrice: {
             get: function() {

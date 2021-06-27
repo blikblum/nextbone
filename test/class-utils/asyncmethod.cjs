@@ -1,10 +1,3 @@
-import sinon from 'sinon';
-import sinonChai from 'sinon-chai';
-import chai, { expect } from 'chai';
-import { defineAsyncMethods, asyncMethod } from '../../class-utils';
-
-chai.use(sinonChai);
-
 describe('asyncMethod', function() {
   let fooStub;
   let barSpy;

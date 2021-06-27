@@ -414,17 +414,17 @@ module.exports = {
         this.model = new Model();
       },
 
-      isValid: function() {        
+      isValid: function() {
         assert(this.model.isValid());
       },
 
-      validate: function() {        
+      validate: function() {
         refute(this.model.validate());
       },
 
-      preValidate: function() {        
+      preValidate: function() {
         refute(this.model.preValidate());
-      },
+      }
     }
   }
 };
