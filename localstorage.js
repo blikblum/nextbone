@@ -261,11 +261,10 @@ function localStorageSync(method, model, options) {
     }
   }
 
-  if (resp) {
+  if (resp && !errorMessage) {
     resolve(resp);
   } else {
-    errorMessage = errorMessage ? errorMessage : 'Record Not Found';
-    reject(errorMessage);
+    reject(new Error(errorMessage || 'Record Not Found'));
   }
 
   return promise;
