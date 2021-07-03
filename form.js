@@ -62,6 +62,8 @@ const formats = {
   number: parseNumber
 };
 
+const NO_BIND_ATTRIBUTE = 'no-bind';
+
 class FormState {
   constructor(el, model = 'model', events, updateMethod) {
     this._data = {};
@@ -78,9 +80,12 @@ class FormState {
     }
     const renderRoot = this.el.renderRoot || this.el;
     const result = [];
-    renderRoot
-      .querySelectorAll(this.__selector)
-      .forEach(el => result.push(el.getAttribute('name')));
+    renderRoot.querySelectorAll(this.__selector).forEach(el => {
+      const name = el.getAttribute('name');
+      if (name && result.indexOf(name) === -1 && !el.hasAttribute(NO_BIND_ATTRIBUTE)) {
+        result.push(name);
+      }
+    });
     return result;
   }
 
@@ -163,7 +168,7 @@ const createClass = (ctor, options = {}) => {
 
   function updateModel(e) {
     const inputEl = e.target;
-    if (inputEl.hasAttribute('no-bind')) return;
+    if (inputEl.hasAttribute(NO_BIND_ATTRIBUTE)) return;
     const prop = inputEl.getAttribute('name');
     if (!prop) return;
     const formatter = formats[inputEl.dataset.format || inputEl.type];

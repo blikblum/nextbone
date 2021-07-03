@@ -87,6 +87,22 @@ class TestNestedInput extends HTMLElement {
 }
 const testNestedTag = defineCE(TestNestedInput);
 
+@form
+class TestNoNameInputs extends LitElement {
+  createRenderRoot() {
+    return this;
+  }
+
+  render() {
+    return html`
+      <input type="text" name="textProp" />
+      <input type="text" />
+    `;
+  }
+}
+
+const testNoNameTag = defineCE(TestNoNameInputs);
+
 describe('form', function() {
   let myModel;
   let setSpy;
@@ -449,6 +465,25 @@ describe('form', function() {
           expect(el.form.errors).to.be.empty;
           expect(el.form.touched).to.be.empty;
           expect(el.form.isDirty()).to.be['false'];
+        });
+      });
+
+      describe('getAttributes', () => {
+        it('should return an array with the name of the inputs excluding no bind', () => {
+          expect(el.form.getAttributes()).to.deep.equal([
+            'textProp',
+            'nested.textProp',
+            'numberProp',
+            'bracketProp',
+            'radioProp',
+            'checkProp',
+            'selectProp'
+          ]);
+        });
+
+        it('should not return value for inputs with no name', async () => {
+          el = await fixture(`<${testNoNameTag}></${testNoNameTag}>`);
+          expect(el.form.getAttributes()).to.deep.equal(['textProp']);
         });
       });
     });
