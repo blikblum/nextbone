@@ -155,7 +155,8 @@ const defaultInputs = {
   input: ['input'],
   textarea: ['change'],
   'input[type=radio]': ['change'],
-  'input[type=checkbox]': ['change']
+  'input[type=checkbox]': ['change'],
+  '[form-bind]': ['change']
 };
 
 const createClass = (ctor, options = {}) => {

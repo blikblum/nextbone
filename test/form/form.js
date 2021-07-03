@@ -65,21 +65,36 @@ class CustomInput extends LitElement {
   }
 
   render() {
+    return html``;
+  }
+}
+
+const customInputTag = defineCE(CustomInput);
+
+class NestedCustomInput extends LitElement {
+  @property({ type: String })
+  name;
+
+  createRenderRoot() {
+    return this;
+  }
+
+  render() {
     return html`
       <input type="text" name="x" />
     `;
   }
 }
 
-const customInputTag = defineCE(CustomInput);
+const nestedCustomInputTag = defineCE(NestedCustomInput);
 
-@form({ inputs: { [`${customInputTag}`]: ['change'], input: ['change'] } })
+@form({ inputs: { [`${nestedCustomInputTag}`]: ['change'], input: ['change'] } })
 class TestNestedInput extends HTMLElement {
   model = new Model();
 
   connectedCallback() {
     this.innerHTML = `
-    <${customInputTag} name="y"></${customInputTag}>
+    <${nestedCustomInputTag} name="y"></${nestedCustomInputTag}>
   `;
   }
 
@@ -129,6 +144,15 @@ describe('form', function() {
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
       assert.calledWith(setSpy, 'textProp', 'zzz');
+    });
+
+    it('should handle input event change with form-bind attribute', async function() {
+      el.renderRoot.innerHTML = `<${customInputTag} name="customInput" form-bind></${customInputTag}>`;
+      const inputEl = el.renderRoot.querySelector('[name="customInput"]');
+      inputEl.value = 'zzz';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'customInput', 'zzz');
     });
 
     it('should not handle input event input with no-bind attribute', async function() {
