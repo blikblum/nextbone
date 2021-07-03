@@ -21,7 +21,7 @@ class TestDefaultInputs extends LitElement {
     return html`
       <input type="text" name="textProp" />
       <input type="text" name="nested.textProp" />
-      <input type="text" name="noBind" no-bind />
+      <input type="text" name="noBind" no-form-bind />
       <input type="number" name="numberProp" />
       <input id="data-number" data-format="number" name="numberProp" />
       <input id="custom-format" data-format="bracket" name="bracketProp" />
@@ -155,7 +155,7 @@ describe('form', function() {
       assert.calledWith(setSpy, 'customInput', 'zzz');
     });
 
-    it('should not handle input event input with no-bind attribute', async function() {
+    it('should not handle input event input with no-form-bind attribute', async function() {
       const inputEl = el.renderRoot.querySelector('input[name="noBind"]');
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));

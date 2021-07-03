@@ -62,7 +62,7 @@ const formats = {
   number: parseNumber
 };
 
-const NO_BIND_ATTRIBUTE = 'no-bind';
+const NO_BIND_ATTRIBUTE = 'no-form-bind';
 
 class FormState {
   constructor(el, model = 'model', events, updateMethod) {
