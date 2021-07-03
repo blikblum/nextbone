@@ -472,6 +472,11 @@ describe('form', function() {
           myModel.set({ textProp: 'danger' });
           expect(el.form.isDirty()).to.be['true'];
         });
+
+        it('should return true when setValue is called', async function() {
+          el.form.setValue('testProp', 'Hello');
+          expect(el.form.isDirty()).to.be['true'];
+        });
       });
 
       describe('reset', () => {

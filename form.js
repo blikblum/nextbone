@@ -96,6 +96,9 @@ class FormState {
 
   setValue(attr, value, model = this.model) {
     model = typeof model === 'string' ? this.el[model] : model;
+    if (!this.modelInitialData.get(model)) {
+      this.modelInitialData.set(model, Object.assign({}, model.attributes));
+    }
     setModelValue(model, attr, value);
     if (typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
