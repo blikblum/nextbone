@@ -1,6 +1,6 @@
 /*global it, describe, before, beforeEach*/
 
-import chai from 'chai';
+import 'chai/chai.js';
 import sinon from 'sinon';
 import * as _ from 'lodash-es';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
@@ -8,8 +8,7 @@ import { LitElement, html } from 'lit-element';
 import { Collection } from '../../nextbone';
 import { virtualState, VirtualCollection } from '../../virtualcollection';
 
-const assert = chai.assert;
-const expect = chai.expect;
+const expect = window.chai.expect;
 
 describe('virtualState', () => {
   it('should preserve decorated class name', async () => {

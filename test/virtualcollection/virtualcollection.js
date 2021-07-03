@@ -1,12 +1,12 @@
 /*global it, describe, before, beforeEach*/
 
-import chai from 'chai';
+import 'chai/chai.js';
 import sinon from 'sinon';
 import * as _ from 'lodash-es';
 import * as Backbone from '../../nextbone';
 import { VirtualCollection, buildFilter } from '../../virtualcollection';
 
-const assert = chai.assert;
+const assert = window.chai.assert;
 
 describe('VirtualCollection', function() {
   describe('#constructor', function() {
