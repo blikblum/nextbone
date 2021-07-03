@@ -262,23 +262,10 @@ function localStorageSync(method, model, options) {
   }
 
   if (resp) {
-    if (options.success) {
-      options.success.call(model, resp, options);
-    }
     resolve(resp);
   } else {
     errorMessage = errorMessage ? errorMessage : 'Record Not Found';
-
-    if (options.error) {
-      options.error.call(model, errorMessage, options);
-    }
     reject(errorMessage);
-  }
-
-  // add compatibility with $.ajax
-  // always execute callback for success and error
-  if (options.complete) {
-    options.complete.call(model, resp);
   }
 
   return promise;
