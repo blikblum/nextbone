@@ -529,6 +529,43 @@ describe('form', function() {
           ]);
         });
       });
+
+      describe('getDirtyAttributes', () => {
+        it('should return empty array by default', async () => {
+          expect(el.form.getDirtyAttributes()).to.deep.equal([]);
+        });
+
+        it('should return an array with the name of the inputs with dirty value', () => {
+          let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.value = 'zzz';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+          inputEl.value = 'zzz';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.getDirtyAttributes()).to.deep.equal(['textProp', 'nested.textProp']);
+        });
+
+        it('should not return attributes changed but with equal values to pristine data', () => {
+          el.model.set({ textProp: 'x', nested: { textProp: 'y' } });
+          let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.value = 'zzz';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          inputEl.value = 'x';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+          inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+          inputEl.value = 'zzz';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          inputEl.value = 'y';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.getDirtyAttributes()).to.deep.equal([]);
+        });
+
+        it('should return name of properties set through setValue', async () => {
+          el.form.setValue('dynProp', 'x');
+          expect(el.form.getDirtyAttributes()).to.deep.equal(['dynProp']);
+        });
+      });
     });
 
     describe('with nested path', () => {

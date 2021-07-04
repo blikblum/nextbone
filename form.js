@@ -124,6 +124,23 @@ class FormState {
     return initialData ? !isEqual(model.attributes, initialData) : false;
   }
 
+  getDirtyAttributes({ model = this.model } = {}) {
+    const result = [];
+    model = typeof model === 'string' ? this.el[model] : model;
+    const initialData = this.modelInitialData.get(model);
+    if (initialData) {
+      const attributes = this.getAttributes();
+      for (const attribute of attributes) {
+        const initialValue = getPath(initialData, attribute);
+        const modelValue = getPath(model.attributes, attribute);
+        if (modelValue !== initialValue) {
+          result.push(attribute);
+        }
+      }
+    }
+    return result;
+  }
+
   isValid({ model = this.model, attributes = this.getAttributes(), update, touch } = {}) {
     model = typeof model === 'string' ? this.el[model] : model;
     const result = model.isValid(attributes);
