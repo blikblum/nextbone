@@ -510,9 +510,23 @@ describe('form', function() {
           ]);
         });
 
-        it('should not return value for inputs with no name', async () => {
+        it('should omit inputs with no name', async () => {
           el = await fixture(`<${testNoNameTag}></${testNoNameTag}>`);
           expect(el.form.getAttributes()).to.deep.equal(['textProp']);
+        });
+
+        it('should return name of properties set through setValue', async () => {
+          el.form.setValue('dynProp', 'x');
+          expect(el.form.getAttributes()).to.deep.equal([
+            'dynProp',
+            'textProp',
+            'nested.textProp',
+            'numberProp',
+            'bracketProp',
+            'radioProp',
+            'checkProp',
+            'selectProp'
+          ]);
         });
       });
     });

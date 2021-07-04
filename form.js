@@ -67,6 +67,7 @@ const NO_BIND_ATTRIBUTE = 'no-form-bind';
 class FormState {
   constructor(el, model = 'model', events, updateMethod) {
     this._data = {};
+    this._attributes = new Set();
     this.el = el;
     this.model = model;
     this.events = events;
@@ -79,7 +80,7 @@ class FormState {
       this.__selector = this.events.map(event => event.selector).join(', ');
     }
     const renderRoot = this.el.renderRoot || this.el;
-    const result = [];
+    const result = Array.from(this._attributes);
     renderRoot.querySelectorAll(this.__selector).forEach(el => {
       const name = el.getAttribute('name');
       if (name && result.indexOf(name) === -1 && !el.hasAttribute(NO_BIND_ATTRIBUTE)) {
@@ -99,6 +100,7 @@ class FormState {
     if (!this.modelInitialData.get(model)) {
       this.modelInitialData.set(model, Object.assign({}, model.attributes));
     }
+    this._attributes.add(attr);
     setModelValue(model, attr, value);
     if (typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
@@ -149,6 +151,7 @@ class FormState {
   reset() {
     this.errors = {};
     this.touched = {};
+    this._attributes = new Set();
     this.modelInitialData = new WeakMap();
   }
 }
