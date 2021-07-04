@@ -201,7 +201,7 @@ const createClass = (ctor, options = {}) => {
 
     if (!model) {
       // eslint-disable-next-line no-console
-      console.warn(`formBind: could not find model "${modelOption}" in element "${this.tagName}"`);
+      console.warn(`form: could not find model "${modelOption}" in element "${this.tagName}"`);
       return;
     }
 
