@@ -231,7 +231,7 @@ const createClass = (ctor, options = {}) => {
           }
           value = previousValue.slice();
         } else {
-          value = [value];
+          value = inputEl.checked ? [value] : [];
         }
       } else {
         value = Boolean(inputEl.checked);
