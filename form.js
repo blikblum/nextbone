@@ -211,16 +211,31 @@ const createClass = (ctor, options = {}) => {
       this.form.loadInitialData({ model });
     }
 
-    let value;
-    switch (inputEl.type) {
-      case 'checkbox':
-        value = Boolean(inputEl.checked);
-        break;
-      default:
-        value = inputEl.value;
-    }
+    let value = inputEl.value;
     if (formatter) {
       value = formatter(value);
+    }
+
+    if (inputEl.type === 'checkbox') {
+      if (inputEl.hasAttribute('value')) {
+        const previousValue = getPath(model.attributes, prop);
+        if (Array.isArray(previousValue)) {
+          const valueIndex = previousValue.indexOf(value);
+          if (inputEl.checked) {
+            // eslint-disable-next-line max-depth
+            if (valueIndex === -1) {
+              previousValue.push(value);
+            }
+          } else if (valueIndex !== -1) {
+            previousValue.splice(valueIndex, 1);
+          }
+          value = previousValue.slice();
+        } else {
+          value = [value];
+        }
+      } else {
+        value = Boolean(inputEl.checked);
+      }
     }
 
     setModelValue(model, prop, value);

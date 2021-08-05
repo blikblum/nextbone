@@ -28,6 +28,8 @@ class TestDefaultInputs extends LitElement {
       <input type="radio" name="radioProp" value="a" />
       <input type="radio" name="radioProp" value="b" checked />
       <input type="checkbox" name="checkProp" />
+      <input id="check-group-1" type="checkbox" name="checkGroup" value="jim" />
+      <input id="check-group-2" type="checkbox" name="checkGroup" value="3" data-format="number" />
       <select name="selectProp">
         <option value="xx">XX</option>
         <option selected value="yy">YY</option>
@@ -190,10 +192,36 @@ describe('form', function() {
     });
 
     it('should handle change event for checkbox input', async function() {
-      let inputEl = el.renderRoot.querySelector('input[type="checkbox"]');
+      const inputEl = el.renderRoot.querySelector('input[type="checkbox"]');
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(setSpy);
       assert.calledWith(setSpy, 'checkProp', false);
+      setSpy.resetHistory();
+      inputEl.checked = true;
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'checkProp', true);
+    });
+
+    it('should handle change event for checkbox input with value attribute', async function() {
+      let inputEl = el.renderRoot.querySelector('#check-group-1');
+      inputEl.checked = true;
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'checkGroup', ['jim']);
+      setSpy.resetHistory();
+
+      inputEl = el.renderRoot.querySelector('#check-group-2');
+      inputEl.checked = true;
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'checkGroup', ['jim', 3]);
+      setSpy.resetHistory();
+
+      inputEl.checked = false;
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'checkGroup', ['jim']);
     });
 
     it('should convert value to number for number input', async function() {
@@ -506,6 +534,7 @@ describe('form', function() {
             'bracketProp',
             'radioProp',
             'checkProp',
+            'checkGroup',
             'selectProp'
           ]);
         });
@@ -525,6 +554,7 @@ describe('form', function() {
             'bracketProp',
             'radioProp',
             'checkProp',
+            'checkGroup',
             'selectProp'
           ]);
         });
