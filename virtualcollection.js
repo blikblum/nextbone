@@ -1,4 +1,4 @@
-import { Collection, Events } from './nextbone';
+import { Collection, Events } from './nextbone.js';
 import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];

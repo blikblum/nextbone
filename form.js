@@ -1,5 +1,5 @@
 import { isObject, isEqual } from 'lodash-es';
-import { delegate } from './nextbone';
+import { delegate } from './nextbone.js';
 
 function getPathSegments(path) {
   const pathArr = path.split('.');
