@@ -1,5 +1,5 @@
 import { Model } from '../../nextbone';
-import { form, registerFormat } from '../../form';
+import { form, registerFormat, FormState } from '../../form';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html, property } from 'lit-element';
@@ -11,6 +11,28 @@ const { expect } = window.chai;
 
 registerFormat('bracket', value => `[${value}]`);
 
+function renderForm() {
+  return html`
+    <input type="text" name="textProp" />
+    <input type="text" name="nested.textProp" />
+    <input type="text" name="noBind" no-form-bind />
+    <input type="number" name="numberProp" />
+    <input id="data-number" data-format="number" name="numberProp" />
+    <input id="custom-format" data-format="bracket" name="bracketProp" />
+    <input type="radio" name="radioProp" value="a" />
+    <input type="radio" name="radioProp" value="b" checked />
+    <input type="checkbox" name="checkProp" />
+    <input id="check-group-1" type="checkbox" name="checkGroup" value="jim" />
+    <input id="check-group-2" type="checkbox" name="checkGroup" value="3" data-format="number" />
+    <select name="selectProp">
+      <option value="xx">XX</option>
+      <option selected value="yy">YY</option>
+    </select>
+    <custom-input name="customInputBind" form-bind></custom-input>
+    <custom-input name="customInput"></custom-input>
+  `;
+}
+
 @form
 class TestDefaultInputs extends LitElement {
   createRenderRoot() {
@@ -18,23 +40,7 @@ class TestDefaultInputs extends LitElement {
   }
 
   render() {
-    return html`
-      <input type="text" name="textProp" />
-      <input type="text" name="nested.textProp" />
-      <input type="text" name="noBind" no-form-bind />
-      <input type="number" name="numberProp" />
-      <input id="data-number" data-format="number" name="numberProp" />
-      <input id="custom-format" data-format="bracket" name="bracketProp" />
-      <input type="radio" name="radioProp" value="a" />
-      <input type="radio" name="radioProp" value="b" checked />
-      <input type="checkbox" name="checkProp" />
-      <input id="check-group-1" type="checkbox" name="checkGroup" value="jim" />
-      <input id="check-group-2" type="checkbox" name="checkGroup" value="3" data-format="number" />
-      <select name="selectProp">
-        <option value="xx">XX</option>
-        <option selected value="yy">YY</option>
-      </select>
-    `;
+    return renderForm();
   }
 }
 
@@ -120,6 +126,29 @@ class TestNoNameInputs extends LitElement {
 
 const testNoNameTag = defineCE(TestNoNameInputs);
 
+class TestFormState extends LitElement {
+  form = new FormState(this);
+
+  customOptionsForm = new FormState(this, {
+    model: 'otherModel',
+    inputs: { 'custom-input': ['change'] }
+  });
+
+  model = new Model();
+
+  otherModel = new Model();
+
+  createRenderRoot() {
+    return this;
+  }
+
+  render() {
+    return renderForm();
+  }
+}
+
+const formStateTag = defineCE(TestFormState);
+
 describe('form', function() {
   let myModel;
   let setSpy;
@@ -149,12 +178,11 @@ describe('form', function() {
     });
 
     it('should handle input event change with form-bind attribute', async function() {
-      el.renderRoot.innerHTML = `<${customInputTag} name="customInput" form-bind></${customInputTag}>`;
-      const inputEl = el.renderRoot.querySelector('[name="customInput"]');
+      const inputEl = el.renderRoot.querySelector('[name="customInputBind"]');
       inputEl.value = 'zzz';
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(setSpy);
-      assert.calledWith(setSpy, 'customInput', 'zzz');
+      assert.calledWith(setSpy, 'customInputBind', 'zzz');
     });
 
     it('should not handle input event input with no-form-bind attribute', async function() {
@@ -535,7 +563,8 @@ describe('form', function() {
             'radioProp',
             'checkProp',
             'checkGroup',
-            'selectProp'
+            'selectProp',
+            'customInputBind'
           ]);
         });
 
@@ -555,7 +584,8 @@ describe('form', function() {
             'radioProp',
             'checkProp',
             'checkGroup',
-            'selectProp'
+            'selectProp',
+            'customInputBind'
           ]);
         });
       });
@@ -696,6 +726,57 @@ describe('form', function() {
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(el.requestUpdate);
       el.requestUpdate.restore();
+    });
+  });
+
+  describe('with FormState instance', () => {
+    let el;
+    beforeEach(async function() {
+      el = await fixture(`<${formStateTag}></${formStateTag}>`);
+    });
+
+    it('should use default options by default', () => {
+      let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = '---';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('input[name="noBind"]');
+      inputEl.value = 'aaa';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('[name="customInput"]');
+      inputEl.value = 'bbb';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('[name="customInputBind"]');
+      inputEl.value = 'ccc';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+
+      expect(el.model.attributes).to.be.deep.equal({ textProp: '---', customInputBind: 'ccc' });
+    });
+
+    it('should accept custom options', () => {
+      let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = '---';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('input[name="noBind"]');
+      inputEl.value = 'aaa';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('[name="customInput"]');
+      inputEl.value = 'bbb';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('[name="customInputBind"]');
+      inputEl.value = 'ccc';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+
+      expect(el.otherModel.attributes).to.be.deep.equal({
+        textProp: '---',
+        customInput: 'bbb',
+        customInputBind: 'ccc'
+      });
     });
   });
 });
