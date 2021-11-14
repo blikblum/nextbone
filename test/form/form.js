@@ -126,6 +126,12 @@ class TestNoNameInputs extends LitElement {
 
 const testNoNameTag = defineCE(TestNoNameInputs);
 
+class CustomFormState extends FormState {
+  acceptInput(prop) {
+    return prop !== 'textProp';
+  }
+}
+
 class TestFormState extends LitElement {
   form = new FormState(this);
 
@@ -134,9 +140,13 @@ class TestFormState extends LitElement {
     inputs: { 'custom-input': ['change'] }
   });
 
+  customForm = new CustomFormState(this, { model: 'customModel' });
+
   model = new Model();
 
   otherModel = new Model();
+
+  customModel = new Model();
 
   createRenderRoot() {
     return this;
@@ -775,6 +785,28 @@ describe('form', function() {
       expect(el.otherModel.attributes).to.be.deep.equal({
         textProp: '---',
         customInput: 'bbb',
+        customInputBind: 'ccc'
+      });
+    });
+
+    it('should allow to select input event by overriding acceptInput', () => {
+      let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+      inputEl.value = '---';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('input[name="noBind"]');
+      inputEl.value = 'aaa';
+      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('[name="customInput"]');
+      inputEl.value = 'bbb';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+
+      inputEl = el.renderRoot.querySelector('[name="customInputBind"]');
+      inputEl.value = 'ccc';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+
+      expect(el.customModel.attributes).to.be.deep.equal({
         customInputBind: 'ccc'
       });
     });

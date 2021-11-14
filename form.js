@@ -95,7 +95,7 @@ function inputEventHandler(e) {
   const inputEl = e.target;
   if (inputEl.hasAttribute(NO_BIND_ATTRIBUTE)) return;
   const prop = inputEl.getAttribute('name');
-  if (!prop) return;
+  if (!prop || !this.acceptInput(prop, e)) return;
   const formatter = formats[inputEl.dataset.format || inputEl.type];
   const modelOption = inputEl.model || inputEl.dataset.model || this.model || 'model';
   const model = typeof modelOption === 'string' ? el[modelOption] : modelOption;
@@ -191,6 +191,10 @@ export class FormState {
     events.forEach(({ event, selector }) =>
       delegate(el.renderRoot || el, event, selector, inputEventHandler, this)
     );
+  }
+
+  acceptInput(prop, event) {
+    return true;
   }
 
   getAttributes() {
