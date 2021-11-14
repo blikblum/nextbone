@@ -958,7 +958,6 @@ class Model extends Events {
 
 // Defining an @@iterator method implements JavaScript's Iterable protocol.
 // This value is found at Symbol.iterator.
-/* global Symbol */
 var $$iterator = Symbol.iterator;
 
 // Collection

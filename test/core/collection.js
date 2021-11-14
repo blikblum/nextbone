@@ -2047,8 +2047,7 @@
   QUnit.test('Collection implements Iterable, values is default iterator function', function(
     assert
   ) {
-    /* global Symbol */
-    var $$iterator = typeof Symbol === 'function' && Symbol.iterator;
+    var $$iterator = Symbol.iterator;
     // This test only applies to environments which define Symbol.iterator.
     if (!$$iterator) {
       assert.expect(0);
