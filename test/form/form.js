@@ -1,5 +1,5 @@
 import { Model } from '../../nextbone';
-import { form, registerFormat, FormState } from '../../form';
+import { form, FormState, registerFormat, registerInput } from '../../form';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html, property } from 'lit-element';
@@ -10,6 +10,8 @@ import { spy, assert } from 'sinon';
 const { expect } = window.chai;
 
 registerFormat('bracket', value => `[${value}]`);
+
+registerInput('registered-input', ['change']);
 
 function renderForm() {
   return html`
@@ -30,6 +32,7 @@ function renderForm() {
     </select>
     <custom-input name="customInputBind" form-bind></custom-input>
     <custom-input name="customInput"></custom-input>
+    <registered-input name="registeredInput"></registered-input>
   `;
 }
 
@@ -291,8 +294,16 @@ describe('form', function() {
       assert.calledWith(setSpy, 'numberProp', 'a');
     });
 
+    it('should listen to events registered through registerInput', async function() {
+      const inputEl = el.renderRoot.querySelector('[name="registeredInput"]');
+      inputEl.value = 'xxx';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'registeredInput', 'xxx');
+    });
+
     it('should convert value using custom format registered through registerFormat', async function() {
-      let inputEl = el.renderRoot.querySelector('#custom-format');
+      const inputEl = el.renderRoot.querySelector('#custom-format');
       inputEl.value = 'xxx';
       inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
       assert.calledOnce(setSpy);
@@ -551,7 +562,8 @@ describe('form', function() {
             'checkProp',
             'checkGroup',
             'selectProp',
-            'customInputBind'
+            'customInputBind',
+            'registeredInput'
           ]);
         });
 
@@ -572,7 +584,8 @@ describe('form', function() {
             'checkProp',
             'checkGroup',
             'selectProp',
-            'customInputBind'
+            'customInputBind',
+            'registeredInput'
           ]);
         });
       });

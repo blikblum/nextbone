@@ -317,6 +317,10 @@ export const registerFormat = (name, fn) => {
   formats[name] = fn;
 };
 
+export const registerInput = (selector, events) => {
+  defaultInputs[selector] = events;
+};
+
 export const form = (optionsOrCtorOrDescriptor, options) => {
   // current state of decorators sucks. Lets abuse of duck typing
   if (typeof optionsOrCtorOrDescriptor === 'function') {
