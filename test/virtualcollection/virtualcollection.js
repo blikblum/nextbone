@@ -1,5 +1,3 @@
-/*global it, describe, before, beforeEach*/
-
 import 'chai/chai.js';
 import sinon from 'sinon';
 import * as _ from 'lodash-es';
@@ -40,18 +38,18 @@ describe('VirtualCollection', function() {
     });
 
     it('should accept a destroyWith option and bind destroy event (Marionette)', function() {
-      var vc, collection, event_emitter;
+      var vc, collection, eventEmitter;
       collection = new Backbone.Collection([{ id: 1, foo: 'bar' }]);
-      event_emitter = new Backbone.Events();
+      eventEmitter = new Backbone.Events();
       sinon.spy(VirtualCollection.prototype, 'stopListening');
-      vc = new VirtualCollection(collection, { destroyWith: event_emitter });
+      vc = new VirtualCollection(collection, { destroyWith: eventEmitter });
 
-      event_emitter.trigger('destroy');
+      eventEmitter.trigger('destroy');
       assert.equal(vc.stopListening.callCount, 1);
       VirtualCollection.prototype.stopListening.restore();
     });
     it('should set the model from the collection', function() {
-      var vc, MyModel, MyCollection, my_model, my_collection;
+      var vc, MyModel, MyCollection, myModel, myCollection;
       MyModel = class extends Backbone.Model {
         foo() {
           return 'foo';
@@ -60,10 +58,10 @@ describe('VirtualCollection', function() {
       MyCollection = class extends Backbone.Collection {
         static model = MyModel;
       };
-      my_collection = new MyCollection([{ id: 1, foo: 'bar' }]);
-      vc = new VirtualCollection(my_collection);
-      my_model = new vc.model();
-      assert.equal(my_model.foo(), 'foo');
+      myCollection = new MyCollection([{ id: 1, foo: 'bar' }]);
+      vc = new VirtualCollection(myCollection);
+      myModel = new vc.model();
+      assert.equal(myModel.foo(), 'foo');
     });
   });
 
@@ -349,7 +347,7 @@ describe('VirtualCollection', function() {
       );
       var vc = new VirtualCollection(collection, {
         filter: function(model) {
-          return model.get('name') == 'a' || model.get('name') == 'b';
+          return model.get('name') === 'a' || model.get('name') === 'b';
         }
       });
       assert.deepEqual(
@@ -368,9 +366,9 @@ describe('VirtualCollection', function() {
       var ac = new ACollection([{ type: 1 }, { type: 2 }, { type: 1 }, { type: 2 }]);
       assert.equal(ac.length, 4);
       var vc = new VirtualCollection(ac, { filter: { type: 2 } });
-      var vc_clone = vc.clone();
-      assert.equal(vc_clone.length, 2);
-      assert(vc_clone instanceof ACollection, 'clone instanciates the parent collection class');
+      var vcClone = vc.clone();
+      assert.equal(vcClone.length, 2);
+      assert(vcClone instanceof ACollection, 'clone instanciates the parent collection class');
     });
   });
   describe('#map', function() {
@@ -458,7 +456,7 @@ describe('VirtualCollection', function() {
       vc.add({ id: 2 });
       assert.equal(collection.length, 1);
       var model = vc.remove(collection.at(0));
-      assert(model.id == 2);
+      assert(model.id === 2);
       assert.equal(collection.length, 0);
     });
   });
@@ -710,8 +708,8 @@ describe('VirtualCollection', function() {
         }),
         called = false;
 
-      vc.on('update', function(collection, options) {
-        called = options.changes.removed.length == 1 && options.changes.added.length == 2;
+      vc.on('update', function(coll, options) {
+        called = options.changes.removed.length === 1 && options.changes.added.length === 2;
       });
       collection.set([{ type: 'a' }, { type: 'a' }, { type: 'b' }, { type: 'c' }]);
 
@@ -891,30 +889,30 @@ describe('VirtualCollection', function() {
       var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
         filterFunction;
 
-      var grandpa_vc = new VirtualCollection(collection, {
+      var grandpaVc = new VirtualCollection(collection, {
         filter: { type: 'a' }
       });
 
-      var daddy_vc = new VirtualCollection(grandpa_vc, {
+      var daddyVc = new VirtualCollection(grandpaVc, {
         filter: { type: 'a' }
       });
 
-      var vc = new VirtualCollection(daddy_vc, {
+      var vc = new VirtualCollection(daddyVc, {
         filter: { type: 'a' }
       });
 
       sinon.spy(collection, 'get');
       sinon.spy(vc, 'get');
-      sinon.spy(daddy_vc, 'get');
-      sinon.spy(grandpa_vc, 'get');
+      sinon.spy(daddyVc, 'get');
+      sinon.spy(grandpaVc, 'get');
 
       vc.each(function(model) {
         //looping collection
       });
 
       assert(!vc.get.called);
-      assert(!daddy_vc.get.called);
-      assert(!grandpa_vc.get.called);
+      assert(!daddyVc.get.called);
+      assert(!grandpaVc.get.called);
       assert(!collection.get.called);
     });
   });

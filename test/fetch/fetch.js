@@ -165,11 +165,11 @@ describe('backbone.fetch', function() {
         .then(function() {
           throw new Error('this request should fail');
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           expect(error.response.status).to.equal(400);
           done();
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           done(error);
         });
 
@@ -189,11 +189,11 @@ describe('backbone.fetch', function() {
         .then(function() {
           throw new Error('this request should fail');
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           expect(error.response.status).to.equal(400);
           done();
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           done(error);
         });
 
@@ -211,11 +211,11 @@ describe('backbone.fetch', function() {
         .then(function() {
           throw new Error('this request should fail');
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           expect(error.responseData).to.deep.equal({ code: 'INVALID_HORSE' });
           done();
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           done(error);
         });
 
@@ -239,11 +239,11 @@ describe('backbone.fetch', function() {
         .then(function() {
           throw new Error('this request should fail');
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           expect(error.response.status).to.equal(400);
           done();
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           done(error);
         });
 
@@ -261,11 +261,11 @@ describe('backbone.fetch', function() {
         .then(function() {
           throw new Error('this request should fail');
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           expect(error.responseData).to.equal('Nope');
           done();
         })
-        .catch(function(error) {
+        ['catch'](function(error) {
           done(error);
         });
 
@@ -284,14 +284,13 @@ describe('backbone.fetch', function() {
       .then(function() {
         throw new Error('this request should fail');
       })
-      .catch(function(error) {
-        console.log(error);
-        expect(error).to.be.an.instanceof(TypeError);
+      ['catch'](function(error) {
+        expect(error).to.be.an['instanceof'](TypeError);
         expect(error).not.to.have.property('response');
         expect(error.message).to.equal('Network request failed');
         done();
       })
-      .catch(function(error) {
+      ['catch'](function(error) {
         done(error);
       });
 
@@ -302,7 +301,7 @@ describe('backbone.fetch', function() {
   describe('Promise', function() {
     it('should return a Promise', function() {
       var xhr = ajax({ url: 'test', type: 'GET' });
-      expect(xhr).to.be.an.instanceof(Promise);
+      expect(xhr).to.be.an['instanceof'](Promise);
     });
   });
 });

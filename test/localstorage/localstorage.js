@@ -100,7 +100,7 @@ describe('LocalStorage Model', function() {
             done();
           }
         })
-        .catch(error => {});
+        ['catch'](error => {});
     });
   });
 

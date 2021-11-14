@@ -1,5 +1,7 @@
 {
-  "extends": ["prettier"],
+  "extends": [
+    "prettier"
+  ],
   "env": {
     "browser": true,
     "node": true,
@@ -9,6 +11,25 @@
   "parserOptions": {
     "ecmaVersion": 6
   },
+  "overrides": [
+    {
+      "files": [
+        "test/form/**/*.js",
+        "test/localstorage/**/*.js",
+        "test/virtualcollection/**/*.js",
+        "test/fetch/**/*.js",
+        "test/computed/**/*.js",
+        "test/class-utils/**/*.js"
+      ],
+      "env": {
+        "es2020": true,
+        "mocha": true
+      },
+      "rules": {
+        "no-unused-expressions": "off"
+      }
+    }
+  ],
   "globals": {
     "attachEvent": false,
     "detachEvent": false
@@ -16,19 +37,58 @@
   "rules": {
     "array-bracket-spacing": 2,
     "block-scoped-var": 2,
-    "brace-style": [1, "1tbs", { "allowSingleLine": true }],
+    "brace-style": [
+      1,
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
     "camelcase": 2,
-    "comma-dangle": [2, "never"],
+    "comma-dangle": [
+      2,
+      "never"
+    ],
     "comma-spacing": 2,
-    "computed-property-spacing": [2, "never"],
-    "dot-notation": [2, { "allowKeywords": false }],
+    "computed-property-spacing": [
+      2,
+      "never"
+    ],
+    "dot-notation": [
+      2,
+      {
+        "allowKeywords": false
+      }
+    ],
     "eol-last": 2,
-    "eqeqeq": [2, "smart"],
+    "eqeqeq": [
+      2,
+      "smart"
+    ],
     "key-spacing": 1,
-    "keyword-spacing": [2, { "after": true }],
-    "max-depth": [1, 4],
-    "max-params": [1, 5],
-    "new-cap": [2, { "newIsCapExceptions": ["model", "modelClass"] }],
+    "keyword-spacing": [
+      2,
+      {
+        "after": true
+      }
+    ],
+    "max-depth": [
+      1,
+      4
+    ],
+    "max-params": [
+      1,
+      5
+    ],
+    "new-cap": [
+      2,
+      {
+        "newIsCapExceptions": [
+          "model",
+          "modelClass"
+        ]
+      }
+    ],
     "no-alert": 2,
     "no-caller": 2,
     "no-catch-shadow": 2,
@@ -76,20 +136,39 @@
     "no-unreachable": 2,
     "no-unused-expressions": [
       2,
-      { "allowTernary": true, "allowShortCircuit": true }
+      {
+        "allowTernary": true,
+        "allowShortCircuit": true
+      }
     ],
     "no-with": 2,
-    "quotes": [2, "single", "avoid-escape"],
+    "quotes": [
+      2,
+      "single",
+      "avoid-escape"
+    ],
     "radix": 2,
     "semi": 2,
     "space-before-function-paren": [
       2,
-      { "anonymous": "never", "named": "never" }
+      {
+        "anonymous": "never",
+        "named": "never"
+      }
     ],
     "space-infix-ops": 2,
-    "space-unary-ops": [2, { "words": true, "nonwords": false }],
+    "space-unary-ops": [
+      2,
+      {
+        "words": true,
+        "nonwords": false
+      }
+    ],
     "use-isnan": 2,
     "valid-typeof": 2,
-    "wrap-iife": [2, "inside"]
+    "wrap-iife": [
+      2,
+      "inside"
+    ]
   }
 }

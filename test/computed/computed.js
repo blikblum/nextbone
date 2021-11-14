@@ -1,5 +1,6 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
+import { isNumber } from 'lodash-es';
 import { withComputed } from '../../computed.js';
 import { Model, Collection } from '../../nextbone.js';
 
@@ -479,13 +480,13 @@ describe('nextbone/computed', function() {
           };
         }
 
-        validate() {
+        validate(attrs) {
           var errors = [];
-          if ((attrs.netPrice && !_.isNumber(attrs.netPrice)) || attrs.netPrice < 0) {
+          if ((attrs.netPrice && !isNumber(attrs.netPrice)) || attrs.netPrice < 0) {
             errors.push('netPrice is invalid');
           }
 
-          if ((attrs.grossPrice && !_.isNumber(attrs.grossPrice)) || attrs.grossPrice < 0) {
+          if ((attrs.grossPrice && !isNumber(attrs.grossPrice)) || attrs.grossPrice < 0) {
             errors.push('grossPrice is invalid');
           }
 
@@ -509,8 +510,8 @@ describe('nextbone/computed', function() {
       getSpy = sinon.spy(function() {
         return this.external.get('value');
       });
-      callback = function(callback) {
-        this.external.on('change:value', callback);
+      callback = function(cb) {
+        this.external.on('change:value', cb);
       };
 
       @withComputed
