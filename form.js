@@ -224,31 +224,41 @@ export class FormState {
     return result;
   }
 
+  get(attr, { meta } = {}) {
+    return meta ? this._data[attr] : getPath(this.modelInstance.attributes, attr);
+  }
+
+  set(attr, value, { meta, update = true } = {}) {
+    if (meta) {
+      this._data[attr] = value;
+    } else {
+      const model = this.modelInstance;
+      if (!this.modelInitialData.get(model)) {
+        this.modelInitialData.set(model, Object.assign({}, model.attributes));
+      }
+      this._attributes.add(attr);
+      setModelValue(model, attr, value);
+    }
+
+    if (update && typeof this.el[this.updateMethod] === 'function') {
+      this.el[this.updateMethod]();
+    }
+  }
+
   getValue(attr) {
-    return getPath(this.modelInstance.attributes, attr);
+    return this.get(attr);
   }
 
   setValue(attr, value) {
-    const model = this.modelInstance;
-    if (!this.modelInitialData.get(model)) {
-      this.modelInitialData.set(model, Object.assign({}, model.attributes));
-    }
-    this._attributes.add(attr);
-    setModelValue(model, attr, value);
-    if (typeof this.el[this.updateMethod] === 'function') {
-      this.el[this.updateMethod]();
-    }
+    this.set(attr, value);
   }
 
   getData(prop) {
-    return this._data[prop];
+    return this.get(prop, { meta: true });
   }
 
   setData(prop, value) {
-    this._data[prop] = value;
-    if (typeof this.el[this.updateMethod] === 'function') {
-      this.el[this.updateMethod]();
-    }
+    this.set(prop, value, { meta: true });
   }
 
   isDirty() {
