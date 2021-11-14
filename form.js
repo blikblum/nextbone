@@ -1,4 +1,4 @@
-import { isObject, isEqual } from 'lodash-es';
+import { isPlainObject, isEqual } from 'lodash-es';
 import { delegate } from './nextbone.js';
 
 function getPathSegments(path) {
@@ -19,8 +19,6 @@ function getPathSegments(path) {
   return parts;
 }
 
-// todo: use lodash `get/set` when/if using lodash instead of underscore
-
 export const getPath = (object, path) => {
   // Check if path is string or array. Regex : ensure that we do not have '.' and brackets
   const pathArray = Array.isArray(path) ? path : path.split(/[,[\].]/g).filter(Boolean);
@@ -28,24 +26,31 @@ export const getPath = (object, path) => {
   return pathArray.reduce((prevObj, key) => prevObj && prevObj[key], object);
 };
 
-export const setPath = (obj, path, value) => {
+export const getPathChange = (obj, path, value) => {
   const pathArr = getPathSegments(path);
 
-  for (let i = 0; i < pathArr.length; i++) {
+  const attr = pathArr[0];
+
+  const origValue = obj[attr];
+
+  const newValue = isPlainObject(origValue) ? { ...origValue } : {};
+
+  let runValue = newValue;
+
+  for (let i = 1; i < pathArr.length; i++) {
     const p = pathArr[i];
 
-    if (!isObject(obj[p])) {
-      obj[p] = {};
-    }
-
     if (i === pathArr.length - 1) {
-      obj[p] = value;
+      runValue[p] = value;
+    } else {
+      if (!isPlainObject(runValue[p])) {
+        runValue[p] = {};
+      }
+      runValue = runValue[p];
     }
-
-    obj = obj[p];
   }
 
-  return pathArr[0];
+  return [attr, newValue];
 };
 
 function toNull(value) {
@@ -156,7 +161,7 @@ function inputEventHandler(e) {
   if (model.validate) {
     const modelErrors = model.validate(model.attributes, { attributes: [prop] });
     if (modelErrors) {
-      if (isObject(modelErrors)) {
+      if (isPlainObject(modelErrors)) {
         Object.assign(this.errors, modelErrors);
       } else {
         this.errors[prop] = modelErrors;
@@ -276,7 +281,7 @@ export class FormState {
       attributes.forEach(key => {
         delete this.errors[key];
       });
-    } else if (isObject(model.validationError)) {
+    } else if (isPlainObject(model.validationError)) {
       Object.assign(this.errors, model.validationError);
     }
     if (touch) {
@@ -343,17 +348,13 @@ export const form = (optionsOrCtorOrDescriptor, options) => {
     return form(ctorOrDescriptor, optionsOrCtorOrDescriptor);
   };
 };
+
 function setModelValue(model, prop, value) {
   // handle nested attributes
   if (prop.indexOf('.') !== -1) {
-    // optimize to avoid cloning and setting entire attributes
     const attrs = Object.assign({}, model.attributes);
-    const rootAttr = setPath(attrs, prop, value);
-    model.set(attrs);
-    if (!Object.keys(model.changed).length) {
-      model.trigger(`change:${rootAttr}`, model, {});
-      model.trigger('change', model, {});
-    }
+    const [attr, newValue] = getPathChange(attrs, prop, value);
+    model.set(attr, newValue);
   } else {
     model.set(prop, value);
   }
