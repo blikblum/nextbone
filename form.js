@@ -112,9 +112,7 @@ function inputEventHandler(e) {
 
   e.stopPropagation();
 
-  if (!this.modelInitialData.get(model)) {
-    this.loadInitialData();
-  }
+  this._ensureInitialData(model);
 
   let value = inputEl.value;
   if (formatter) {
@@ -233,15 +231,19 @@ export class FormState {
       this._data[attr] = value;
     } else {
       const model = this.modelInstance;
-      if (!this.modelInitialData.get(model)) {
-        this.modelInitialData.set(model, Object.assign({}, model.attributes));
-      }
+      this._ensureInitialData(model);
       this._attributes.add(attr);
       setModelValue(model, attr, value);
     }
 
     if (update && typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
+    }
+  }
+
+  _ensureInitialData(model) {
+    if (!this.modelInitialData.get(model)) {
+      this.modelInitialData.set(model, Object.assign({}, model.attributes));
     }
   }
 
