@@ -97,19 +97,18 @@ function inputEventHandler(e) {
   const prop = inputEl.getAttribute('name');
   if (!prop || !this.acceptInput(prop, e)) return;
   const formatter = formats[inputEl.dataset.format || inputEl.type];
-  const modelOption = inputEl.model || inputEl.dataset.model || this.model || 'model';
-  const model = typeof modelOption === 'string' ? el[modelOption] : modelOption;
+  const model = this.modelInstance;
 
   if (!model) {
     // eslint-disable-next-line no-console
-    console.warn(`form: could not find model "${modelOption}" in element "${el.tagName}"`);
+    console.warn(`form: could not find model "${this.model}" in element "${el.tagName}"`);
     return;
   }
 
   e.stopPropagation();
 
   if (!this.modelInitialData.get(model)) {
-    this.loadInitialData({ model });
+    this.loadInitialData();
   }
 
   let value = inputEl.value;
@@ -183,6 +182,7 @@ export class FormState {
   ) {
     this._data = {};
     this._attributes = new Set();
+    this._modelInstance = undefined;
     this.el = el;
     this.model = model;
     this.events = events;
@@ -190,6 +190,13 @@ export class FormState {
     this.reset();
     events.forEach(({ event, selector }) =>
       delegate(el.renderRoot || el, event, selector, inputEventHandler, this)
+    );
+  }
+
+  get modelInstance() {
+    return (
+      this._modelInstance ||
+      (this._modelInstance = typeof this.model === 'string' ? this.el[this.model] : this.model)
     );
   }
 
@@ -212,13 +219,12 @@ export class FormState {
     return result;
   }
 
-  getValue(attr, model = this.model) {
-    model = typeof model === 'string' ? this.el[model] : model;
-    return getPath(model.attributes, attr);
+  getValue(attr) {
+    return getPath(this.modelInstance.attributes, attr);
   }
 
-  setValue(attr, value, model = this.model) {
-    model = typeof model === 'string' ? this.el[model] : model;
+  setValue(attr, value) {
+    const model = this.modelInstance;
     if (!this.modelInitialData.get(model)) {
       this.modelInitialData.set(model, Object.assign({}, model.attributes));
     }
@@ -240,15 +246,15 @@ export class FormState {
     }
   }
 
-  isDirty({ model = this.model } = {}) {
-    model = typeof model === 'string' ? this.el[model] : model;
+  isDirty() {
+    const model = this.modelInstance;
     const initialData = this.modelInitialData.get(model);
     return initialData ? !isEqual(model.attributes, initialData) : false;
   }
 
-  getDirtyAttributes({ model = this.model } = {}) {
+  getDirtyAttributes() {
     const result = [];
-    model = typeof model === 'string' ? this.el[model] : model;
+    const model = this.modelInstance;
     const initialData = this.modelInitialData.get(model);
     if (initialData) {
       const attributes = this.getAttributes();
@@ -263,8 +269,8 @@ export class FormState {
     return result;
   }
 
-  isValid({ model = this.model, attributes = this.getAttributes(), update, touch } = {}) {
-    model = typeof model === 'string' ? this.el[model] : model;
+  isValid({ attributes = this.getAttributes(), update, touch } = {}) {
+    const model = this.modelInstance;
     const result = model.isValid(attributes);
     if (result) {
       attributes.forEach(key => {
@@ -282,8 +288,8 @@ export class FormState {
     return result;
   }
 
-  loadInitialData({ model = this.model } = {}) {
-    model = typeof model === 'string' ? this.el[model] : model;
+  loadInitialData() {
+    const model = this.modelInstance;
     this.modelInitialData.set(model, Object.assign({}, model.attributes));
   }
 

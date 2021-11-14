@@ -57,7 +57,6 @@ class TestModelOption extends LitElement {
   render() {
     return html`
       <input id="default" name="textProp" />
-      <input id="other" data-model="yetAnotherModel" name="textProp" />
     `;
   }
 }
@@ -392,29 +391,19 @@ describe('form', function() {
       });
 
       describe('getValue', () => {
-        it('should return value from the default model', () => {
+        it('should return value from the model', () => {
           myModel.set({ x: 'y' });
           expect(el.form.getValue('x')).to.equal('y');
         });
 
-        it('should return falsy value from the default model', () => {
+        it('should return falsy value from the model', () => {
           myModel.set({ x: 0 });
           expect(el.form.getValue('x')).to.equal(0);
-        });
-
-        it('should return value from el property when passing a string as model option', () => {
-          el.anotherModel = new Model({ a: 'b' });
-          expect(el.form.getValue('a', 'anotherModel')).to.equal('b');
-        });
-
-        it('should return value from passed model option when is a model instance', () => {
-          const anotherModel = new Model({ foo: 'bar' });
-          expect(el.form.getValue('foo', anotherModel)).to.equal('bar');
         });
       });
 
       describe('setValue', () => {
-        it('should set value to the default model', () => {
+        it('should set value to the model', () => {
           myModel.set({ x: 'y' });
           el.form.setValue('x', 'b');
           expect(myModel.get('x')).to.equal('b');
@@ -424,18 +413,6 @@ describe('form', function() {
           myModel.set({ inner: { x: 'y' } });
           el.form.setValue('inner.x', 'b');
           expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
-        });
-
-        it('should set value to el property when passing a string as model option', () => {
-          el.anotherModel = new Model({ a: 'b' });
-          el.form.setValue('a', 'x', 'anotherModel');
-          expect(el.anotherModel.get('a')).to.equal('x');
-        });
-
-        it('should set value to passed model option when is a model instance', () => {
-          const anotherModel = new Model({ foo: 'bar' });
-          el.form.setValue('foo', 'baz', anotherModel);
-          expect(anotherModel.get('foo')).to.equal('baz');
         });
 
         it('should call updateMethod', () => {
@@ -699,17 +676,6 @@ describe('form', function() {
 
       assert.calledOnce(otherModelSetSpy);
       assert.calledWith(otherModelSetSpy, 'textProp', 'zzz');
-    });
-
-    it('should update the model defined by data-model', async function() {
-      const inputEl = el.renderRoot.querySelector('#other');
-      inputEl.value = 'zzz';
-      inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      assert.notCalled(setSpy);
-      assert.notCalled(otherModelSetSpy);
-
-      assert.calledOnce(yetAnotherModelSetSpy);
-      assert.calledWith(yetAnotherModelSetSpy, 'textProp', 'zzz');
     });
 
     it('should call the method passed in update option', function() {
