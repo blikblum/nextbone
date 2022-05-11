@@ -1848,8 +1848,9 @@ const event = (eventName, selector) => (protoOrDescriptor, methodName, propertyD
       initializer,
       key,
       finisher(ctor) {
+        ctor = ensureViewClass(ctor);
         registerDelegatedEvent(ctor, eventName, selector, descriptor.value);
-        return ensureViewClass(ctor);
+        return ctor;
       }
     };
   }
@@ -1883,8 +1884,9 @@ const state = (optionsOrProtoOrDescriptor, fieldName, options) => {
       initializer,
       key,
       finisher(ctor) {
+        ctor = ensureViewClass(ctor);
         registerStateProperty(ctor, name, key, options);
-        return ensureViewClass(ctor);
+        return ctor;
       }
     };
   }
