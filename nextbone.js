@@ -31,7 +31,8 @@ import {
   partition,
   sortBy,
   countBy,
-  groupBy
+  groupBy,
+  take
 } from 'lodash-es';
 
 // Initial Setup
@@ -1395,24 +1396,24 @@ class Collection extends Events {
     return this.models.length;
   }
 
-  first(n) {
-    return first(this.models, n);
+  first() {
+    return first(this.models);
   }
 
   take(n) {
-    return first(this.models, n);
+    return take(this.models, n);
   }
 
-  initial(n) {
-    return initial(this.models, n);
+  initial() {
+    return initial(this.models);
   }
 
-  last(n) {
-    return last(this.models, n);
+  last() {
+    return last(this.models);
   }
 
-  drop(index) {
-    return drop(this.models, index);
+  drop(n) {
+    return drop(this.models, n);
   }
 
   without(...args) {
