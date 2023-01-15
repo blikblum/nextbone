@@ -578,7 +578,7 @@
   });
 
   QUnit.test('isLoading with successful fetch', function(assert) {
-    assert.expect(4);
+    assert.expect(6);
     var done = assert.async();
     var collection = new Backbone.Collection();
     collection.url = '/test';
@@ -586,15 +586,21 @@
     this.ajaxResponse = new Promise(function(res) {
       resolve = res;
     });
+    var loadCalled = false;
+    collection.on('load', function() {
+      loadCalled = true;
+    });
     assert.equal(collection.isLoading, false);
     collection
       .fetch({
         success() {
           assert.equal(collection.isLoading, false);
+          assert.equal(loadCalled, true);
         }
       })
       .then(function() {
         assert.equal(collection.isLoading, false);
+        assert.equal(loadCalled, true);
         done();
       });
     assert.equal(collection.isLoading, true);
@@ -602,7 +608,7 @@
   });
 
   QUnit.test('isLoading with failed fetch', function(assert) {
-    assert.expect(4);
+    assert.expect(6);
     var done = assert.async();
     var collection = new Backbone.Collection();
     collection.url = '/test';
@@ -610,15 +616,21 @@
     this.ajaxResponse = new Promise(function(res, rej) {
       reject = rej;
     });
+    var loadCalled = false;
+    collection.on('load', function() {
+      loadCalled = true;
+    });
     assert.equal(collection.isLoading, false);
     collection
       .fetch({
         error() {
           assert.equal(collection.isLoading, false);
+          assert.equal(loadCalled, true);
         }
       })
       ['catch'](function() {
         assert.equal(collection.isLoading, false);
+        assert.equal(loadCalled, true);
         done();
       });
     assert.equal(collection.isLoading, true);

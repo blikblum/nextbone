@@ -1018,7 +1018,7 @@
   });
 
   QUnit.test('isLoading with successful fetch', function(assert) {
-    assert.expect(4);
+    assert.expect(6);
     var done = assert.async();
     var model = new Backbone.Model();
     model.url = '/test';
@@ -1026,15 +1026,21 @@
     this.ajaxResponse = new Promise(function(res) {
       resolve = res;
     });
+    var loadCalled = false;
+    model.on('load', function() {
+      loadCalled = true;
+    });
     assert.equal(model.isLoading, false);
     model
       .fetch({
         success() {
           assert.equal(model.isLoading, false);
+          assert.equal(loadCalled, true);
         }
       })
       .then(function() {
         assert.equal(model.isLoading, false);
+        assert.equal(loadCalled, true);
         done();
       });
     assert.equal(model.isLoading, true);
@@ -1042,7 +1048,7 @@
   });
 
   QUnit.test('isLoading with failed fetch', function(assert) {
-    assert.expect(4);
+    assert.expect(6);
     var done = assert.async();
     var model = new Backbone.Model();
     model.url = '/test';
@@ -1050,15 +1056,21 @@
     this.ajaxResponse = new Promise(function(res, rej) {
       reject = rej;
     });
+    var loadCalled = false;
+    model.on('load', function() {
+      loadCalled = true;
+    });
     assert.equal(model.isLoading, false);
     model
       .fetch({
         error() {
           assert.equal(model.isLoading, false);
+          assert.equal(loadCalled, true);
         }
       })
       ['catch'](function() {
         assert.equal(model.isLoading, false);
+        assert.equal(loadCalled, true);
         done();
       });
     assert.equal(model.isLoading, true);
