@@ -33,6 +33,7 @@ function renderForm() {
     <custom-input name="customInputBind" form-bind></custom-input>
     <custom-input name="customInput"></custom-input>
     <registered-input name="registeredInput"></registered-input>
+    <lazy-input name="lazyInput"></lazy-input>
   `;
 }
 
@@ -295,11 +296,22 @@ describe('form', function() {
     });
 
     it('should listen to events registered through registerInput', async function() {
-      const inputEl = el.renderRoot.querySelector('[name="registeredInput"]');
+      let inputEl = el.renderRoot.querySelector('[name="registeredInput"]');
       inputEl.value = 'xxx';
       inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
       assert.calledOnce(setSpy);
       assert.calledWith(setSpy, 'registeredInput', 'xxx');
+
+      registerInput('lazy-input', ['change']);
+      el = await fixture(`<${defaultsTag}></${defaultsTag}>`);
+      el.model = myModel;
+      setSpy.resetHistory();
+
+      inputEl = el.renderRoot.querySelector('[name="lazyInput"]');
+      inputEl.value = 'xxx';
+      inputEl.dispatchEvent(new InputEvent('change', { bubbles: true }));
+      assert.calledOnce(setSpy);
+      assert.calledWith(setSpy, 'lazyInput', 'xxx');
     });
 
     it('should convert value using custom format registered through registerFormat', async function() {
@@ -592,7 +604,8 @@ describe('form', function() {
             'checkGroup',
             'selectProp',
             'customInputBind',
-            'registeredInput'
+            'registeredInput',
+            'lazyInput'
           ]);
         });
 
@@ -614,7 +627,8 @@ describe('form', function() {
             'checkGroup',
             'selectProp',
             'customInputBind',
-            'registeredInput'
+            'registeredInput',
+            'lazyInput'
           ]);
         });
       });

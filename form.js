@@ -319,13 +319,12 @@ export class FormState {
 }
 
 const createClass = (ctor, options = {}) => {
-  const updateMethod = options.updateMethod;
-  const events = getInputEvents(options.inputs);
+  const { model, inputs, updateMethod } = options;
 
   return class extends ctor {
     constructor() {
       super();
-      this.form = new FormState(this, { model: options.model, events, updateMethod });
+      this.form = new FormState(this, { model, inputs, updateMethod });
     }
   };
 };
@@ -335,6 +334,7 @@ export const registerFormat = (name, fn) => {
 };
 
 export const registerInput = (selector, events) => {
+  defaultInputEvents = undefined;
   defaultInputs[selector] = events;
 };
 
