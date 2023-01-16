@@ -523,13 +523,13 @@ var wrapSync = function(model, response, options) {
   response.then(
     function(data) {
       model.isLoading = false;
-      model.trigger('load', model);
       if (options.success) options.success(data);
+      model.trigger('load', model);
     },
     function(error) {
       model.isLoading = false;
-      model.trigger('load', model);
       if (options.error) options.error.call(options.context, error);
+      model.trigger('load', model);
     }
   );
   return response;

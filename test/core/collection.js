@@ -578,7 +578,7 @@
   });
 
   QUnit.test('isLoading with successful fetch', function(assert) {
-    assert.expect(6);
+    assert.expect(7);
     var done = assert.async();
     var collection = new Backbone.Collection();
     collection.url = '/test';
@@ -586,21 +586,22 @@
     this.ajaxResponse = new Promise(function(res) {
       resolve = res;
     });
-    var loadCalled = false;
+    var successCalled = false;
     collection.on('load', function() {
-      loadCalled = true;
+      assert.equal(successCalled, true);
+      assert.equal(collection.at(0).get('a'), 1);
     });
     assert.equal(collection.isLoading, false);
     collection
       .fetch({
         success() {
           assert.equal(collection.isLoading, false);
-          assert.equal(loadCalled, true);
+          successCalled = true;
         }
       })
       .then(function() {
         assert.equal(collection.isLoading, false);
-        assert.equal(loadCalled, true);
+        assert.equal(successCalled, true);
         done();
       });
     assert.equal(collection.isLoading, true);
@@ -616,21 +617,21 @@
     this.ajaxResponse = new Promise(function(res, rej) {
       reject = rej;
     });
-    var loadCalled = false;
+    var errorCalled = false;
     collection.on('load', function() {
-      loadCalled = true;
+      assert.equal(errorCalled, true);
     });
     assert.equal(collection.isLoading, false);
     collection
       .fetch({
         error() {
           assert.equal(collection.isLoading, false);
-          assert.equal(loadCalled, true);
+          errorCalled = true;
         }
       })
       ['catch'](function() {
         assert.equal(collection.isLoading, false);
-        assert.equal(loadCalled, true);
+        assert.equal(errorCalled, true);
         done();
       });
     assert.equal(collection.isLoading, true);
