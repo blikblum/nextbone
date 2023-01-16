@@ -1746,9 +1746,9 @@ const undelegate = function(el, handler) {
 
 const bindViewState = (el, value, name, events) => {
   if (value instanceof Model) {
-    el.listenTo(value, 'change sync request', () => el.requestUpdate());
+    el.listenTo(value, 'change load request', () => el.requestUpdate());
   } else if (value instanceof Collection) {
-    el.listenTo(value, 'sort update reset change sync request', () => el.requestUpdate());
+    el.listenTo(value, 'sort update reset change load request', () => el.requestUpdate());
   } else {
     // not state. nothing more to do
     return;
