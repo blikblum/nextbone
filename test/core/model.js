@@ -1077,6 +1077,70 @@
     reject({ fail: true });
   });
 
+  QUnit.test('waitLoading with successful fetch', function(assert) {
+    assert.expect(7);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var resolve;
+    this.ajaxResponse = new Promise(function(res) {
+      resolve = res;
+    });
+    var loadCalled = false;
+    var changeCalled = false;
+    var fetchResolved = false;
+    model.on('load', function() {
+      loadCalled = true;
+    });
+    model.on('change', function() {
+      changeCalled = true;
+    });
+    assert.equal(model.isLoading, false);
+    model.fetch().then(function() {
+      fetchResolved = true;
+    });
+    assert.equal(model.isLoading, true);
+    Backbone.waitLoading(model).then(() => {
+      assert.equal(model.isLoading, false);
+      assert.equal(loadCalled, true);
+      assert.equal(changeCalled, true);
+      assert.equal(fetchResolved, true);
+      assert.equal(model.get('a'), 1);
+      done();
+    });
+    resolve({ a: 1 });
+  });
+
+  QUnit.test('waitLoading with failed fetch', function(assert) {
+    assert.expect(5);
+    var done = assert.async();
+    var model = new Backbone.Model();
+    model.url = '/test';
+    var reject;
+    this.ajaxResponse = new Promise(function(res, rej) {
+      reject = rej;
+    });
+    var loadCalled = false;
+    var fetchResolved = false;
+    model.on('load', function() {
+      loadCalled = true;
+    });
+
+    assert.equal(model.isLoading, false);
+    model.fetch().catch(function() {
+      fetchResolved = true;
+    });
+
+    assert.equal(model.isLoading, true);
+    Backbone.waitLoading(model).then(() => {
+      assert.equal(model.isLoading, false);
+      assert.equal(loadCalled, true);
+      assert.equal(fetchResolved, true);
+      done();
+    });
+    reject();
+  });
+
   QUnit.test('isLoading with successful save', function(assert) {
     assert.expect(4);
     var done = assert.async();

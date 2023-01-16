@@ -1664,6 +1664,14 @@ var modelMatcher = function(attrs) {
   };
 };
 
+async function waitLoading(state) {
+  if (state.isLoading) {
+    return new Promise(resolve => {
+      state.once('load', resolve);
+    });
+  }
+}
+
 // view
 // -------------
 
@@ -2432,5 +2440,6 @@ export {
   delegate,
   undelegate,
   isView,
-  cloneObject
+  cloneObject,
+  waitLoading
 };

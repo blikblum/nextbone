@@ -604,7 +604,7 @@
         done();
       });
     assert.equal(collection.isLoading, true);
-    resolve({ a: 1 });
+    resolve([{ a: 1 }]);
   });
 
   QUnit.test('isLoading with failed fetch', function(assert) {
@@ -635,6 +635,70 @@
       });
     assert.equal(collection.isLoading, true);
     reject({ fail: true });
+  });
+
+  QUnit.test('waitLoading with successful fetch', function(assert) {
+    assert.expect(7);
+    var done = assert.async();
+    var collection = new Backbone.Collection();
+    collection.url = '/test';
+    var resolve;
+    this.ajaxResponse = new Promise(function(res) {
+      resolve = res;
+    });
+    var loadCalled = false;
+    var updateCalled = false;
+    var fetchResolved = false;
+    collection.on('load', function() {
+      loadCalled = true;
+    });
+    collection.on('update', function() {
+      updateCalled = true;
+    });
+    assert.equal(collection.isLoading, false);
+    collection.fetch().then(function() {
+      fetchResolved = true;
+    });
+    assert.equal(collection.isLoading, true);
+    Backbone.waitLoading(collection).then(() => {
+      assert.equal(collection.isLoading, false);
+      assert.equal(loadCalled, true);
+      assert.equal(updateCalled, true);
+      assert.equal(fetchResolved, true);
+      assert.equal(collection.at(0).get('a'), 1);
+      done();
+    });
+    resolve([{ a: 1 }]);
+  });
+
+  QUnit.test('waitLoading with failed fetch', function(assert) {
+    assert.expect(5);
+    var done = assert.async();
+    var collection = new Backbone.Collection();
+    collection.url = '/test';
+    var reject;
+    this.ajaxResponse = new Promise(function(res, rej) {
+      reject = rej;
+    });
+    var loadCalled = false;
+    var fetchResolved = false;
+    collection.on('load', function() {
+      loadCalled = true;
+    });
+
+    assert.equal(collection.isLoading, false);
+    collection.fetch().catch(function() {
+      fetchResolved = true;
+    });
+
+    assert.equal(collection.isLoading, true);
+    Backbone.waitLoading(collection).then(() => {
+      assert.equal(collection.isLoading, false);
+      assert.equal(loadCalled, true);
+      assert.equal(fetchResolved, true);
+      done();
+    });
+    reject();
   });
 
   QUnit.test('#3283 - fetch with an error response calls error with context', function(assert) {
