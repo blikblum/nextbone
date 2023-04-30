@@ -208,10 +208,11 @@ const elHTML = html`
     });
 
     QUnit.test(`state${suffix}`, async function(assert) {
-      assert.expect(21);
+      assert.expect(23);
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
       let el;
+      let updateChangeMap;
       @classDecorator
       class Test extends LitElement {
         static createProperty(...args) {
@@ -244,6 +245,11 @@ const elHTML = html`
         @Backbone.state({ copy: true })
         unitializedCopyModel;
 
+        update(changed) {
+          updateChangeMap = changed;
+          return super.update(changed);
+        }
+
         _enqueueUpdate(...args) {
           enqueueUpdateCount++;
           super._enqueueUpdate(...args);
@@ -265,6 +271,10 @@ const elHTML = html`
       el.collection.reset([]);
       assert.equal(enqueueUpdateCount, 2);
       await el.updateComplete;
+
+      // property name must be passed to update changed map
+      assert.equal(updateChangeMap.has('model'), true);
+      assert.equal(updateChangeMap.has('collection'), true);
 
       // update property instance should trigger element update
       const newModel = new Backbone.Model();
