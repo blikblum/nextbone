@@ -278,7 +278,7 @@ export class FormState {
       for (const attribute of attributes) {
         const initialValue = getPath(initialData, attribute);
         const modelValue = getPath(model.attributes, attribute);
-        if (modelValue !== initialValue) {
+        if (!isEqual(modelValue, initialValue)) {
           result.push(attribute);
         }
       }
