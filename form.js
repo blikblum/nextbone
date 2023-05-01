@@ -27,6 +27,26 @@ export const getPath = (object, path) => {
   return pathArray.reduce((prevObj, key) => prevObj && prevObj[key], object);
 };
 
+export const setPath = (object, path, value) => {
+  // Check if path is string or array. Regex : ensure that we do not have '.' and brackets
+  const pathArr = Array.isArray(path) ? path : path.split(/[,[\].]/g).filter(Boolean);
+
+  let runValue = object;
+
+  for (let i = 0; i < pathArr.length; i++) {
+    const p = pathArr[i];
+
+    if (i === pathArr.length - 1) {
+      runValue[p] = value;
+    } else {
+      if (!isPlainObject(runValue[p])) {
+        runValue[p] = {};
+      }
+      runValue = runValue[p];
+    }
+  }
+};
+
 export const getPathChange = (obj, path, value) => {
   const pathArr = getPathSegments(path);
 
@@ -227,7 +247,7 @@ export class FormState {
     return meta ? this._data[attr] : getPath(this.modelInstance.attributes, attr);
   }
 
-  set(attr, value, { meta, update = true } = {}) {
+  set(attr, value, { meta, reset, update = true } = {}) {
     if (meta) {
       this._data[attr] = value;
     } else {
@@ -235,6 +255,12 @@ export class FormState {
       this._ensureInitialData(model);
       this._attributes.add(attr);
       setModelValue(model, attr, value);
+      if (reset) {
+        delete this.errors[attr];
+        delete this.touched[attr];
+        const initialData = this.modelInitialData.get(model);
+        setPath(initialData, attr, value);
+      }
     }
 
     if (update && typeof this.el[this.updateMethod] === 'function') {
@@ -243,8 +269,8 @@ export class FormState {
   }
 
   _ensureInitialData(model) {
-    if (!this.modelInitialData.get(model)) {
-      // cloning 5 levels should be more than enough
+    if (!this.modelInitialData.has(model)) {
+      // cloning up to 5 levels should be more than enough
       this.modelInitialData.set(model, deepCloneLite(model.attributes, 5));
     }
   }

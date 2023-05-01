@@ -343,11 +343,16 @@ describe('form', function() {
     });
 
     describe('form state', () => {
-      @withValidation
-      class ValidatedModel extends Model {
+      class ValidatedModel extends withValidation(Model) {
         static validation = {
           textProp: function(value) {
             if (value === 'danger') return 'error';
+          },
+          'nested.textProp': function(value) {
+            if (value === 'danger') return 'error';
+          },
+          numberProp: function(value) {
+            if (typeof value === 'number' && value > 100) return 'tooBig';
           },
           strangeProp: function(value) {
             if (value === 'danger') return 'error';
@@ -471,6 +476,44 @@ describe('form', function() {
           const updateMethodSpy = spy(el, 'requestUpdate');
           el.form.setValue('x', 'b');
           assert.calledOnce(updateMethodSpy);
+        });
+
+        it('should reset form state when called with reset: true', async function() {
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          const nestedInputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+          const numberInputEl = el.renderRoot.querySelector('input[type="number"]');
+          inputEl.focus();
+          inputEl.value = 'danger';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          nestedInputEl.focus();
+          nestedInputEl.value = 'danger';
+          nestedInputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          numberInputEl.focus();
+          numberInputEl.value = '1000';
+          numberInputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          // force touched
+          inputEl.focus();
+          expect(el.form.errors).to.deep.equal({
+            textProp: 'error',
+            'nested.textProp': 'error',
+            numberProp: 'tooBig'
+          });
+          expect(el.form.touched).to.deep.equal({
+            textProp: true,
+            'nested.textProp': true,
+            numberProp: true
+          });
+          expect(el.form.getDirtyAttributes()).to.deep.equal([
+            'textProp',
+            'nested.textProp',
+            'numberProp'
+          ]);
+
+          el.form.set('textProp', 'new', { reset: true });
+          el.form.set('nested.textProp', 'new', { reset: true });
+          expect(el.form.errors).to.deep.equal({ numberProp: 'tooBig' });
+          expect(el.form.touched).to.deep.equal({ numberProp: true });
+          expect(el.form.getDirtyAttributes()).to.deep.equal(['numberProp']);
         });
       });
 
