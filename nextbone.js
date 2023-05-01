@@ -1679,14 +1679,12 @@ const isState = function(value) {
 // handler.
 
 const delegate = function(el, eventName, selector, listener, context = el) {
-  if (delegate.$) return $delegate(el, eventName, selector, listener, context, delegate.$);
-
   const handler = selector
     ? function(e) {
         var node = e.target;
         for (; node && node !== el; node = node.parentNode) {
           if (node.matches && node.matches(selector)) {
-            e.selectorTarget = node;
+            e.selectorTarget = e.delegateTarget = node;
             listener.call(context, e);
           }
         }
@@ -1698,30 +1696,9 @@ const delegate = function(el, eventName, selector, listener, context = el) {
   return handler;
 };
 
-// jquery version of delegate
-const $delegate = function(el, eventName, selector, listener, context, $) {
-  let handler;
-  if (selector) {
-    handler = function(e) {
-      e.selectorTarget = e.currentTarget;
-      listener.call(context, e);
-    };
-    $(el).on(eventName, selector, handler);
-  } else {
-    handler = listener.bind(context);
-    $(el).on(eventName, handler);
-  }
-  handler.eventName = eventName;
-  return handler;
-};
-
 const undelegate = function(el, handler) {
   const eventName = handler.eventName;
-  if (!delegate.$) {
-    el.removeEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
-  } else {
-    delegate.$(el).off(eventName, handler);
-  }
+  el.removeEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
 };
 
 const bindViewState = (el, value, name, events) => {
