@@ -664,17 +664,23 @@ describe('form', function() {
           expect(el.form.getDirtyAttributes()).to.deep.equal([]);
         });
 
+        it('should return name of properties set through set', async () => {
+          el.form.set('dynProp', 'x');
+          expect(el.form.getDirtyAttributes()).to.deep.equal(['dynProp']);
+        });
+
+        it('should return attribute name when setting a deep nested property', async () => {
+          el.model.set({ x: { y: { z: 'a' } } });
+          el.form.set('x.y.z', 'b');
+          expect(el.form.getDirtyAttributes()).to.deep.equal(['x.y.z']);
+        });
+
         it('should not return attributes different reference but deep equal', () => {
           el.model.set({ textProp: 'x', complex: { textProp: 'y' } });
           el.form.set('complex', { textProp: 'x' });
           expect(el.form.getDirtyAttributes()).to.deep.equal(['complex']);
           el.form.set('complex', { textProp: 'y' });
           expect(el.form.getDirtyAttributes()).to.deep.equal([]);
-        });
-
-        it('should return name of properties set through setValue', async () => {
-          el.form.setValue('dynProp', 'x');
-          expect(el.form.getDirtyAttributes()).to.deep.equal(['dynProp']);
         });
       });
     });

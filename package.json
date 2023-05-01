@@ -99,6 +99,7 @@
     "form.js",
     "class-utils.js",
     "dom-utils.js",
+    "utils.js",
     "LICENSE"
   ],
   "packageManager": "yarn@3.3.1"

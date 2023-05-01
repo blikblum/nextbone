@@ -14,7 +14,6 @@ import {
   isString,
   isFunction,
   isRegExp,
-  isPlainObject,
   isObject,
   negate,
   max,
@@ -34,6 +33,7 @@ import {
   groupBy,
   take
 } from 'lodash-es';
+import { cloneObject, deepCloneLite } from './utils.js';
 
 // Initial Setup
 // -------------
@@ -41,26 +41,6 @@ import {
 // Underscore like functions
 var keys = function(obj) {
   return obj ? Object.keys(obj) : [];
-};
-
-var cloneObject = function(obj) {
-  return Object.assign({}, obj);
-};
-
-// clone that deep copy array and object one level
-var deepCloneLite = function(obj) {
-  var result = {};
-  Object.keys(obj).forEach(key => {
-    var value = obj[key];
-    if (Array.isArray(value)) {
-      result[key] = value.slice(0);
-    } else if (isPlainObject(value)) {
-      result[key] = cloneObject(value);
-    } else {
-      result[key] = value;
-    }
-  });
-  return result;
 };
 
 var isArray = Array.isArray;

@@ -1,5 +1,6 @@
 import { isPlainObject, isEqual } from 'lodash-es';
 import { delegate } from './nextbone.js';
+import { deepCloneLite } from './utils.js';
 
 function getPathSegments(path) {
   const pathArr = path.split('.');
@@ -243,7 +244,8 @@ export class FormState {
 
   _ensureInitialData(model) {
     if (!this.modelInitialData.get(model)) {
-      this.modelInitialData.set(model, Object.assign({}, model.attributes));
+      // cloning 5 levels should be more than enough
+      this.modelInitialData.set(model, deepCloneLite(model.attributes, 5));
     }
   }
 
