@@ -1806,7 +1806,11 @@ const ensureViewClass = ElementClass => {
 };
 
 // Method decorator to register a delegated event
-const event = (eventName, selector) => (protoOrDescriptor, methodName, propertyDescriptor) => {
+const eventHandler = (eventName, selector) => (
+  protoOrDescriptor,
+  methodName,
+  propertyDescriptor
+) => {
   if (typeof methodName !== 'string') {
     const { kind, key, placement, descriptor, initializer } = protoOrDescriptor;
     return {
@@ -2391,7 +2395,8 @@ export {
   on,
   observable,
   view,
-  event,
+  eventHandler as event,
+  eventHandler,
   state,
   // helpers
   delegate,

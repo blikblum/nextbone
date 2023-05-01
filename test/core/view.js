@@ -39,21 +39,21 @@ const elHTML = html`
           return elHTML;
         }
 
-        @Backbone.event('click', '.one')
+        @Backbone.eventHandler('click', '.one')
         oneClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, oneChildEl, 'target should be .one-child element');
           assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
         }
 
-        @Backbone.event('click', '.two')
+        @Backbone.eventHandler('click', '.two')
         twoClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, twoEl, 'target should be .two element');
           assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
         }
 
-        @Backbone.event('my-event')
+        @Backbone.eventHandler('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
@@ -80,21 +80,21 @@ const elHTML = html`
           return elHTML;
         }
 
-        @Backbone.event('click', '.one')
+        @Backbone.eventHandler('click', '.one')
         oneClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, oneChildEl, 'target should be .one-child element');
           assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
         }
 
-        @Backbone.event('click', '.two')
+        @Backbone.eventHandler('click', '.two')
         twoClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, twoEl, 'target should be .two element');
           assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
         }
 
-        @Backbone.event('my-event')
+        @Backbone.eventHandler('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
@@ -121,21 +121,21 @@ const elHTML = html`
           render(elHTML, this);
         }
 
-        @Backbone.event('click', '.one')
+        @Backbone.eventHandler('click', '.one')
         oneClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, oneChildEl, 'target should be .one-child element');
           assert.equal(e.selectorTarget, oneEl, 'selectorTarget should be .one element');
         }
 
-        @Backbone.event('click', '.two')
+        @Backbone.eventHandler('click', '.two')
         twoClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, twoEl, 'target should be .two element');
           assert.equal(e.selectorTarget, twoEl, 'selectorTarget should be .two element');
         }
 
-        @Backbone.event('my-event')
+        @Backbone.eventHandler('my-event')
         selfClick(e) {
           assert.equal(this, el, 'this should be the element instance');
           assert.equal(e.target, el, 'target should be be the element instance');
@@ -167,7 +167,7 @@ const elHTML = html`
           render(elHTML, this);
         }
 
-        @Backbone.event('my-event')
+        @Backbone.eventHandler('my-event')
         selfClick(e) {
           eventThis = this;
           eventCounter++;
@@ -175,7 +175,7 @@ const elHTML = html`
       }
 
       class SubTest extends Test {
-        @Backbone.event('my-sub-event')
+        @Backbone.eventHandler('my-sub-event')
         selfClick(e) {
           subEventThis = this;
           subEventCounter++;
