@@ -418,64 +418,70 @@ describe('form', function() {
         el.requestUpdate.restore();
       });
 
-      describe('getValue', () => {
+      describe('get', () => {
         it('should return value from the model', () => {
           myModel.set({ x: 'y' });
-          expect(el.form.getValue('x')).to.equal('y');
+          expect(el.form.get('x')).to.equal('y');
         });
 
         it('should return falsy value from the model', () => {
           myModel.set({ x: 0 });
-          expect(el.form.getValue('x')).to.equal(0);
+          expect(el.form.get('x')).to.equal(0);
         });
       });
 
-      describe('setValue', () => {
+      describe('set', () => {
         it('should set value to the model', () => {
           myModel.set({ x: 'y' });
-          el.form.setValue('x', 'b');
+          el.form.set('x', 'b');
           expect(myModel.get('x')).to.equal('b');
         });
 
         it('should set nested value', () => {
           myModel.set({ inner: { x: 'y' }, x: 'y' }, { reset: true });
-          el.form.setValue('inner.x', 'b');
+          el.form.set('inner.x', 'b');
           expect(myModel.attributes).to.deep.equal({ inner: { x: 'b' }, x: 'y' });
           expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
           expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
 
           // same value
           myModel.set({ inner: { x: 'y' }, x: 'y' }, { reset: true });
-          el.form.setValue('inner.x', 'y');
+          el.form.set('inner.x', 'y');
           expect(myModel.attributes).to.deep.equal({ inner: { x: 'y' }, x: 'y' });
           expect(myModel.get('inner')).to.deep.equal({ x: 'y' });
           expect(myModel.changed).to.deep.equal({});
 
           // overwrite non object in path
           myModel.set({ inner: [{ x: 'y' }] }, { reset: true });
-          el.form.setValue('inner.x', 'b');
+          el.form.set('inner.x', 'b');
           expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
           expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
 
           // create path
           myModel.set({ x: 'y' }, { reset: true });
-          el.form.setValue('inner.x', 'b');
+          el.form.set('inner.x', 'b');
           expect(myModel.attributes).to.deep.equal({ inner: { x: 'b' }, x: 'y' });
           expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
           expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
 
           // deep path
           myModel.set({ x: 'y' }, { reset: true });
-          el.form.setValue('inner.x.y.z', 'b');
+          el.form.set('inner.x.y.z', 'b');
           expect(myModel.attributes).to.deep.equal({ inner: { x: { y: { z: 'b' } } }, x: 'y' });
           expect(myModel.get('inner')).to.deep.equal({ x: { y: { z: 'b' } } });
           expect(myModel.changed).to.deep.equal({ inner: { x: { y: { z: 'b' } } } });
         });
 
-        it('should call updateMethod', () => {
+        it('should call updateMethod by default', () => {
           const updateMethodSpy = spy(el, 'requestUpdate');
-          el.form.setValue('x', 'b');
+          el.form.set('x', 'b');
           assert.calledOnce(updateMethodSpy);
+        });
+
+        it('should not call updateMethod when silent = true', () => {
+          const updateMethodSpy = spy(el, 'requestUpdate');
+          el.form.set('x', 'b', { silent: true });
+          assert.notCalled(updateMethodSpy);
         });
 
         it('should reset form state when called with reset: true', async function() {

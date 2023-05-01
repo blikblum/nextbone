@@ -247,7 +247,7 @@ export class FormState {
     return meta ? this._data[attr] : getPath(this.modelInstance.attributes, attr);
   }
 
-  set(attr, value, { meta, reset, update = true } = {}) {
+  set(attr, value, { meta, reset, silent } = {}) {
     if (meta) {
       this._data[attr] = value;
     } else {
@@ -263,7 +263,7 @@ export class FormState {
       }
     }
 
-    if (update && typeof this.el[this.updateMethod] === 'function') {
+    if (!silent && typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
     }
   }
