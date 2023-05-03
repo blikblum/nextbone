@@ -69,6 +69,7 @@
     "sinon": "^11.1.1",
     "sinon-chai": "^3.7.0",
     "turndown": "^7.1.2",
+    "vitepress": "^1.0.0-alpha.75",
     "whatwg-fetch": "^3.0.0"
   },
   "scripts": {
@@ -83,7 +84,10 @@
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
     "doc": "docco backbone.js && docco examples/todos/todos.js examples/backbone.localStorage.js",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js form.js test/core/*.js",
-    "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write"
+    "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "sideEffects": false,
   "license": "MIT",

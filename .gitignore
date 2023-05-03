@@ -4,6 +4,9 @@ raw
 node_modules
 bower_components
 
+docs/.vitepress/dist
+docs/.vitepress/cache
+
 .pnp.*
 .yarn/*
 !.yarn/patches
