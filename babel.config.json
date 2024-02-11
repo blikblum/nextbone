@@ -5,7 +5,7 @@
       {
         "targets": {
           "browsers": [
-            "chrome 60"
+            "chrome 100"
           ]
         },
         "modules": false
