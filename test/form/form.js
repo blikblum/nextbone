@@ -37,8 +37,7 @@ function renderForm() {
   `;
 }
 
-@form
-class TestDefaultInputs extends LitElement {
+class TestDefaultInputs extends form(LitElement) {
   createRenderRoot() {
     return this;
   }
@@ -50,8 +49,9 @@ class TestDefaultInputs extends LitElement {
 
 const defaultsTag = defineCE(TestDefaultInputs);
 
-@form({ model: 'otherModel', updateMethod: 'forceUpdate' })
 class TestModelOption extends LitElement {
+  form = new FormState(this, { model: 'otherModel', updateMethod: 'forceUpdate' });
+
   createRenderRoot() {
     return this;
   }
@@ -68,8 +68,9 @@ class TestModelOption extends LitElement {
 const modelOptionTag = defineCE(TestModelOption);
 
 class CustomInput extends LitElement {
-  @property({ type: String })
-  name;
+  static properties = {
+    name: { type: String }
+  };
 
   createRenderRoot() {
     return this;
@@ -83,8 +84,9 @@ class CustomInput extends LitElement {
 const customInputTag = defineCE(CustomInput);
 
 class NestedCustomInput extends LitElement {
-  @property({ type: String })
-  name;
+  static properties = {
+    name: { type: String }
+  };
 
   createRenderRoot() {
     return this;
@@ -99,8 +101,11 @@ class NestedCustomInput extends LitElement {
 
 const nestedCustomInputTag = defineCE(NestedCustomInput);
 
-@form({ inputs: { [`${nestedCustomInputTag}`]: ['change'], input: ['change'] } })
 class TestNestedInput extends HTMLElement {
+  form = new FormState(this, {
+    inputs: { [`${nestedCustomInputTag}`]: ['change'], input: ['change'] }
+  });
+
   model = new Model();
 
   connectedCallback() {
@@ -113,8 +118,7 @@ class TestNestedInput extends HTMLElement {
 }
 const testNestedTag = defineCE(TestNestedInput);
 
-@form
-class TestNoNameInputs extends LitElement {
+class TestNoNameInputs extends form(LitElement) {
   createRenderRoot() {
     return this;
   }
@@ -397,12 +401,13 @@ describe('form', function() {
 
       it('should mark as touched after the first time exits from input', function() {
         const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+        const numberInputEl = el.renderRoot.querySelector('input[type="number"]');
         inputEl.focus();
         inputEl.value = 'danger';
         inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
         expect(el.form.touched.textProp).to.equal(undefined);
 
-        inputEl.blur();
+        numberInputEl.focus();
         expect(el.form.touched.textProp).to.be['true'];
       });
 
