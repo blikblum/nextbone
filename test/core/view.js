@@ -463,9 +463,10 @@ const elHTML = html`
   });
 
   QUnit.test('state without decorator', async function(assert) {
-    assert.expect(6);
+    assert.expect(7);
     const modelChangeSpy = spy();
     const copyModelChangeSpy = spy();
+    const requestUpdateSpy = spy();
     class Test extends Backbone.view(LitElement) {
       static states = {
         model: {},
@@ -476,6 +477,11 @@ const elHTML = html`
         super();
         this.model = new Backbone.Model();
         this.copyModel = new Backbone.Model();
+      }
+
+      requestUpdate(...args) {
+        requestUpdateSpy();
+        return super.requestUpdate(...args);
       }
 
       // willUpdate does not work with lit-element v1 and upgrading to v2 is not an option
@@ -512,8 +518,10 @@ const elHTML = html`
     assert.equal(modelChangeSpy.callCount, 1, 'initial model change');
     assert.equal(copyModelChangeSpy.callCount, 1, 'initial copyModel change');
 
+    requestUpdateSpy.resetHistory();
     el.model.set('x', 'y');
     el.copyModel.set('x', 'y');
+    assert.equal(requestUpdateSpy.callCount, 2, 'requestUpdate called');
     await el.updateComplete;
     assert.equal(modelChangeSpy.callCount, 2, 'model change');
     assert.equal(copyModelChangeSpy.callCount, 2, 'copyModel change');

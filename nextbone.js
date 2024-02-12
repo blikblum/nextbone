@@ -1728,6 +1728,8 @@ const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
   classEvents.push({ eventName, selector, listener });
 };
 
+const viewsWithStateBound = new WeakSet();
+
 const registerStateProperty = (ctor, name, key, { copy, events } = {}) => {
   const classStates = ensureClassProperty(ctor, '__states');
   classStates.push({ name, events });
@@ -1746,7 +1748,7 @@ const registerStateProperty = (ctor, name, key, { copy, events } = {}) => {
           value = value.clone();
         }
       }
-      if (this.isConnected) {
+      if (viewsWithStateBound.has(this)) {
         bindViewState(this, value, name, events);
       }
       if (isState(oldValue)) {
@@ -1793,6 +1795,7 @@ const createViewClass = ElementClass => {
       super.connectedCallback && super.connectedCallback();
       const states = this.constructor.__states;
       if (states) {
+        viewsWithStateBound.add(this);
         states.forEach(({ name, events }) => {
           bindViewState(this, this[name], name, events);
         });
