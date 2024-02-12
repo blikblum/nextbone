@@ -15,6 +15,7 @@
   ],
   "author": "Luiz Américo Pereira Câmara",
   "main": "nextbone.js",
+  "types": "nextbone.d.ts",
   "exports": {
     ".": "./nextbone.js",
     "./class-utils": "./class-utils.js",
