@@ -41,7 +41,7 @@
           {
             "targets": {
               "browsers": [
-                "chrome 60"
+                "chrome 100"
               ]
             }
           }
