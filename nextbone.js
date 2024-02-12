@@ -1766,6 +1766,16 @@ const registerStateProperty = (ctor, name, key, { copy, events } = {}) => {
 
 const createViewClass = ElementClass => {
   return class extends ElementClass {
+    static get observedAttributes() {
+      const { states } = this;
+      if (states) {
+        for (const [name, options] of Object.entries(states)) {
+          registerStateProperty(this, name, `__${name}`, options);
+        }
+      }
+      return super.observedAttributes || [];
+    }
+
     constructor() {
       super();
       const { __events, __onEvents } = this.constructor;
