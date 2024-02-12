@@ -75,6 +75,7 @@
   "scripts": {
     "test": "karma start test/core/karma.conf.cjs",
     "test:computed": "web-test-runner test/computed/*.js --node-resolve --puppeteer",
+    "test:core": "web-test-runner test/core-next/*.js --node-resolve --puppeteer",
     "test:fetch": "mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
     "test:localstorage": "web-test-runner test/localstorage/*.js --node-resolve --puppeteer",
     "test:validation": "mocha --require @babel/register --require test/validation/setup-globals.js --ui exports --recursive test/validation/",

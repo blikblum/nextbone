@@ -14,6 +14,7 @@
   "overrides": [
     {
       "files": [
+        "test/core-next/**/*.js",
         "test/form/**/*.js",
         "test/localstorage/**/*.js",
         "test/virtualcollection/**/*.js",
