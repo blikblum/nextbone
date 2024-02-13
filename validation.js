@@ -14,6 +14,32 @@ import {
   pick
 } from 'lodash-es';
 
+/** @typedef {import('./nextbone.js').Model} Model */
+
+/**
+ * @callback FnRule
+ * @param {*} value
+ * @param {string} attr
+ * @param {Record<string, any>} computed
+ * @this {Model}
+ *
+ * @typedef {object} ValidationRule
+ * @property {boolean|FnRule} [required] - If the attribute is required or not
+ * @property {boolean|FnRule} [acceptance] - If the attribute has to be accepted
+ * @property {number|FnRule} [min] - The minimum value for the attribute
+ * @property {number|FnRule} [max] - The maximum value for the attribute
+ * @property {number[]|FnRule} [range] - The range for the attribute]
+ * @property {number|FnRule} [length] - The length for the attribute
+ * @property {number|FnRule} [minLength] - The minimum length for the attribute
+ * @property {number|FnRule} [maxLength] - The maximum length for the attribute
+ * @property {number[]|FnRule} [rangeLength] - The range for the length of the attribute
+ * @property {string[]|FnRule} [oneOf] - The allowed values for the attribute
+ * @property {string|FnRule} [equalTo] - The name of the attribute to compare with
+ * @property {RegExp|string|FnRule} [pattern] - The pattern to match the attribute against
+ * @property {string} [msg] - The error message to display if the validation fails
+ * @property {FnRule} [fn] - A custom function used for validation
+ */
+
 var keys = Object.keys;
 
 // Default options
@@ -239,17 +265,17 @@ var labelFormatters = {
 
   // Looks for a label configured on the model and returns it
   //
-  //      var Model = Backbone.Model.extend({
-  //        validation: {
+  //      var Model = class extends Model {
+  //        static validation = {
   //          someAttribute: {
   //            required: true
   //          }
-  //        },
+  //        }
   //
-  //        labels: {
+  //        labels = {
   //          someAttribute: 'Custom label'
   //        }
-  //      });
+  //      };
   label: function(attrName, model) {
     return (
       (model.labels && model.labels[attrName]) || labelFormatters.sentenceCase(attrName, model)
@@ -448,10 +474,19 @@ const getRules = ctor => {
   return (ctor.__validationRules = ctor.validation);
 };
 
-const createClass = ModelClass => {
+/**
+ * @template {typeof Model} ModelClass
+ * @param {ModelClass} ModelClass
+ * @returns
+ */
+function createClass(ModelClass) {
   return class extends ModelClass {
-    // Check whether or not a value, or a hash of values
-    // passes validation without updating the model
+    /**
+     * @description Check whether or not a value, or a hash of values passes validation without updating the model
+     * @param {string} attr
+     * @param {*} value
+     * @returns
+     */
     preValidate(attr, value) {
       var rules = getRules(this.constructor);
       if (!rules) return;
@@ -466,8 +501,8 @@ const createClass = ModelClass => {
         // regular validation
         extend(allAttrs, attr);
 
-        each(attr, function(value, attrKey) {
-          error = validateAttr(self, attrKey, value, allAttrs, rules);
+        each(attr, function(attrValue, attrKey) {
+          error = validateAttr(self, attrKey, attrValue, allAttrs, rules);
           if (error) {
             result[attrKey] = error;
           }
@@ -475,25 +510,24 @@ const createClass = ModelClass => {
 
         return isEmpty(result) ? undefined : result;
       }
-        return validateAttr(self, attr, value, allAttrs, rules);
-
+      return validateAttr(self, attr, value, allAttrs, rules);
     }
 
     // Check to see if an attribute, an array of attributes or the
     // entire model is valid.
-    isValid(options) {
+    isValid(opts) {
       var attributes;
 
-      if (isString(options)) {
-        attributes = [options];
-      } else if (isArray(options)) {
-        attributes = options;
+      if (isString(opts)) {
+        attributes = [opts];
+      } else if (isArray(opts)) {
+        attributes = opts;
       }
 
       var error = (this.validationError =
         this.validate(null, { validate: true, attributes }) || null);
       if (!error) return true;
-      this.trigger('invalid', this, error, options);
+      this.trigger('invalid', this, error, opts);
       return false;
     }
 
@@ -538,9 +572,20 @@ const createClass = ModelClass => {
       }
     }
   };
-};
+}
 
 // decorator
+// todo add type for functions
+/**
+ * @typedef ValidationStaticMixin
+ * @property {Record<string, ValidationRule>} validation
+ */
+
+/**
+ * @template {typeof import('./nextbone.js').Model} BaseClass
+ * @param {BaseClass} ctorOrDescriptor - Base model class
+ * @returns {BaseClass & ValidationStaticMixin}
+ */
 const withValidation = ctorOrDescriptor => {
   if (typeof ctorOrDescriptor === 'function') {
     return createClass(ctorOrDescriptor);

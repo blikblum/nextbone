@@ -2,6 +2,17 @@ import { isPlainObject, isEqual } from 'lodash-es';
 import { delegate } from './nextbone.js';
 import { deepCloneLite } from './utils.js';
 
+/**
+ * @typedef {import('./nextbone.js').Collection} Collection
+ * @typedef {import('./nextbone.js').Model} Model
+ *
+ * @typedef FormStateOptions
+ * @property {string|Model} [model='model']
+ * @property {string} [updateMethod='requestUpdate']
+ * @property {Record<string, string[]>} [inputs]
+ * @property {Array<{event: string, selector: string}>} [events]
+ */
+
 function getPathSegments(path) {
   const pathArr = path.split('.');
   const parts = [];
@@ -195,6 +206,10 @@ function inputEventHandler(e) {
 }
 
 export class FormState {
+  /**
+   * @param {HTMLElement} el
+   * @param {FormStateOptions} options
+   */
   constructor(
     el,
     {
@@ -287,16 +302,26 @@ export class FormState {
     return this.get(prop, { meta: true });
   }
 
+  /**
+   * @param {string} prop
+   * @param {*} value
+   */
   setData(prop, value) {
     this.set(prop, value, { meta: true });
   }
 
+  /**
+   * @return {boolean}
+   */
   isDirty() {
     const model = this.modelInstance;
     const initialData = this.modelInitialData.get(model);
     return initialData ? !isEqual(model.attributes, initialData) : false;
   }
 
+  /**
+   * @returns {string[]}
+   */
   getDirtyAttributes() {
     const result = [];
     const model = this.modelInstance;
@@ -389,6 +414,11 @@ export const form = (optionsOrCtorOrDescriptor, options) => {
   };
 };
 
+/**
+ * @param {Model} model
+ * @param {string} prop
+ * @param {*} value
+ */
 function setModelValue(model, prop, value) {
   // handle nested attributes
   if (prop.indexOf('.') !== -1) {

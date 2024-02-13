@@ -1,6 +1,16 @@
 import { Collection, Events } from './nextbone.js';
 import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
+/**
+ * @typedef {import('./nextbone.js').Model} Model
+ *
+ * @callback ModelFilterFunction
+ * @param {import('./nextbone.js').Model} model
+ * @return boolean
+ *
+ * @typedef {Record<string, any> | ModelFilterFunction} ModelFilter
+ */
+
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
 var clone = function(obj) {
@@ -23,7 +33,18 @@ var buildFilter = function(options) {
   }
 };
 
+/**
+ * @class VirtualCollection
+ * @description A virtual collection is a collection that is a filtered view of another collection.
+ */
 class VirtualCollection extends Collection {
+  /** @type {Collection} */
+  _parent;
+
+  /**
+   * @param {Collection | null} [parent]
+   * @param {{filter?: ModelFilter, destroyWith?: Model | Collection}} [options]
+   */
   constructor(parent, options = {}) {
     super(null, options);
     const { destroyWith, filter } = options;
@@ -35,6 +56,9 @@ class VirtualCollection extends Collection {
     this.parent = parent;
   }
 
+  /**
+   * @type {Collection}
+   */
   get parent() {
     return this._parent;
   }
@@ -58,6 +82,10 @@ class VirtualCollection extends Collection {
     }
   }
 
+  /**
+   * @param {ModelFilter} filter
+   * @returns {VirtualCollection}
+   */
   updateFilter(filter) {
     if (filter) {
       this.accepts = buildFilter(filter);

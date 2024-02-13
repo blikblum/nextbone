@@ -1,6 +1,5 @@
 /// <reference types="lodash-es" />
 
-type _Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 type _Result<T> = T | (() => T);
 type _StringKey<T> = keyof T & string;
 
@@ -49,7 +48,7 @@ interface Parseable {
   parse?: boolean | undefined;
 }
 
-interface PersistenceOptions extends Partial<_Omit<AjaxSettings, 'success' | 'error'>> {
+interface PersistenceOptions extends Partial<Omit<AjaxSettings, 'success' | 'error'>> {
   // TODO: Generalize modelOrCollection
   success?: ((modelOrCollection: any, response: any, options: any) => void) | undefined;
   error?: ((modelOrCollection: any, response: any, options: any) => void) | undefined;
@@ -302,8 +301,8 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
   pick<A extends _StringKey<T>>(keys: A[]): Partial<Pick<T, A>>;
   pick<A extends _StringKey<T>>(...keys: A[]): Partial<Pick<T, A>>;
   pick(fn: (value: any, key: any, object: any) => any): Partial<T>;
-  omit<A extends _StringKey<T>>(keys: A[]): Partial<_Omit<T, A>>;
-  omit<A extends _StringKey<T>>(...keys: A[]): Partial<_Omit<T, A>>;
+  omit<A extends _StringKey<T>>(keys: A[]): Partial<Omit<T, A>>;
+  omit<A extends _StringKey<T>>(...keys: A[]): Partial<Omit<T, A>>;
   omit(fn: (value: any, key: any, object: any) => any): Partial<T>;
   isEmpty(): boolean;
   matches(attrs: any): boolean;
@@ -547,3 +546,49 @@ interface Ajax {
 }
 
 export const ajax: Ajax;
+
+// decorator
+
+export function eventHandler(event: string, selector: string): void;
+export function eventHandler(event: string): void;
+export function eventHandler(target: any, event: string, selector: string): void;
+
+export function view<
+  BaseClass extends {
+    new (): HTMLElement;
+    prototype: HTMLElement;
+  }
+>(klass: BaseClass): BaseClass & EventsMixin;
+
+export function on(event: string): void;
+
+export function observable(): void;
+
+export function state(options?: {
+  copy?: boolean;
+  events?: Record<string, string | Function>;
+}): void;
+
+// mixins
+
+type Constructor = new (...args: any[]) => {};
+
+export function withEvents<T extends Constructor>(Base: T): T & EventsMixin;
+
+// utils
+
+export function delegate(
+  el: HTMLElement,
+  eventName: string,
+  selector: string,
+  listener: () => void,
+  context: HTMLElement
+): () => void;
+
+export function undelegate(el: HTMLElement, handler: () => void): void;
+
+export function waitLoading(state: Model | Collection): Promise<void>;
+
+export function isView(el: HTMLElement): boolean;
+
+export function cloneObject<T>(obj: T): T;

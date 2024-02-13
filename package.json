@@ -17,21 +17,66 @@
   "main": "nextbone.js",
   "types": "nextbone.d.ts",
   "exports": {
-    ".": "./nextbone.js",
-    "./class-utils": "./class-utils.js",
-    "./class-utils.js": "./class-utils.js",
-    "./computed": "./computed.js",
-    "./computed.js": "./computed.js",
-    "./dom-utils": "./dom-utils.js",
-    "./dom-utils.js": "./dom-utils.js",
-    "./form": "./form.js",
-    "./form.js": "./form.js",
-    "./localstorage": "./localstorage.js",
-    "./localstorage.js": "./localstorage.js",
-    "./validation": "./validation.js",
-    "./validation.js": "./validation.js",
-    "./virtualcollection": "./virtualcollection.js",
-    "./virtualcollection.js": "./virtualcollection.js"
+    ".": {
+      "types": "./types/nextbone.d.ts",
+      "default": "./nextbone.js"
+    },
+    "./class-utils": {
+      "types": "./types/class-utils.d.ts",
+      "default": "./class-utils.js"
+    },
+    "./class-utils.js": {
+      "types": "./types/class-utils.d.ts",
+      "default": "./class-utils.js"
+    },
+    "./computed": {
+      "types": "./types/computed.d.ts",
+      "default": "./computed.js"
+    },
+    "./computed.js": {
+      "types": "./types/computed.d.ts",
+      "default": "./computed.js"
+    },
+    "./dom-utils": {
+      "types": "./types/class-utils.d.ts",
+      "default": "./class-utils.js"
+    },
+    "./dom-utils.js": {
+      "types": "./types/class-utils.d.ts",
+      "default": "./class-utils.js"
+    },
+    "./form": {
+      "types": "./types/form.d.ts",
+      "default": "./form.js"
+    },
+    "./form.js": {
+      "types": "./types/form.d.ts",
+      "default": "./form.js"
+    },
+    "./localstorage": {
+      "types": "./types/localstorage.d.ts",
+      "default": "./localstorage.js"
+    },
+    "./localstorage.js": {
+      "types": "./types/localstorage.d.ts",
+      "default": "./localstorage.js"
+    },
+    "./validation": {
+      "types": "./types/validation.d.ts",
+      "default": "./validation.js"
+    },
+    "./validation.js": {
+      "types": "./types/validation.d.ts",
+      "default": "./validation.js"
+    },
+    "./virtualcollection": {
+      "types": "./types/virtualcollection.d.ts",
+      "default": "./virtualcollection.js"
+    },
+    "./virtualcollection.js": {
+      "types": "./types/virtualcollection.d.ts",
+      "default": "./virtualcollection.js"
+    }
   },
   "dependencies": {
     "lodash-es": "^4.17.21"
@@ -70,6 +115,7 @@
     "sinon": "^11.1.1",
     "sinon-chai": "^3.7.0",
     "turndown": "^7.1.2",
+    "typescript": "^5.3.3",
     "vitepress": "^1.0.0-alpha.75",
     "whatwg-fetch": "^3.0.0"
   },
@@ -88,7 +134,8 @@
     "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "types": "tsc --project tsconfig.types.json"
   },
   "sideEffects": false,
   "license": "MIT",
