@@ -1,6 +1,6 @@
 {
   "name": "nextbone",
-  "version": "0.27.0",
+  "version": "0.27.2",
   "description": "BackboneJS with ES classes and web components",
   "url": "https://github.com/blikblum/nextbone",
   "type": "module",
@@ -15,7 +15,7 @@
   ],
   "author": "Luiz Américo Pereira Câmara",
   "main": "nextbone.js",
-  "types": "nextbone.d.ts",
+  "types": "types/nextbone.d.ts",
   "exports": {
     ".": {
       "types": "./types/nextbone.d.ts",
