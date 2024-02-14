@@ -144,6 +144,7 @@
     "url": "https://github.com/blikblum/nextbone.git"
   },
   "files": [
+    "types",
     "nextbone.js",
     "computed.js",
     "localstorage.js",
