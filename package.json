@@ -38,12 +38,12 @@
       "default": "./computed.js"
     },
     "./dom-utils": {
-      "types": "./types/class-utils.d.ts",
-      "default": "./class-utils.js"
+      "types": "./types/dom-utils.d.ts",
+      "default": "./dom-utils.js"
     },
     "./dom-utils.js": {
-      "types": "./types/class-utils.d.ts",
-      "default": "./class-utils.js"
+      "types": "./types/dom-utils.d.ts",
+      "default": "./dom-utils.js"
     },
     "./form": {
       "types": "./types/form.d.ts",
