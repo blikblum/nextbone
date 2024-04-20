@@ -462,7 +462,7 @@ const elHTML = html`
     assert.equal(eventThis, el, 'event this should be element instance.');
   });
 
-  QUnit.test('state without decorator', async function(assert) {
+  QUnit.test('state defined in static states', async function(assert) {
     assert.expect(7);
     const modelChangeSpy = spy();
     const copyModelChangeSpy = spy();
@@ -530,5 +530,91 @@ const elHTML = html`
     el.copyModel = new Backbone.Model({ foo: 'bar' });
     assert.equal(originalCopyModel, el.copyModel);
     assert.equal(el.copyModel.get('foo'), 'bar');
+  });
+
+  QUnit.test('state defined in ReactiveElement property', async function(assert) {
+    assert.expect(9);
+    const modelChangeSpy = spy();
+    const copyModelChangeSpy = spy();
+    const collectionChangeSpy = spy();
+    const requestUpdateSpy = spy();
+    class Test extends Backbone.view(LitElement) {
+      static properties = {
+        model: { type: Backbone.Model },
+        copyModel: { type: Backbone.Model, copy: true },
+        collection: { type: Backbone.Collection }
+      };
+
+      constructor() {
+        super();
+        this.model = new Backbone.Model();
+        this.copyModel = new Backbone.Model();
+        this.collection = new Backbone.Collection();
+      }
+
+      requestUpdate(...args) {
+        requestUpdateSpy();
+        return super.requestUpdate(...args);
+      }
+
+      // willUpdate does not work with lit-element v1 and upgrading to v2 is not an option
+      // upgrade to v2 when get rid of karma
+      willUpdate(changed) {
+        if (changed.has('model')) {
+          modelChangeSpy();
+        }
+
+        if (changed.has('copyModel')) {
+          copyModelChangeSpy();
+        }
+
+        if (changed.has('collection')) {
+          collectionChangeSpy();
+        }
+      }
+
+      update(changed) {
+        if (changed.has('model')) {
+          modelChangeSpy();
+        }
+
+        if (changed.has('copyModel')) {
+          copyModelChangeSpy();
+        }
+
+        if (changed.has('collection')) {
+          collectionChangeSpy();
+        }
+
+        return super.update(changed);
+      }
+
+      render() {
+        return elHTML;
+      }
+    }
+
+    const tag = defineCE(Test);
+    const el = await fixture(`<${tag}></${tag}>`);
+
+    assert.equal(modelChangeSpy.callCount, 1, 'initial model change');
+    assert.equal(copyModelChangeSpy.callCount, 1, 'initial copyModel change');
+    assert.equal(collectionChangeSpy.callCount, 1, 'initial collection change');
+
+    requestUpdateSpy.resetHistory();
+    el.model.set('x', 'y');
+    el.copyModel.set('x', 'y');
+    el.collection.reset([{ x: 'y' }]);
+    assert.equal(requestUpdateSpy.callCount, 3, 'requestUpdate called');
+    await el.updateComplete;
+    assert.equal(modelChangeSpy.callCount, 2, 'model change');
+    assert.equal(copyModelChangeSpy.callCount, 2, 'copyModel change');
+    assert.equal(collectionChangeSpy.callCount, 2, 'collection change');
+
+    const originalCopyModel = el.copyModel;
+    el.copyModel = new Backbone.Model({ foo: 'bar' });
+    assert.equal(originalCopyModel, el.copyModel);
+    assert.equal(el.copyModel.get('foo'), 'bar');
+    await el.updateComplete;
   });
 })(QUnit);

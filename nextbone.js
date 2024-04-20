@@ -1778,6 +1778,14 @@ const createViewClass = ElementClass => {
       return super.observedAttributes || [];
     }
 
+    static createProperty(name, options) {
+      if (options.type === Model || options.type === Collection) {
+        registerStateProperty(this, name, `__${name}`, options);
+        return;
+      }
+      super.createProperty(name, options);
+    }
+
     constructor() {
       super();
       const { __events, __onEvents } = this.constructor;
