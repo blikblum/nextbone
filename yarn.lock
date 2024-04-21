@@ -3092,6 +3092,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"assertion-error@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "assertion-error@npm:2.0.1"
+  checksum: a0789dd882211b87116e81e2648ccb7f60340b34f19877dd020b39ebb4714e475eb943e14ba3e22201c221ef6645b7bfe10297e76b6ac95b48a9898c1211ce66
+  languageName: node
+  linkType: hard
+
 "assign-symbols@npm:^1.0.0":
   version: 1.0.0
   resolution: "assign-symbols@npm:1.0.0"
@@ -3602,6 +3609,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chai-promised@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "chai-promised@npm:1.0.3"
+  dependencies:
+    chai: ^5.1.0
+    check-error: ^2.0.0
+  peerDependencies:
+    chai: ">= 5"
+  checksum: d2f544a569f47b58e56396b785244414841c4bba0a5f5df3158c81a11299af9e9f8ab7c90770907f37d77fd007c3a4e8d9c8a1bef07bb3745bf06468925843a2
+  languageName: node
+  linkType: hard
+
 "chai@npm:^4.3.4":
   version: 4.3.4
   resolution: "chai@npm:4.3.4"
@@ -3613,6 +3632,19 @@ __metadata:
     pathval: ^1.1.1
     type-detect: ^4.0.5
   checksum: 772c522b3bfe3fcf0e0e74edfe584cd886b0e85a73126dec750095300e023d4e1ec6d40e3c35a80d2bd8f33dca46c42767a36f5f50f32dca6fa31c88b5f49ab8
+  languageName: node
+  linkType: hard
+
+"chai@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "chai@npm:5.1.0"
+  dependencies:
+    assertion-error: ^2.0.1
+    check-error: ^2.0.0
+    deep-eql: ^5.0.1
+    loupe: ^3.1.0
+    pathval: ^2.0.0
+  checksum: f45c8c6ca8b35933efa533eba26a3ecf78378c86acf1d5d0ca82ae0be94a8d25f574f098e3f7e0294a3774e43931eb2e299c991516f22ac24c9042dce8a23ce0
   languageName: node
   linkType: hard
 
@@ -3671,6 +3703,13 @@ __metadata:
   version: 1.0.2
   resolution: "check-error@npm:1.0.2"
   checksum: d9d106504404b8addd1ee3f63f8c0eaa7cd962a1a28eb9c519b1c4a1dc7098be38007fc0060f045ee00f075fbb7a2a4f42abcf61d68323677e11ab98dc16042e
+  languageName: node
+  linkType: hard
+
+"check-error@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "check-error@npm:2.0.0"
+  checksum: 120f252c2e1ad82ef82a616662805345c6c361347bfd6203f8a28c53a158811dd0ea21278f29c8136cc9df12fc7f077d1a07124569d98fb396b3072d08f2f092
   languageName: node
   linkType: hard
 
@@ -4337,6 +4376,13 @@ __metadata:
   dependencies:
     type-detect: ^4.0.0
   checksum: 4f4c9fb79eb994fb6e81d4aa8b063adc40c00f831588aa65e20857d5d52f15fb23034a6576ecf886f7ff6222d5ae42e71e9b7d57113e0715b1df7ea1e812b125
+  languageName: node
+  linkType: hard
+
+"deep-eql@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "deep-eql@npm:5.0.1"
+  checksum: 8009e8a8bf3e0f591a122e7788e304a2bed1299b7774f039be96f9ef35c00fb254292fb1568952651aea0c1d1eb23d0bca484bbdd2cf4fcee685c6f2c43670f3
   languageName: node
   linkType: hard
 
@@ -5545,6 +5591,13 @@ __metadata:
   version: 2.0.0
   resolution: "get-func-name@npm:2.0.0"
   checksum: 8d82e69f3e7fab9e27c547945dfe5cc0c57fc0adf08ce135dddb01081d75684a03e7a0487466f478872b341d52ac763ae49e660d01ab83741f74932085f693c3
+  languageName: node
+  linkType: hard
+
+"get-func-name@npm:^2.0.1":
+  version: 2.0.2
+  resolution: "get-func-name@npm:2.0.2"
+  checksum: 3f62f4c23647de9d46e6f76d2b3eafe58933a9b3830c60669e4180d6c601ce1b4aa310ba8366143f55e52b139f992087a9f0647274e8745621fa2af7e0acf13b
   languageName: node
   linkType: hard
 
@@ -7190,6 +7243,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"loupe@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "loupe@npm:3.1.0"
+  dependencies:
+    get-func-name: ^2.0.1
+  checksum: e23814854ab2571e3f753b7c198bfe016c708f3a435501624dd6ff79b6a5544e14b0f28cfc0432eb22e9da9177b1533491871aca3f94d56b19fecc0d4a766e58
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:4.1.x":
   version: 4.1.5
   resolution: "lru-cache@npm:4.1.5"
@@ -7873,6 +7935,7 @@ __metadata:
     "@web/test-runner": ^0.18.0
     "@web/test-runner-puppeteer": ^0.15.0
     chai: ^4.3.4
+    chai-promised: ^1.0.3
     cross-env: ^5.2.0
     eslint: ^8.2.0
     eslint-config-prettier: ^8.3.0
@@ -8510,6 +8573,13 @@ __metadata:
   version: 1.1.1
   resolution: "pathval@npm:1.1.1"
   checksum: 090e3147716647fb7fb5b4b8c8e5b55e5d0a6086d085b6cd23f3d3c01fcf0ff56fd3cc22f2f4a033bd2e46ed55d61ed8379e123b42afe7d531a2a5fc8bb556d6
+  languageName: node
+  linkType: hard
+
+"pathval@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "pathval@npm:2.0.0"
+  checksum: 682b6a6289de7990909effef7dae9aa7bb6218c0426727bccf66a35b34e7bfbc65615270c5e44e3c9557a5cb44b1b9ef47fc3cb18bce6ad3ba92bcd28467ed7d
   languageName: node
   linkType: hard
 

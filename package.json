@@ -94,6 +94,7 @@
     "@web/test-runner": "^0.18.0",
     "@web/test-runner-puppeteer": "^0.15.0",
     "chai": "^4.3.4",
+    "chai-promised": "^1.0.3",
     "cross-env": "^5.2.0",
     "eslint": "^8.2.0",
     "eslint-config-prettier": "^8.3.0",
