@@ -4,10 +4,10 @@ Nextbone is a conversion of venerable [Backbone](http://backbonejs.org/) using m
 
 ### Features
 
- - Keeps Backbone features / behavior with minimal changes. _In fact, most of the code is untouched_
- - Uses EcmaScript Modules and Classes
- - Fully tree shackable
- - Seamless integration with Web Components (specially [LitElement](https://lit-element.polymer-project.org/))
+- Keeps Backbone features / behavior with minimal changes. _In fact, most of the code is untouched_
+- Uses EcmaScript Modules and Classes
+- Fully tree shackable
+- Seamless integration with Web Components (specially [LitElement](https://lit-element.polymer-project.org/))
 
 ### Install
 
@@ -17,7 +17,7 @@ To take fully advantage of nextbone is necessary to use Typescript or Babel conf
 
 ### Usage
 
-> Examples uses language features (class properties and decorators) that needs transpiling with Babel or Typescript 
+> Examples uses language features (class properties and decorators) that needs transpiling with Babel or Typescript
 
 Define models
 
@@ -41,15 +41,63 @@ tasks.fetch()
 
 Define a web component using LitElement
 
-```Javascript
-import { LitElement, html} from 'lit-element'
-import { state, event } from 'nextbone'
+Without decorators
 
+```Javascript
+import { LitElement, html} from 'lit'
+import { view, delegate } from 'nextbone'
+
+class TasksView extends view(LitElement) {
+  static properties = {
+    // set type hint to `Collection` or `Model` to enable update on property mutation
+    tasks: { type: Collection }
+  }
+
+  constructor() {
+    super()
+    this.tasks = new Tasks()
+    delegate(this, 'click', '#fetch', this.fetchTasks)
+  }
+
+  fetchTasks() {
+    this.tasks.fetch()
+  }
+
+  render() {
+    return html`
+    <h2>Tasks</h2>
+    <ul>
+      ${tasks.map(task => {
+        html`<li>${task.get('title')}</li>`
+      })}
+    </ul>
+    <button id="fetch">Fetch data</button>
+    `
+  }
+}
+
+customElements.define('tasks-view', TasksView)
+
+document.body.innerHTML = '<tasks-view></tasks-view>'
+```
+
+With decorators
+
+```Javascript
+import { LitElement, html, property } from 'lit'
+import { state, eventHandler } from 'nextbone'
+
+@view
 class TasksView extends LitElement {
+  // use specialized `state` decorator
   @state
   tasks = new Tasks()
-  
-  @event('click', '#fetch')
+
+  // or use `property` decorator with type hint = `Collection` or `Model`
+  @property({ type: Collection })
+  tasks = new Tasks()
+
+  @eventHandler('click', '#fetch')
   fetchTasks() {
     this.tasks.fetch()
   }
@@ -74,8 +122,8 @@ document.body.innerHTML = '<tasks-view></tasks-view>'
 
 ### Documentation
 
-TBD
+[WIP](https://blikblum.github.io/nextbone/)
 
 ### Related projects
 
-Copyright © 2019 Luiz Américo Pereira Câmara
+Copyright © 2019-2024 Luiz Américo Pereira Câmara

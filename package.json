@@ -1,6 +1,6 @@
 {
   "name": "nextbone",
-  "version": "0.27.3",
+  "version": "0.28.0",
   "description": "BackboneJS with ES classes and web components",
   "url": "https://github.com/blikblum/nextbone",
   "type": "module",
