@@ -197,17 +197,11 @@ export class Events implements EventsMixin {
   stopListening(object?: any, events?: string, callback?: EventHandler): this;
 }
 
-export class ModelBase extends Events {
-  parse(response: any, options?: any): any;
-  toJSON(options?: any): any;
-  sync(...arg: any[]): Promise<any>;
-}
-
 /**
  * E - Extensions to the model constructor options. You can accept additional constructor options
  * by listing them in the E parameter.
  */
-export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> extends ModelBase {
+export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> extends Events {
   attributes: Partial<T>;
   changed: Partial<T>;
   cidPrefix: string;
@@ -217,6 +211,10 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
   private _changing: boolean;
   private _previousAttributes: Partial<T>;
   private _pending: boolean;
+
+  parse(response: any, options?: any): any;
+  toJSON(options?: any): any;
+  sync(...arg: any[]): Promise<any>;
 
   /**
    * Default attributes for the model. It can be an object hash or a method returning an object hash.
@@ -308,7 +306,7 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
   matches(attrs: any): boolean;
 }
 
-export class Collection<TModel extends Model = Model> extends ModelBase {
+export class Collection<TModel extends Model = Model> extends Events {
   model: new (...args: any[]) => TModel;
   models: TModel[];
   length: number;
