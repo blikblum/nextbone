@@ -460,22 +460,26 @@ describe('Backbone.view', function() {
     const copyModelChangeSpy = spy();
     const collectionChangeSpy = spy();
     const requestUpdateSpy = spy();
+
     class TestPropertyType extends Backbone.view(LitElement) {
       static properties = {
-        model: { type: Backbone.Model },
+        model: { type: Backbone.Model, context: 'model' },
         copyModel: { type: Backbone.Model, copy: true },
         collection: { type: Backbone.Collection }
       };
+
       constructor() {
         super();
         this.model = new Backbone.Model();
         this.copyModel = new Backbone.Model();
         this.collection = new Backbone.Collection();
       }
+
       requestUpdate(...args) {
         requestUpdateSpy();
         return super.requestUpdate(...args);
       }
+
       willUpdate(changed) {
         if (changed.has('model')) {
           modelChangeSpy();
@@ -487,6 +491,7 @@ describe('Backbone.view', function() {
           collectionChangeSpy();
         }
       }
+
       update(changed) {
         if (changed.has('model')) {
           modelChangeSpy();
@@ -499,11 +504,18 @@ describe('Backbone.view', function() {
         }
         return super.update(changed);
       }
+
       render() {
         return elHTML;
       }
     }
+
     const tag = defineCE(TestPropertyType);
+
+    // internal _classProperties is not public API
+    const modelOptions = TestPropertyType._classProperties.get('model');
+    expect(modelOptions.context).to.equal('model');
+
     const el = await fixture(`<${tag}></${tag}>`);
     expect(modelChangeSpy.callCount).to.equal(1, 'initial model change');
     expect(copyModelChangeSpy.callCount).to.equal(1, 'initial copyModel change');

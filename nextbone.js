@@ -1730,7 +1730,7 @@ const registerDelegatedEvent = (ctor, eventName, selector, listener) => {
 
 const viewsWithStateBound = new WeakSet();
 
-const registerStateProperty = (ctor, name, key, { copy, events } = {}) => {
+const registerStateProperty = (ctor, name, key, { copy, events, ...options } = {}) => {
   const classStates = ensureClassProperty(ctor, '__states');
   classStates.push({ name, events });
   const desc = {
@@ -1762,7 +1762,7 @@ const registerStateProperty = (ctor, name, key, { copy, events } = {}) => {
   };
   Object.defineProperty(ctor.prototype, name, desc);
   if (ctor.createProperty) {
-    ctor.createProperty(name, { type: Object, noAccessor: true });
+    ctor.createProperty(name, { ...options, type: Object, noAccessor: true });
   }
 };
 
