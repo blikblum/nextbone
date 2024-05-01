@@ -1779,7 +1779,7 @@ const createViewClass = ElementClass => {
     }
 
     static createProperty(name, options) {
-      if (options.type === Model || options.type === Collection) {
+      if (options && (options.type === Model || options.type === Collection)) {
         registerStateProperty(this, name, `__${name}`, options);
         return;
       }
