@@ -78,7 +78,7 @@ class VirtualCollection extends Collection {
       this.listenTo(value, 'filter', this._onFilter);
       this.listenTo(value, 'sort', this._onSort);
       this.listenTo(value, 'update', this._onUpdate);
-      this._proxyParentEvents(value, ['sync', 'request', 'error']);
+      this._proxyParentEvents(value, ['sync', 'request', 'load', 'error']);
     }
   }
 

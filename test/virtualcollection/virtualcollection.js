@@ -21,6 +21,7 @@ describe('VirtualCollection', function() {
         'update',
         'sync',
         'request',
+        'load',
         'error'
       ]);
     });
@@ -493,6 +494,18 @@ describe('VirtualCollection', function() {
       vc.on('error', eventSpy);
 
       collection.trigger('error');
+
+      assert(eventSpy.called);
+    });
+
+    it('should proxy the load event', function() {
+      var collection = new Backbone.Collection([]),
+        eventSpy = sinon.spy();
+
+      var vc = new VirtualCollection(collection, {});
+      vc.on('load', eventSpy);
+
+      collection.trigger('load');
 
       assert(eventSpy.called);
     });
