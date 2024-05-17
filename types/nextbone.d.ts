@@ -73,6 +73,11 @@ interface ModelSaveOptions extends Silenceable, Waitable, Validable, Parseable, 
 
 interface ModelDestroyOptions extends Waitable, PersistenceOptions {}
 
+export type CollectionComparator<TModel extends Model> =
+  | string
+  | { bivarianceHack(element: TModel): number | string }['bivarianceHack']
+  | { bivarianceHack(compare: TModel, to?: TModel): number }['bivarianceHack'];
+
 interface CollectionFetchOptions extends PersistenceOptions, Parseable, CollectionSetOptions {
   reset?: boolean | undefined;
 }
@@ -307,7 +312,7 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
 }
 
 export class Collection<TModel extends Model = Model> extends Events {
-  model: new (...args: any[]) => TModel;
+  model?: new (...args: any[]) => TModel | ((...args: any[]) => TModel);
   models: TModel[];
   length: number;
 
@@ -327,10 +332,7 @@ export class Collection<TModel extends Model = Model> extends Events {
   /**
    * Specify a model attribute name (string) or function that will be used to sort the collection.
    */
-  comparator:
-    | string
-    | { bivarianceHack(element: TModel): number | string }['bivarianceHack']
-    | { bivarianceHack(compare: TModel, to?: TModel): number }['bivarianceHack'];
+  comparator: CollectionComparator<TModel>;
 
   add(model: {} | TModel, options?: AddOptions): TModel;
   add(models: Array<{} | TModel>, options?: AddOptions): TModel[];
@@ -562,10 +564,16 @@ export function on(event: string): void;
 
 export function observable(): void;
 
+export function state(
+  target: any,
+  propertyName: string,
+  descriptor: TypedPropertyDescriptor<any>
+): void;
+
 export function state(options?: {
   copy?: boolean;
   events?: Record<string, string | Function>;
-}): void;
+}): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 
 // mixins
 

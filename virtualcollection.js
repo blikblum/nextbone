@@ -4,6 +4,13 @@ import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 /**
  * @typedef {import('./nextbone.js').Model} Model
  *
+ * @typedef VirtualCollectionOptions
+ * @property {ModelFilter} [filter]
+ * @property {Model | Collection} [destroyWith]
+ * @property {import('./nextbone.js').CollectionComparator<Model>} [comparator]
+ * @property {new (...args: any[]) => Model | ((...args: any[]) => Model);} [model]
+ *
+ *
  * @callback ModelFilterFunction
  * @param {import('./nextbone.js').Model} model
  * @return boolean
@@ -43,7 +50,7 @@ class VirtualCollection extends Collection {
 
   /**
    * @param {Collection | null} [parent]
-   * @param {{filter?: ModelFilter, destroyWith?: Model | Collection}} [options]
+   * @param {VirtualCollectionOptions} [options]
    */
   constructor(parent, options = {}) {
     super(null, options);
