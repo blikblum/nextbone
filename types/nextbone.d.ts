@@ -547,11 +547,12 @@ interface Ajax {
 
 export const ajax: Ajax;
 
-// decorator
+// decorators
 
-export function eventHandler(event: string, selector: string): void;
-export function eventHandler(event: string): void;
-export function eventHandler(target: any, event: string, selector: string): void;
+export function eventHandler(
+  event: string,
+  selector?: string
+): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 
 export function view<
   BaseClass extends {
@@ -560,20 +561,18 @@ export function view<
   }
 >(klass: BaseClass): BaseClass & EventsMixin;
 
-export function on(event: string): void;
+export function on(
+  event: string
+): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 
-export function observable(): void;
+export function observable(target: Object, propertyKey: string | symbol): void;
 
-export function state(
-  target: any,
-  propertyName: string,
-  descriptor: TypedPropertyDescriptor<any>
-): void;
+export function state(target: Object, propertyKey: string | symbol): void;
 
 export function state(options?: {
   copy?: boolean;
   events?: Record<string, string | Function>;
-}): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+}): (target: Object, propertyKey: string | symbol) => void;
 
 // mixins
 
