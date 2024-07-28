@@ -1,5 +1,36 @@
 import { isEmpty, reduce, omit } from 'lodash-es';
 
+/**
+ * @import { Model } from './nextbone.js'
+ */
+
+/**
+ * @callback ComputedFieldGet
+ * @param {Record<string, any>} fields
+ * @returns {any}
+ *
+ * @typedef ComputedField
+ * @property {string[]} depends
+ * @property {ComputedFieldGet} get
+ * @property {(value: any, fields: Record<string, any>) => any} set
+ * Not possible to use rest arams here: https://github.com/Microsoft/TypeScript/issues/15190
+ * @typedef {[string, ComputedFieldGet]}  ShortHandComputedField1
+ * @typedef {[string, string, ComputedFieldGet]} ShortHandComputedField2
+ * @typedef {[string, string, string, ComputedFieldGet]} ShortHandComputedField3
+ * @typedef {[string, string, string, string, ComputedFieldGet]} ShortHandComputedField4
+ * @typedef {[string, string, string, string, string, ComputedFieldGet]} ShortHandComputedField5
+ * @typedef {[string, string, string, string, string, string, ComputedFieldGet]} ShortHandComputedField6
+ * @typedef {ShortHandComputedField1 | ShortHandComputedField2 | ShortHandComputedField3 | ShortHandComputedField4 | ShortHandComputedField5 | ShortHandComputedField6} ShortHandComputedField
+ *
+ * @typedef ComputedDefs
+ * @property {Record<string, ComputedField | ShortHandComputedField>} computed
+ */
+
+/**
+ * @param { ComputedField } computedField
+ * @param { Model } model
+ * @returns
+ */
 const computeFieldValue = (computedField, model) => {
   if (computedField && computedField.get) {
     const values = getDependentValues(computedField.depends, model);
@@ -150,7 +181,17 @@ const createClass = ModelClass => {
   };
 };
 
-const withComputed = ctorOrDescriptor => {
+/**
+ * @typedef ComputedStaticMixin
+ * @property {ComputedDefs} computed
+ */
+
+/**
+ * @template {typeof Model} BaseClass
+ * @param {BaseClass} ctorOrDescriptor - Base model class
+ * @returns {BaseClass & ComputedStaticMixin}
+ */
+function withComputed(ctorOrDescriptor) {
   if (typeof ctorOrDescriptor === 'function') {
     return createClass(ctorOrDescriptor);
   }
@@ -162,6 +203,6 @@ const withComputed = ctorOrDescriptor => {
       return createClass(ctor);
     }
   };
-};
+}
 
 export { withComputed };

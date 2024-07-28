@@ -1,5 +1,5 @@
-export function getPath(object: any, path: any): any;
-export function setPath(object: any, path: any, value: any): void;
+export function getPath(object: any, path: string): any;
+export function setPath(object: any, path: string, value: any): void;
 export function getPathChange(obj: any, path: any, value: any): any[];
 export class FormState {
     /**
@@ -11,7 +11,7 @@ export class FormState {
     _attributes: Set<any>;
     _modelInstance: any;
     el: HTMLElement;
-    model: string | import("./nextbone.js").Model;
+    model: string | Model;
     events: {
         event: string;
         selector: string;
@@ -30,9 +30,30 @@ export class FormState {
         silent: any;
     }): void;
     _ensureInitialData(model: any): void;
-    getValue(attr: any): any;
-    setValue(attr: any, value: any): void;
-    getData(prop: any): any;
+    /**
+     * @param {string} attr
+     * @returns {any}
+     * @deprecated
+     * @see FormState#get
+     */
+    getValue(attr: string): any;
+    /**
+     * @param {string} attr
+     * @param {any} value
+     * @returns {void}
+     * @deprecated
+     * @see FormState#set
+     */
+    setValue(attr: string, value: any): void;
+    /**
+     * @param {string} prop
+     * @returns {any}
+     * @see FormState#getData
+     * @see FormState#getValue
+     * @see FormState#get
+     * @see FormState#getValue
+     */
+    getData(prop: string): any;
     /**
      * @param {string} prop
      * @param {*} value
@@ -46,11 +67,18 @@ export class FormState {
      * @returns {string[]}
      */
     getDirtyAttributes(): string[];
+    /**
+     * @param {Object} options
+     * @param {string[]} [options.attributes]
+     * @param {boolean} [options.update]
+     * @param {boolean} [options.touch]
+     * @returns {boolean}
+     */
     isValid({ attributes, update, touch }?: {
-        attributes?: any[];
-        update: any;
-        touch: any;
-    }): any;
+        attributes?: string[];
+        update?: boolean;
+        touch?: boolean;
+    }): boolean;
     loadInitialData(): void;
     reset(): void;
     errors: {};
@@ -59,41 +87,7 @@ export class FormState {
 }
 export function registerFormat(name: any, fn: any): void;
 export function registerInput(selector: any, events: any): void;
-export function form(optionsOrCtorOrDescriptor: any, options: any): {
-    new (): {
-        [x: string]: any;
-        form: FormState;
-    };
-    [x: string]: any;
-} | ((ctorOrDescriptor: any) => {
-    new (): {
-        [x: string]: any;
-        form: FormState;
-    };
-    [x: string]: any;
-} | any | {
-    kind: any;
-    elements: any;
-    finisher(ctor: any): {
-        new (): {
-            [x: string]: any;
-            form: FormState;
-        };
-        [x: string]: any;
-    };
-}) | {
-    kind: any;
-    elements: any;
-    finisher(ctor: any): {
-        new (): {
-            [x: string]: any;
-            form: FormState;
-        };
-        [x: string]: any;
-    };
-};
-export type Collection = import('./nextbone.js').Collection;
-export type Model = import('./nextbone.js').Model;
+export function form(optionsOrCtorOrDescriptor: FormStateOptions, options: any): ClassDecorator;
 export type FormStateOptions = {
     model?: string | Model;
     updateMethod?: string;
@@ -103,4 +97,6 @@ export type FormStateOptions = {
         selector: string;
     }>;
 };
+import type { Model } from './nextbone.js';
+import type { Model as Model_1 } from './nextbone.js';
 //# sourceMappingURL=form.d.ts.map

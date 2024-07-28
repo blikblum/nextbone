@@ -2,17 +2,17 @@ import { Collection, Events } from './nextbone.js';
 import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 /**
- * @typedef {import('./nextbone.js').Model} Model
+ * @import { Model, CollectionComparator } from './nextbone.js'
  *
  * @typedef VirtualCollectionOptions
  * @property {ModelFilter} [filter]
  * @property {Model | Collection} [destroyWith]
- * @property {import('./nextbone.js').CollectionComparator<Model>} [comparator]
+ * @property {CollectionComparator<Model>} [comparator]
  * @property {new (...args: any[]) => Model | ((...args: any[]) => Model);} [model]
  *
  *
  * @callback ModelFilterFunction
- * @param {import('./nextbone.js').Model} model
+ * @param {Model} model
  * @return boolean
  *
  * @typedef {Record<string, any> | ModelFilterFunction} ModelFilter

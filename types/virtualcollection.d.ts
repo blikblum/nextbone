@@ -1,5 +1,13 @@
-export type Model = import('./nextbone.js').Model;
-export type ModelFilterFunction = (model: import('./nextbone.js').Model) => any;
+export type VirtualCollectionOptions = {
+    filter?: ModelFilter;
+    destroyWith?: Model | Collection;
+    comparator?: isFunction<Model>;
+    /**
+     * ;} [model]
+     */
+    "": new (...args: any[]) => Model | ((...args: any[]) => Model);
+};
+export type ModelFilterFunction = (model: Model) => any;
 export type ModelFilter = Record<string, any> | ModelFilterFunction;
 /**
  * @class VirtualCollection
@@ -8,12 +16,9 @@ export type ModelFilter = Record<string, any> | ModelFilterFunction;
 export class VirtualCollection extends Collection {
     /**
      * @param {Collection | null} [parent]
-     * @param {{filter?: ModelFilter, destroyWith?: Model | Collection}} [options]
+     * @param {VirtualCollectionOptions} [options]
      */
-    constructor(parent?: Collection | null, options?: {
-        filter?: ModelFilter;
-        destroyWith?: Model | Collection;
-    });
+    constructor(parent?: Collection | null, options?: VirtualCollectionOptions);
     /** @type {Collection} */
     _parent: Collection;
     accepts: any;
@@ -64,5 +69,6 @@ export function virtualState(optionsOrProtoOrDescriptor: any, fieldName: any, op
     key: string | symbol;
     finisher(ctor: any): any;
 };
+import type { Model } from './nextbone.js';
 import { Collection } from './nextbone.js';
 //# sourceMappingURL=virtualcollection.d.ts.map

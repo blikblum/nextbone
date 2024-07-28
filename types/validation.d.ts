@@ -1,5 +1,4 @@
-export type Model = import('./nextbone.js').Model;
-export type FnRule = (this: import("./nextbone.js").Model, value: any, attr: string, computed: Record<string, any>) => any;
+export type FnRule = (this: Model, value: any, attr: string, computed: Record<string, any>) => any;
 export type ValidationRule = {
     /**
      * - If the attribute is required or not
@@ -58,19 +57,20 @@ export type ValidationRule = {
      */
     fn?: FnRule;
 };
+export type ValidationRules = Record<string, ValidationRule>;
 export type ValidationStaticMixin = {
-    validation: Record<string, ValidationRule>;
+    validation: ValidationRules;
 };
 /**
  * @typedef ValidationStaticMixin
- * @property {Record<string, ValidationRule>} validation
+ * @property {ValidationRules} validation
  */
 /**
- * @template {typeof import('./nextbone.js').Model} BaseClass
+ * @template {typeof Model} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
  * @returns {BaseClass & ValidationStaticMixin}
  */
-export function withValidation<BaseClass extends typeof import("./nextbone.js").Model>(ctorOrDescriptor: BaseClass): BaseClass & ValidationStaticMixin;
+export function withValidation<BaseClass extends typeof Model>(ctorOrDescriptor: BaseClass): BaseClass & ValidationStaticMixin;
 export namespace labelFormatters {
     function none(attrName: any): any;
     function sentenceCase(attrName: any): any;
@@ -113,4 +113,5 @@ export namespace options {
     let valid: Function;
     let invalid: Function;
 }
+import type { Model } from './nextbone.js';
 //# sourceMappingURL=validation.d.ts.map

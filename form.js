@@ -3,11 +3,10 @@ import { delegate } from './nextbone.js';
 import { deepCloneLite } from './utils.js';
 
 /**
- * @typedef {import('./nextbone.js').Collection} Collection
- * @typedef {import('./nextbone.js').Model} Model
+ * @import { Model } from './nextbone.js'
  *
  * @typedef FormStateOptions
- * @property {string|Model} [model='model']
+ * @property {string | Model} [model='model']
  * @property {string} [updateMethod='requestUpdate']
  * @property {Record<string, string[]>} [inputs]
  * @property {Array<{event: string, selector: string}>} [events]
@@ -31,6 +30,11 @@ function getPathSegments(path) {
   return parts;
 }
 
+/**
+ * @param {*} object
+ * @param {string} path
+ * @returns {any}
+ */
 export const getPath = (object, path) => {
   // Check if path is string or array. Regex : ensure that we do not have '.' and brackets
   const pathArray = Array.isArray(path) ? path : path.split(/[,[\].]/g).filter(Boolean);
@@ -38,6 +42,12 @@ export const getPath = (object, path) => {
   return pathArray.reduce((prevObj, key) => prevObj && prevObj[key], object);
 };
 
+/**
+ * @param {*} object
+ * @param {string} path
+ * @param {any} value
+ * @returns {void}
+ */
 export const setPath = (object, path, value) => {
   // Check if path is string or array. Regex : ensure that we do not have '.' and brackets
   const pathArr = Array.isArray(path) ? path : path.split(/[,[\].]/g).filter(Boolean);
@@ -290,14 +300,35 @@ export class FormState {
     }
   }
 
+  /**
+   * @param {string} attr
+   * @returns {any}
+   * @deprecated
+   * @see FormState#get
+   */
   getValue(attr) {
     return this.get(attr);
   }
 
+  /**
+   * @param {string} attr
+   * @param {any} value
+   * @returns {void}
+   * @deprecated
+   * @see FormState#set
+   */
   setValue(attr, value) {
     this.set(attr, value);
   }
 
+  /**
+   * @param {string} prop
+   * @returns {any}
+   * @see FormState#getData
+   * @see FormState#getValue
+   * @see FormState#get
+   * @see FormState#getValue
+   */
   getData(prop) {
     return this.get(prop, { meta: true });
   }
@@ -339,6 +370,13 @@ export class FormState {
     return result;
   }
 
+  /**
+   * @param {Object} options
+   * @param {string[]} [options.attributes]
+   * @param {boolean} [options.update]
+   * @param {boolean} [options.touch]
+   * @returns {boolean}
+   */
   isValid({ attributes = this.getAttributes(), update, touch } = {}) {
     const model = this.modelInstance;
     const result = model.isValid(attributes);
@@ -391,6 +429,11 @@ export const registerInput = (selector, events) => {
   defaultInputs[selector] = events;
 };
 
+/**
+ * @param {FormStateOptions} optionsOrCtorOrDescriptor
+ * @returns {ClassDecorator}
+ * @deprecated
+ */
 export const form = (optionsOrCtorOrDescriptor, options) => {
   // current state of decorators sucks. Lets abuse of duck typing
   if (typeof optionsOrCtorOrDescriptor === 'function') {

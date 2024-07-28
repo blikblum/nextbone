@@ -14,14 +14,16 @@ import {
   pick
 } from 'lodash-es';
 
-/** @typedef {import('./nextbone.js').Model} Model */
+/**
+ * @import { Model } from './nextbone.js'
+ */
 
 /**
  * @callback FnRule
  * @param {*} value
  * @param {string} attr
  * @param {Record<string, any>} computed
- * @this {Model}
+ * @this { Model }
  *
  * @typedef {object} ValidationRule
  * @property {boolean|FnRule} [required] - If the attribute is required or not
@@ -38,6 +40,8 @@ import {
  * @property {RegExp|string|FnRule} [pattern] - The pattern to match the attribute against
  * @property {string} [msg] - The error message to display if the validation fails
  * @property {FnRule} [fn] - A custom function used for validation
+ *
+ * @typedef {Record<string, ValidationRule>} ValidationRules
  */
 
 var keys = Object.keys;
@@ -578,11 +582,11 @@ function createClass(ModelClass) {
 // todo add type for functions
 /**
  * @typedef ValidationStaticMixin
- * @property {Record<string, ValidationRule>} validation
+ * @property {ValidationRules} validation
  */
 
 /**
- * @template {typeof import('./nextbone.js').Model} BaseClass
+ * @template {typeof Model} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
  * @returns {BaseClass & ValidationStaticMixin}
  */
