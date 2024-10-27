@@ -22,8 +22,7 @@ import { isEmpty, reduce, omit } from 'lodash-es';
  * @typedef {[string, string, string, string, string, string, ComputedFieldGet]} ShortHandComputedField6
  * @typedef {ShortHandComputedField1 | ShortHandComputedField2 | ShortHandComputedField3 | ShortHandComputedField4 | ShortHandComputedField5 | ShortHandComputedField6} ShortHandComputedField
  *
- * @typedef ComputedDefs
- * @property {Record<string, ComputedField | ShortHandComputedField>} computed
+ * @typedef {Record<string, ComputedField | ShortHandComputedField>} ComputedDefs
  */
 
 /**
