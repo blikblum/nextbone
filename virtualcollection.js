@@ -8,7 +8,7 @@ import { isFunction, sortedIndexBy, extend } from 'lodash-es';
  * @property {ModelFilter} [filter]
  * @property {Model | Collection} [destroyWith]
  * @property {CollectionComparator<Model>} [comparator]
- * @property {new (...args: any[]) => Model | ((...args: any[]) => Model);} [model]
+ * @property {new (...args: any[]) => Model | ((...args: any[]) => Model)} [model]
  *
  *
  * @callback ModelFilterFunction
@@ -90,7 +90,7 @@ class VirtualCollection extends Collection {
   }
 
   /**
-   * @param {ModelFilter} filter
+   * @param {ModelFilter} [filter]
    * @returns {VirtualCollection}
    */
   updateFilter(filter) {
