@@ -189,7 +189,7 @@ describe('Backbone.Router', function() {
     location.replace('http://example.com#search/news');
     Backbone.History.instance.checkUrl();
     expect(router.query).to.equal('news');
-    expect(router.page).to.equal(void 0);
+    expect(router.page).to.equal(null);
     expect(lastRoute).to.equal('search');
     expect(lastArgs[0]).to.equal('news');
   });
@@ -198,7 +198,7 @@ describe('Backbone.Router', function() {
     location.replace('http://example.com#search/тест');
     Backbone.History.instance.checkUrl();
     expect(router.query).to.equal('тест');
-    expect(router.page).to.equal(void 0);
+    expect(router.page).to.equal(null);
     expect(lastRoute).to.equal('search');
     expect(lastArgs[0]).to.equal('тест');
   });
@@ -264,7 +264,7 @@ describe('Backbone.Router', function() {
     location.replace('http://example.com#start_here');
     Backbone.History.instance.checkUrl();
     location.replace = function(href) {
-      expect(href).to.strictEqual(new Location('http://example.com#end_here').href);
+      expect(href).to.eql(new Location('http://example.com#end_here').href);
     };
     Backbone.History.instance.navigate('end_here', { replace: true });
   });
@@ -329,8 +329,8 @@ describe('Backbone.Router', function() {
   it('Decode named parameters, not splats.', function() {
     location.replace('http://example.com#decode/a%2Fb/c%2Fd/e');
     Backbone.History.instance.checkUrl();
-    expect(router.named).to.strictEqual('a/b');
-    expect(router.path).to.strictEqual('c/d/e');
+    expect(router.named).to.eql('a/b');
+    expect(router.path).to.eql('c/d/e');
   });
 
   it("fires event when router doesn't have callback on it", function() {
@@ -381,7 +381,7 @@ describe('Backbone.Router', function() {
       hashChange: false,
       silent: true
     });
-    expect(Backbone.History.instance.getFragment()).to.strictEqual('foo');
+    expect(Backbone.History.instance.getFragment()).to.eql('foo');
 
     Backbone.History.instance.stop();
     Backbone.History.instance = _.extend(new Backbone.History(), {
@@ -392,15 +392,15 @@ describe('Backbone.Router', function() {
       hashChange: false,
       silent: true
     });
-    expect(Backbone.History.instance.getFragment()).to.strictEqual('foo');
+    expect(Backbone.History.instance.getFragment()).to.eql('foo');
   });
 
   it('#967 - Route callback gets passed encoded values.', function() {
     var route = 'has%2Fslash/complex-has%23hash/has%20space';
     Backbone.History.instance.navigate(route, { trigger: true });
-    expect(router.first).to.strictEqual('has/slash');
-    expect(router.part).to.strictEqual('has#hash');
-    expect(router.rest).to.strictEqual('has space');
+    expect(router.first).to.eql('has/slash');
+    expect(router.part).to.eql('has#hash');
+    expect(router.rest).to.eql('has space');
   });
 
   it('correctly handles URLs with % (#868)', function() {
@@ -409,7 +409,7 @@ describe('Backbone.Router', function() {
     location.replace('http://example.com#search/fat');
     Backbone.History.instance.checkUrl();
     expect(router.query).to.equal('fat');
-    expect(router.page).to.equal(void 0);
+    expect(router.page).to.equal(null);
     expect(lastRoute).to.equal('search');
   });
 
@@ -428,7 +428,7 @@ describe('Backbone.Router', function() {
     });
     Backbone.History.instance.start({ hashChange: false });
     var fragment = Backbone.History.instance.getFragment();
-    expect(fragment).to.strictEqual(location.pathname.replace(/^\//, ''));
+    expect(fragment).to.eql(location.pathname.replace(/^\//, ''));
   });
 
   it('#1206 - Strip leading slash before location.assign.', function() {
@@ -439,7 +439,7 @@ describe('Backbone.Router', function() {
     });
     Backbone.History.instance.start({ hashChange: false, root: '/root/' });
     location.assign = function(pathname) {
-      expect(pathname).to.strictEqual('/root/fragment');
+      expect(pathname).to.eql('/root/fragment');
     };
     Backbone.History.instance.navigate('/fragment');
   });
@@ -455,7 +455,7 @@ describe('Backbone.Router', function() {
       root: '/root/',
       silent: true
     });
-    expect(Backbone.History.instance.getFragment()).to.strictEqual('');
+    expect(Backbone.History.instance.getFragment()).to.eql('');
   });
 
   it('#1366 - History does not prepend root to fragment.', function() {
@@ -465,7 +465,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/root/x');
+          expect(url).to.eql('/root/x');
         }
       }
     });
@@ -475,7 +475,7 @@ describe('Backbone.Router', function() {
       hashChange: false
     });
     Backbone.History.instance.navigate('x');
-    expect(Backbone.History.instance.fragment).to.strictEqual('x');
+    expect(Backbone.History.instance.fragment).to.eql('x');
   });
 
   it('Normalize root.', function() {
@@ -485,7 +485,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/root/fragment');
+          expect(url).to.eql('/root/fragment');
         }
       }
     });
@@ -505,7 +505,7 @@ describe('Backbone.Router', function() {
       history: {
         pushState: function(state, title, url) {},
         replaceState: function(state, title, url) {
-          expect(url).to.strictEqual('/root/fragment');
+          expect(url).to.eql('/root/fragment');
         }
       }
     });
@@ -541,7 +541,7 @@ describe('Backbone.Router', function() {
       }
     });
     Backbone.History.instance.start({ root: 'root' });
-    expect(Backbone.History.instance.root).to.strictEqual('/root/');
+    expect(Backbone.History.instance.root).to.eql('/root/');
   });
 
   it('Transition from hashChange to pushState.', function() {
@@ -552,7 +552,7 @@ describe('Backbone.Router', function() {
       history: {
         pushState: function() {},
         replaceState: function(state, title, url) {
-          expect(url).to.strictEqual('/root/x/y');
+          expect(url).to.eql('/root/x/y');
         }
       }
     });
@@ -573,7 +573,7 @@ describe('Backbone.Router', function() {
       }
     });
     Backbone.History.instance.start({ root: '' });
-    expect(Backbone.History.instance.root).to.strictEqual('/');
+    expect(Backbone.History.instance.root).to.eql('/');
   });
 
   it('#1619: Router: nagivate with empty root', function() {
@@ -583,7 +583,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/fragment');
+          expect(url).to.eql('/fragment');
         }
       }
     });
@@ -603,7 +603,7 @@ describe('Backbone.Router', function() {
       history: {
         pushState: function() {},
         replaceState: function(state, title, url) {
-          expect(url).to.strictEqual('/root/x/y?a=b');
+          expect(url).to.eql('/root/x/y?a=b');
         }
       }
     });
@@ -618,7 +618,7 @@ describe('Backbone.Router', function() {
       static routes = { '': 'empty' };
       empty() {}
       route(route) {
-        expect(route).to.strictEqual('');
+        expect(route).to.eql('');
       }
     };
     new MyRouter();
@@ -626,12 +626,12 @@ describe('Backbone.Router', function() {
 
   it('#1794 - Trailing space in fragments.', function() {
     var history = new Backbone.History();
-    expect(history.getFragment('fragment   ')).to.strictEqual('fragment');
+    expect(history.getFragment('fragment   ')).to.eql('fragment');
   });
 
   it('#1820 - Leading slash and trailing space.', function() {
     var history = new Backbone.History();
-    expect(history.getFragment('/fragment ')).to.strictEqual('fragment');
+    expect(history.getFragment('/fragment ')).to.eql('fragment');
   });
 
   it('#1980 - Optional parameters.', function() {
@@ -645,7 +645,7 @@ describe('Backbone.Router', function() {
 
   it('#2062 - Trigger "route" event on router instance.', function() {
     router.on('route', function(name, args) {
-      expect(name).to.strictEqual('routeEvent');
+      expect(name).to.eql('routeEvent');
       expect(args).to.deep.equal(['x', null]);
     });
     location.replace('http://example.com#route-event/x');
@@ -730,7 +730,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/root');
+          expect(url).to.eql('/root');
         }
       }
     });
@@ -749,7 +749,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/');
+          expect(url).to.eql('/');
         }
       }
     });
@@ -764,7 +764,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/root?x=1');
+          expect(url).to.eql('/root?x=1');
         }
       }
     });
@@ -783,7 +783,7 @@ describe('Backbone.Router', function() {
       location: location,
       history: {
         pushState: function(state, title, url) {
-          expect(url).to.strictEqual('/path?query#hash');
+          expect(url).to.eql('/path?query#hash');
         }
       }
     });
@@ -806,7 +806,7 @@ describe('Backbone.Router', function() {
     var MyRouter = class extends Backbone.Router {
       static routes = {
         path: function(params) {
-          expect(params).to.strictEqual('x=y%3Fz');
+          expect(params).to.eql('x=y%3Fz');
         }
       };
     };
@@ -823,7 +823,7 @@ describe('Backbone.Router', function() {
     var MyRouter = class extends Backbone.Router {
       static routes = {
         path: function(params) {
-          expect(params).to.strictEqual('x=y');
+          expect(params).to.eql('x=y');
         }
       };
     };
@@ -841,7 +841,7 @@ describe('Backbone.Router', function() {
     var MyRouter = class extends Backbone.Router {
       static routes = {
         path: function(params) {
-          expect(params).to.strictEqual('x=y');
+          expect(params).to.eql('x=y');
         }
       };
     };
@@ -876,7 +876,7 @@ describe('Backbone.Router', function() {
     var MyRouter = class extends Backbone.Router {
       static routes = {
         'myyjä/:query': function(query) {
-          expect(query).to.strictEqual('foo %?/@% bar');
+          expect(query).to.eql('foo %?/@% bar');
         }
       };
     };
@@ -911,9 +911,9 @@ describe('Backbone.Router', function() {
       static routes = { 'foo/:id/bar': 'foo' };
       foo() {}
       execute(callback, args, name) {
-        expect(callback).to.strictEqual(this.foo);
+        expect(callback).to.eql(this.foo);
         expect(args).to.deep.equal(['123', 'x=y']);
-        expect(name).to.strictEqual('foo');
+        expect(name).to.eql('foo');
       }
     };
     var myRouter = new MyRouter();
@@ -936,7 +936,7 @@ describe('Backbone.Router', function() {
     });
     Backbone.History.instance.start({ pushState: true });
     Backbone.History.instance.navigate('shop/search?keyword=short%20dress', true);
-    expect(Backbone.History.instance.fragment).to.strictEqual('shop/search?keyword=short dress');
+    expect(Backbone.History.instance.fragment).to.eql('shop/search?keyword=short dress');
   });
 
   it('#3175 - Urls in the params', function() {
@@ -949,7 +949,7 @@ describe('Backbone.Router', function() {
     });
     var myRouter = new Backbone.Router();
     myRouter.route('login', function(params) {
-      expect(params).to.strictEqual(
+      expect(params).to.eql(
         'a=value&backUrl=https%3A%2F%2Fwww.msn.com%2Fidp%2Fidpdemo%3Fspid%3Dspdemo%26target%3Db'
       );
     });
@@ -1044,6 +1044,6 @@ describe('Backbone.Router', function() {
   it('#4025 - navigate updates URL hash as is', function() {
     var route = 'search/has%20space';
     Backbone.History.instance.navigate(route);
-    expect(location.hash).to.strictEqual('#' + route);
+    expect(location.hash).to.eql('#' + route);
   });
 });
