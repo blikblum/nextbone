@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { expect } from '@esm-bundle/chai';
+import { expect } from 'chai';
 import { isNumber } from 'lodash-es';
 import { withComputed } from '../../computed.js';
 import { Model, Collection } from '../../nextbone.js';

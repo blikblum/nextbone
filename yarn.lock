@@ -1599,15 +1599,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@esm-bundle/chai@npm:^4.3.4":
-  version: 4.3.4
-  resolution: "@esm-bundle/chai@npm:4.3.4"
-  dependencies:
-    "@types/chai": ^4.2.12
-  checksum: 6d1237e9b8309b31ca55d12abe03642ab58550fdac24d0acbfeae6ab14182f72cedf646c6e858fd7ef592b4034ddd23ce5882ff22b8ab9b7952327e9f3f8c3f5
-  languageName: node
-  linkType: hard
-
 "@hapi/bourne@npm:^3.0.0":
   version: 3.0.0
   resolution: "@hapi/bourne@npm:3.0.0"
@@ -2222,13 +2213,6 @@ __metadata:
     "@types/connect": "*"
     "@types/node": "*"
   checksum: 33041e88eae00af2cfa0827e951e5f1751eafab2a8b6fce06cd89ef368a988907996436b1325180edaeddd1c0c7d0d0d4c20a6c9ff294a91e0039a9db9e9b658
-  languageName: node
-  linkType: hard
-
-"@types/chai@npm:^4.2.12":
-  version: 4.3.20
-  resolution: "@types/chai@npm:4.3.20"
-  checksum: 7c5b0c9148f1a844a8d16cb1e16c64f2e7749cab2b8284155b9e494a6b34054846e22fb2b38df6b290f9bf57e6beebb2e121940c5896bc086ad7bab7ed429f06
   languageName: node
   linkType: hard
 
@@ -6276,7 +6260,6 @@ __metadata:
     "@babel/plugin-proposal-private-methods": ^7.18.6
     "@babel/preset-env": ^7.14.7
     "@babel/register": ^7.14.5
-    "@esm-bundle/chai": ^4.3.4
     "@open-wc/testing-helpers": ^3.0.1
     "@rollup/plugin-babel": ^5.3.0
     "@web/test-runner": ^0.20.2
