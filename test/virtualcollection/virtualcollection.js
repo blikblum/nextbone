@@ -4,7 +4,7 @@ import * as _ from 'lodash-es';
 import * as Backbone from '../../nextbone';
 import { VirtualCollection, buildFilter } from '../../virtualcollection';
 
-const assert = window.chai.assert;
+import { assert } from 'chai';
 
 describe('VirtualCollection', function() {
   describe('#constructor', function() {
@@ -258,7 +258,11 @@ describe('VirtualCollection', function() {
   describe('#comparator', function() {
     it('should sort the virtual collection upon instantiation', function() {
       var collection = new Backbone.Collection(
-          [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
+          [
+            { id: 1, name: 'ccc' },
+            { id: 2, name: 'aaa' },
+            { id: 3, name: 'bbb' }
+          ],
           {
             comparator: 'id'
           }
@@ -270,7 +274,11 @@ describe('VirtualCollection', function() {
     });
     it('should not order the virtual collection when the comparator is falsey', function() {
       var collection = new Backbone.Collection(
-          [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
+          [
+            { id: 1, name: 'ccc' },
+            { id: 2, name: 'aaa' },
+            { id: 3, name: 'bbb' }
+          ],
           {
             comparator: 'name'
           }
@@ -283,7 +291,11 @@ describe('VirtualCollection', function() {
     });
     it('should accept a comparator()', function() {
       var collection = new Backbone.Collection(
-          [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
+          [
+            { id: 1, name: 'ccc' },
+            { id: 2, name: 'aaa' },
+            { id: 3, name: 'bbb' }
+          ],
           {
             comparator: 'id'
           }
@@ -297,7 +309,11 @@ describe('VirtualCollection', function() {
     });
     it('should accept a comparator() that compares two models', function() {
       var collection = new Backbone.Collection(
-          [{ id: 1, name: 'ccc' }, { id: 2, name: 'aaa' }, { id: 3, name: 'bbb' }],
+          [
+            { id: 1, name: 'ccc' },
+            { id: 2, name: 'aaa' },
+            { id: 3, name: 'bbb' }
+          ],
           {
             comparator: 'id'
           }
@@ -311,9 +327,15 @@ describe('VirtualCollection', function() {
       assert.deepEqual(vc.pluck('id'), [1, 3, 2]);
     });
     it('should keep the virtual collection sorted when adding items', function() {
-      var collection = new Backbone.Collection([{ id: 1, name: 'ccc' }, { id: 3, name: 'bbb' }], {
-          comparator: 'id'
-        }),
+      var collection = new Backbone.Collection(
+          [
+            { id: 1, name: 'ccc' },
+            { id: 3, name: 'bbb' }
+          ],
+          {
+            comparator: 'id'
+          }
+        ),
         vc = new VirtualCollection(collection, { comparator: 'name' });
       assert.deepEqual(vc.pluck('id'), [3, 1]);
 
@@ -335,9 +357,9 @@ describe('VirtualCollection', function() {
       assert.equal(vc.length, collection.length);
     });
     it('should respect the order of the parent collection if no comparator is specified', function() {
-      var collection = new class extends Backbone.Collection {
+      var collection = new (class extends Backbone.Collection {
         comparator = 'name';
-      }();
+      })();
       collection.reset([{ name: 'b' }, { name: 'z' }, { name: 'a' }]);
 
       assert.deepEqual(
@@ -414,7 +436,10 @@ describe('VirtualCollection', function() {
 
   describe('#get', function() {
     it('should return the model if it belongs in the virtual collection', function() {
-      var collection = new Backbone.Collection([{ type: 'a', id: 1 }, { type: 'b', id: 2 }]),
+      var collection = new Backbone.Collection([
+          { type: 'a', id: 1 },
+          { type: 'b', id: 2 }
+        ]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' }
         });
@@ -426,7 +451,10 @@ describe('VirtualCollection', function() {
 
   describe('#at', function() {
     it('should return the model at the specified index of the virtual collection', function() {
-      var collection = new Backbone.Collection([{ type: 'a', id: 1 }, { type: 'b', id: 2 }]),
+      var collection = new Backbone.Collection([
+          { type: 'a', id: 1 },
+          { type: 'b', id: 2 }
+        ]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'b' }
         });
@@ -446,7 +474,10 @@ describe('VirtualCollection', function() {
           filter: { age: 44 }
         });
 
-      assert.deepEqual(vc.toJSON(), [{ age: 44, name: 'Papa' }, { age: 44, name: 'Terry' }]);
+      assert.deepEqual(vc.toJSON(), [
+        { age: 44, name: 'Papa' },
+        { age: 44, name: 'Terry' }
+      ]);
     });
   });
 
@@ -946,9 +977,9 @@ describe('VirtualCollection', function() {
     });
 
     it('should should inherit new model order if it does not have a comparator', function() {
-      var collection = new class extends Backbone.Collection {
+      var collection = new (class extends Backbone.Collection {
         comparator = 'type';
-      }([{ type: 'a' }, { type: 'c' }, { type: 'b' }]);
+      })([{ type: 'a' }, { type: 'c' }, { type: 'b' }]);
 
       var vc = new VirtualCollection(collection);
 

@@ -4,10 +4,9 @@ import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html, property } from 'lit-element';
 
-import 'chai/chai.js';
 import { spy, assert } from 'sinon';
 
-const { expect } = window.chai;
+import { expect } from 'chai';
 
 registerFormat('bracket', value => `[${value}]`);
 

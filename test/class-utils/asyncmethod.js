@@ -1,3 +1,10 @@
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+import { use, expect } from 'chai';
+import { defineAsyncMethods, asyncMethod } from '../../class-utils.js';
+
+use(sinonChai);
+
 describe('asyncMethod', function() {
   let fooStub;
   let barSpy;
@@ -66,15 +73,15 @@ describe('asyncMethod', function() {
 
   it('should call onError when an async method errors', function() {
     const err = new Error('Err!');
-    fooStub.throws(err);
+    fooStub['throws'](err);
 
     return myService.foo().then(
       () => {
         expect(fooStub).to.have.thrown(err);
       },
-      err => {
-        expect(err).to.equal(err);
-        expect(errorSpy).to.have.been.calledWith(err);
+      error => {
+        expect(error).to.equal(error);
+        expect(errorSpy).to.have.been.calledWith(error);
         expect(errorSpy).to.have.been.calledOn(myService);
       }
     );
@@ -148,15 +155,15 @@ describe('defineAsyncMethods', function() {
 
   it('should call onError when an async method errors', function() {
     const err = new Error('Err!');
-    fooStub.throws(err);
+    fooStub['throws'](err);
 
     return myService.foo().then(
       () => {
         expect(fooStub).to.have.thrown(err);
       },
-      err => {
-        expect(err).to.equal(err);
-        expect(errorSpy).to.have.been.calledWith(err);
+      error => {
+        expect(error).to.equal(error);
+        expect(errorSpy).to.have.been.calledWith(error);
         expect(errorSpy).to.have.been.calledOn(myService);
       }
     );

@@ -1,14 +1,11 @@
-/*global it, describe, before, beforeEach*/
-
-import 'chai/chai.js';
 import sinon from 'sinon';
 import * as _ from 'lodash-es';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
-import { LitElement, html } from 'lit-element';
+import { LitElement } from 'lit-element';
 import { Collection } from '../../nextbone';
 import { virtualState, VirtualCollection } from '../../virtualcollection';
 
-const expect = window.chai.expect;
+import { expect } from 'chai';
 
 describe('virtualState', () => {
   it('should preserve decorated class name', async () => {

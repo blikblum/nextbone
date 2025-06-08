@@ -2,11 +2,10 @@ import { Model, Collection, ajax } from '../../nextbone';
 import { localStorage, bindLocalStorage } from '../../localstorage';
 import { clone, uniq } from 'lodash-es';
 
-import 'chai/chai.js';
+import { expect } from 'chai';
 import { stub } from 'sinon';
 
 const root = window;
-const expect = window.chai.expect;
 
 const attributes = {
   string: 'String',

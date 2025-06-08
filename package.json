@@ -119,7 +119,7 @@
     "test:validation": "mocha --require @babel/register --require test/validation/setup-globals.js --ui exports --recursive test/validation/",
     "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",
-    "test:class-utils": "mocha --require @babel/register --require test/class-utils/setup-globals.js test/class-utils",
+    "test:class-utils": "mocha --require @babel/register test/class-utils",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js form.js test/core/*.js",
     "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write",
