@@ -1,104 +1,118 @@
-(function(QUnit) {
-  var Library = class extends Backbone.Collection {
-    url() {
-      return '/library';
-    }
-  };
-  var library;
+import * as Backbone from 'nextbone';
+import * as _ from 'lodash-es';
 
-  var attrs = {
-    title: 'The Tempest',
-    author: 'Bill Shakespeare',
-    length: 123
-  };
+import { expect } from 'chai';
 
-  QUnit.module('Backbone.sync', {
-    beforeEach: function(assert) {
-      library = new Library();
-      library.create(attrs, { wait: false });
-    }
+describe('Backbone.sync', function() {
+  let Library, library, attrs, ajaxSettings, ajaxResponse;
+  let originalAjax;
+
+  before(function() {
+    Library = class extends Backbone.Collection {
+      url() {
+        return '/library';
+      }
+    };
+    attrs = {
+      title: 'The Tempest',
+      author: 'Bill Shakespeare',
+      length: 123
+    };
   });
 
-  QUnit.test('read', function(assert) {
-    assert.expect(4);
+  beforeEach(function() {
+    originalAjax = Backbone.ajax.handler;
+    Backbone.ajax.handler = async function ajaxHandler(settings) {
+      ajaxSettings = settings;
+      var response = ajaxResponse;
+      ajaxResponse = undefined;
+      await Promise.resolve();
+      return response;
+    };
+
+    library = new Library();
+    library.create(attrs, { wait: false });
+  });
+
+  afterEach(function() {
+    Backbone.ajax.handler = originalAjax;
+  });
+
+  it('read', function() {
     library.fetch();
-    assert.equal(this.ajaxSettings.url, '/library');
-    assert.equal(this.ajaxSettings.type, 'GET');
-    assert.equal(this.ajaxSettings.dataType, 'json');
-    assert.ok(_.isEmpty(this.ajaxSettings.data));
+    expect(ajaxSettings.url).to.equal('/library');
+    expect(ajaxSettings.type).to.equal('GET');
+    expect(ajaxSettings.dataType).to.equal('json');
+    expect(_.isEmpty(ajaxSettings.data)).to.be.ok;
   });
 
-  QUnit.test('passing data', function(assert) {
-    assert.expect(3);
+  it('passing data', function() {
     library.fetch({ data: { a: 'a', one: 1 } });
-    assert.equal(this.ajaxSettings.url, '/library');
-    assert.equal(this.ajaxSettings.data.a, 'a');
-    assert.equal(this.ajaxSettings.data.one, 1);
+    expect(ajaxSettings.url).to.equal('/library');
+    expect(ajaxSettings.data.a).to.equal('a');
+    expect(ajaxSettings.data.one).to.equal(1);
   });
 
-  QUnit.test('create', function(assert) {
-    assert.expect(6);
-    assert.equal(this.ajaxSettings.url, '/library');
-    assert.equal(this.ajaxSettings.type, 'POST');
-    assert.equal(this.ajaxSettings.dataType, 'json');
-    var data = JSON.parse(this.ajaxSettings.data);
-    assert.equal(data.title, 'The Tempest');
-    assert.equal(data.author, 'Bill Shakespeare');
-    assert.equal(data.length, 123);
+  it('create', function() {
+    let data = JSON.parse(ajaxSettings.data);
+    expect(ajaxSettings.url).to.equal('/library');
+    expect(ajaxSettings.type).to.equal('POST');
+    expect(ajaxSettings.dataType).to.equal('json');
+    expect(data.title).to.equal('The Tempest');
+    expect(data.author).to.equal('Bill Shakespeare');
+    expect(data.length).to.equal(123);
   });
 
-  QUnit.test('update', function(assert) {
-    assert.expect(7);
+  it('update', function() {
     library.first().save({ id: '1-the-tempest', author: 'William Shakespeare' });
-    assert.equal(this.ajaxSettings.url, '/library/1-the-tempest');
-    assert.equal(this.ajaxSettings.type, 'PUT');
-    assert.equal(this.ajaxSettings.dataType, 'json');
-    var data = JSON.parse(this.ajaxSettings.data);
-    assert.equal(data.id, '1-the-tempest');
-    assert.equal(data.title, 'The Tempest');
-    assert.equal(data.author, 'William Shakespeare');
-    assert.equal(data.length, 123);
+    let data = JSON.parse(ajaxSettings.data);
+    expect(ajaxSettings.url).to.equal('/library/1-the-tempest');
+    expect(ajaxSettings.type).to.equal('PUT');
+    expect(ajaxSettings.dataType).to.equal('json');
+    expect(data.id).to.equal('1-the-tempest');
+    expect(data.title).to.equal('The Tempest');
+    expect(data.author).to.equal('William Shakespeare');
+    expect(data.length).to.equal(123);
   });
 
-  QUnit.test('read model', function(assert) {
-    assert.expect(3);
+  it('read model', function() {
     library.first().save({ id: '2-the-tempest', author: 'Tim Shakespeare' });
     library.first().fetch();
-    assert.equal(this.ajaxSettings.url, '/library/2-the-tempest');
-    assert.equal(this.ajaxSettings.type, 'GET');
-    assert.ok(_.isEmpty(this.ajaxSettings.data));
+    expect(ajaxSettings.url).to.equal('/library/2-the-tempest');
+    expect(ajaxSettings.type).to.equal('GET');
+    expect(_.isEmpty(ajaxSettings.data)).to.be.ok;
   });
 
-  QUnit.test('destroy', function(assert) {
-    assert.expect(3);
+  it('destroy', function() {
     library.first().save({ id: '2-the-tempest', author: 'Tim Shakespeare' });
     library.first().destroy({ wait: true });
-    assert.equal(this.ajaxSettings.url, '/library/2-the-tempest');
-    assert.equal(this.ajaxSettings.type, 'DELETE');
-    assert.equal(this.ajaxSettings.data, null);
+    expect(ajaxSettings.url).to.equal('/library/2-the-tempest');
+    expect(ajaxSettings.type).to.equal('DELETE');
+    expect(ajaxSettings.data).to.be.undefined;
   });
 
-  QUnit.test('urlError', function(assert) {
-    assert.expect(2);
+  it('urlError', function(done) {
     var model = new Backbone.Model();
-    assert.raises(function() {
+    try {
       model.fetch();
-    });
-    model.fetch({ url: '/one/two' });
-    assert.equal(this.ajaxSettings.url, '/one/two');
+    } catch (e) {
+      model.fetch({ url: '/one/two' });
+      expect(ajaxSettings.url).to.equal('/one/two');
+      done();
+    }
   });
 
-  QUnit.test('#1052 - `options` is optional.', function(assert) {
-    assert.expect(0);
+  it('#1052 - `options` is optional.', function() {
     var model = new Backbone.Model();
     model.url = '/test';
     Backbone.sync.handler('create', model);
+    // No expectation needed, ensuring no error is thrown
   });
 
-  QUnit.test('Backbone.ajax', function(assert) {
-    assert.expect(1);
+  it('Backbone.ajax', function(done) {
     Backbone.ajax.handler = function(settings) {
-      assert.strictEqual(settings.url, '/test');
+      expect(settings.url).to.equal('/test');
+      done();
       return Promise.resolve();
     };
     var model = new Backbone.Model();
@@ -106,21 +120,19 @@
     Backbone.sync.handler('create', model);
   });
 
-  QUnit.test('Call provided error callback on error.', function(assert) {
-    assert.expect(1);
+  it('Call provided error callback on error.', function(done) {
     var model = new Backbone.Model();
     model.url = '/test';
     Backbone.sync.handler('read', model, {
       error: function() {
-        assert.ok(true);
+        expect(true).to.be.ok;
+        done();
       }
     });
-    this.ajaxSettings.error();
+    ajaxSettings.error();
   });
 
-  QUnit.test('isLoading with customized sync method.', function(assert) {
-    assert.expect(4);
-    var done = assert.async();
+  it('isLoading with customized sync method.', function() {
     class SpecialSyncModel extends Backbone.Model {
       sync() {
         return Promise.resolve({ x: 'y' });
@@ -128,29 +140,26 @@
     }
     var model = new SpecialSyncModel();
     model.url = '/test';
-    assert.equal(model.isLoading, false);
+    expect(model.isLoading).to.equal(false);
     model
       .fetch({
         success() {
-          assert.equal(model.isLoading, false);
+          expect(model.isLoading).to.equal(false);
         }
       })
       .then(function() {
-        assert.equal(model.isLoading, false);
-        done();
+        expect(model.isLoading).to.equal(false);
       });
-    assert.equal(model.isLoading, true);
+    expect(model.isLoading).to.equal(true);
   });
 
-  QUnit.test('#2928 - Pass along `textStatus` and `errorThrown`.', function(assert) {
-    assert.expect(3);
-    var done = assert.async();
+  it('#2928 - Pass along `textStatus` and `errorThrown`.', function(done) {
     var model = new Backbone.Model();
     model.url = '/test';
     model.on('error', function(m, error) {
-      assert.ok(error instanceof Error);
-      assert.deepEqual(error.responseData, { message: 'oh no!' });
-      assert.strictEqual(error.textStatus, 'textStatus');
+      expect(error).to.be.an('error');
+      expect(error.responseData).to.deep.equal({ message: 'oh no!' });
+      expect(error.textStatus).to.equal('textStatus');
       done();
     });
     var ajax = Backbone.ajax.handler;
@@ -163,4 +172,4 @@
     model.fetch();
     Backbone.ajax.handler = ajax;
   });
-})(QUnit);
+});

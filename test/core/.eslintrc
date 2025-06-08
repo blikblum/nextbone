@@ -1,19 +1,13 @@
 {
   "env": {
-    "browser": true
+    "browser": true,
+    "mocha": true
   },
-  "parser": "@babel/eslint-parser",
-  "parserOptions": {
-    "ecmaVersion": 6
-  },
-  "globals": {
-    "QUnit": false,
-    "Backbone": true,
-    "_": true,
-    "$": true
-  },
+  "plugins": [
+    "chai-friendly"
+  ],
   "rules": {
-    "no-throw-literal": 0,
-    "no-undefined": 0
+    "no-unused-expressions": 0,
+    "chai-friendly/no-unused-expressions": 2
   }
 }
