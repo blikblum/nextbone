@@ -109,8 +109,7 @@
     "sinon-chai": "^3.7.0",
     "turndown": "^7.1.2",
     "typescript": "^5.5.4",
-    "vitepress": "^1.0.0-alpha.75",
-    "whatwg-fetch": "^3.0.0"
+    "vitepress": "^1.0.0-alpha.75"
   },
   "scripts": {
     "test": "web-test-runner test/core/*.js --node-resolve --puppeteer",

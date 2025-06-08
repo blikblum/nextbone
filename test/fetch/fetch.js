@@ -1,32 +1,46 @@
+import { mock } from 'node:test';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import 'whatwg-fetch';
 import * as Backbone from '../../nextbone.js';
-
-global.fetch = sinon.spy(self.fetch);
 
 var ajax = Backbone.ajax.handler;
 
-describe('backbone.fetch', function() {
-  var server;
+describe('fetch', function() {
+  const fetchSpy = sinon.spy();
+  let textResponse = '';
+  let responseStatus = 200;
+  function text() {
+    return textResponse;
+  }
 
   beforeEach(function() {
-    server = sinon.fakeServer.create();
+    textResponse = '';
+    responseStatus = 200;
+    mock.method(global, 'fetch', async (...args) => {
+      fetchSpy(...args);
+      return new Response(textResponse, {
+        status: responseStatus,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    });
   });
 
   afterEach(function() {
-    server.restore();
+    fetchSpy.resetHistory();
+    mock.reset();
   });
 
   describe('creating a request', function() {
     it('should pass the method and url to fetch', function() {
       ajax({
-        url: 'test',
+        url: 'http://test',
         type: 'GET'
       });
 
-      sinon.assert.calledWith(fetch, 'test', sinon.match.has('method', 'GET'));
-      sinon.assert.calledWith(fetch, 'test', sinon.match.has('body', undefined));
+      sinon.assert.calledWith(fetchSpy, 'http://test', sinon.match.has('method', 'GET'));
+      sinon.assert.calledWith(fetchSpy, 'http://test', sinon.match.has('body', undefined));
     });
 
     it('should stringify GET data when present', function() {
@@ -35,7 +49,7 @@ describe('backbone.fetch', function() {
         type: 'GET',
         data: { a: 1, b: 2 }
       });
-      sinon.assert.calledWith(fetch, 'test?a=1&b=2');
+      sinon.assert.calledWith(fetchSpy, 'test?a=1&b=2');
     });
 
     it('should append to the querystring when one already present', function() {
@@ -44,7 +58,7 @@ describe('backbone.fetch', function() {
         type: 'GET',
         data: { a: 1, b: 2 }
       });
-      sinon.assert.calledWith(fetch, 'test?foo=bar&a=1&b=2');
+      sinon.assert.calledWith(fetchSpy, 'test?foo=bar&a=1&b=2');
     });
 
     it('should send POSTdata when POSTing', function() {
@@ -54,8 +68,8 @@ describe('backbone.fetch', function() {
         data: JSON.stringify({ a: 1, b: 2 })
       });
 
-      sinon.assert.calledWith(fetch, 'test', sinon.match.has('method', 'POST'));
-      sinon.assert.calledWith(fetch, 'test', sinon.match.has('body', '{"a":1,"b":2}'));
+      sinon.assert.calledWith(fetchSpy, 'test', sinon.match.has('method', 'POST'));
+      sinon.assert.calledWith(fetchSpy, 'test', sinon.match.has('body', '{"a":1,"b":2}'));
     });
   });
 
@@ -63,7 +77,7 @@ describe('backbone.fetch', function() {
     it('should set headers if none passed in', function() {
       ajax({ url: 'test', type: 'GET' });
       sinon.assert.calledWith(
-        fetch,
+        fetchSpy,
         'test',
         sinon.match({
           headers: {
@@ -84,7 +98,7 @@ describe('backbone.fetch', function() {
       });
 
       sinon.assert.calledWith(
-        fetch,
+        fetchSpy,
         'test',
         sinon.match({
           headers: {
@@ -108,7 +122,7 @@ describe('backbone.fetch', function() {
       });
 
       sinon.assert.calledWith(
-        fetch,
+        fetchSpy,
         'test',
         sinon.match({
           headers: {
@@ -123,20 +137,20 @@ describe('backbone.fetch', function() {
 
   describe('finishing a request', function() {
     it('should invoke the success callback on complete', function() {
-      var promise = ajax({
-        url: 'test',
+      textResponse = 'ok';
+      return ajax({
+        url: 'http://test',
         type: 'GET',
         success: function(response) {
           expect(response).to.equal('ok');
         }
       });
-      server.respond('ok');
-      return promise;
     });
 
     it('should parse response as json if dataType option is provided', function() {
-      var promise = ajax({
-        url: 'test',
+      textResponse = JSON.stringify({ status: 'ok' });
+      return ajax({
+        url: 'http://test',
         dataType: 'json',
         type: 'GET',
         success: function(response) {
@@ -145,11 +159,11 @@ describe('backbone.fetch', function() {
       }).then(function(response) {
         expect(response).to.deep.equal({ status: 'ok' });
       });
-      server.respond('{"status": "ok"}');
-      return promise;
     });
 
     it('should invoke the error callback on error', function(done) {
+      textResponse = 'Server error';
+      responseStatus = 400;
       var promise = ajax({
         url: 'test',
         type: 'GET',
@@ -172,11 +186,11 @@ describe('backbone.fetch', function() {
         ['catch'](function(error) {
           done(error);
         });
-
-      server.respond([400, {}, 'Server error']);
     });
 
     it('should not fail without error callback', function(done) {
+      textResponse = 'Server error';
+      responseStatus = 400;
       var promise = ajax({
         url: 'test',
         type: 'GET',
@@ -196,11 +210,11 @@ describe('backbone.fetch', function() {
         ['catch'](function(error) {
           done(error);
         });
-
-      server.respond([400, {}, 'Server error']);
     });
 
     it('should parse json as property of Error on failing request', function(done) {
+      textResponse = JSON.stringify({ code: 'INVALID_HORSE' });
+      responseStatus = 400;
       var promise = ajax({
         dataType: 'json',
         url: 'test',
@@ -218,11 +232,11 @@ describe('backbone.fetch', function() {
         ['catch'](function(error) {
           done(error);
         });
-
-      server.respond([400, {}, JSON.stringify({ code: 'INVALID_HORSE' })]);
     });
 
     it('should handle invalid JSON response on failing response', function(done) {
+      textResponse = 'Server error';
+      responseStatus = 400;
       var promise = ajax({
         url: 'test',
         dataType: 'json',
@@ -246,11 +260,11 @@ describe('backbone.fetch', function() {
         ['catch'](function(error) {
           done(error);
         });
-
-      server.respond([400, {}, 'Server error']);
     });
 
     it('should parse text as property of Error on failing request', function(done) {
+      textResponse = 'Nope';
+      responseStatus = 400;
       var promise = ajax({
         dataType: 'text',
         url: 'test',
@@ -268,12 +282,13 @@ describe('backbone.fetch', function() {
         ['catch'](function(error) {
           done(error);
         });
-
-      server.respond([400, {}, 'Nope']);
     });
   });
 
   it.skip('should pass through network errors', function(done) {
+    // Simulate a network error by not resolving the fetch promise
+    textResponse = 'Network error';
+    responseStatus = 600; // Non-standard status code to simulate a network error
     var promise = ajax({
       dataType: 'text',
       url: 'test',
@@ -294,7 +309,6 @@ describe('backbone.fetch', function() {
         done(error);
       });
 
-    server.respond([600, {}, 'Network error']);
     return promise;
   });
 
