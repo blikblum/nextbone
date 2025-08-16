@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import * as _ from 'lodash-es';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
-import { LitElement } from 'lit-element';
+import { LitElement } from 'lit';
 import { Collection } from '../../nextbone';
 import { virtualState, VirtualCollection } from '../../virtualcollection';
 

@@ -1,12 +1,10 @@
-import { fixtureSync, defineCE } from '@open-wc/testing-helpers';
-import { LitElement, html } from 'lit-element';
-import { render } from 'lit-html';
-import { spy } from 'sinon';
-
-import * as Backbone from 'nextbone';
 import * as _ from 'lodash-es';
-
+import { fixtureSync, defineCE } from '@open-wc/testing-helpers';
+import { LitElement, html, render } from 'lit';
+import { spy } from 'sinon';
 import { expect } from 'chai';
+
+import { Model, Collection, view, eventHandler, state, on, isView } from '../../nextbone.js';
 
 const elHTML = html`
   <h1>Test</h1>
@@ -17,15 +15,15 @@ const elHTML = html`
   <div class="one"></div>
 `;
 
-describe('Backbone.view', function() {
+describe('view', function() {
   it('decorated class name', () => {
     class Test extends HTMLElement {}
 
     expect(Test.name).to.equal('Test');
   });
 
-  [Backbone.view, _.noop].forEach(classDecorator => {
-    const suffix = classDecorator === Backbone.view ? '' : ' - without class decorator';
+  [view, _.noop].forEach(classDecorator => {
+    const suffix = classDecorator === view ? '' : ' - without class decorator';
 
     it(`event${suffix}`, async function() {
       let el, oneEl, oneChildEl, twoEl;
@@ -37,19 +35,19 @@ describe('Backbone.view', function() {
         render() {
           return elHTML;
         }
-        @Backbone.eventHandler('click', '.one')
+        @eventHandler('click', '.one')
         oneClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(oneChildEl, 'target should be .one-child element');
           expect(e.selectorTarget).to.equal(oneEl, 'selectorTarget should be .one element');
         }
-        @Backbone.eventHandler('click', '.two')
+        @eventHandler('click', '.two')
         twoClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(twoEl, 'target should be .two element');
           expect(e.selectorTarget).to.equal(twoEl, 'selectorTarget should be .two element');
         }
-        @Backbone.eventHandler('my-event')
+        @eventHandler('my-event')
         selfClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(el, 'target should be be the element instance');
@@ -73,19 +71,19 @@ describe('Backbone.view', function() {
         render() {
           return elHTML;
         }
-        @Backbone.eventHandler('click', '.one')
+        @eventHandler('click', '.one')
         oneClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(oneChildEl, 'target should be .one-child element');
           expect(e.selectorTarget).to.equal(oneEl, 'selectorTarget should be .one element');
         }
-        @Backbone.eventHandler('click', '.two')
+        @eventHandler('click', '.two')
         twoClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(twoEl, 'target should be .two element');
           expect(e.selectorTarget).to.equal(twoEl, 'selectorTarget should be .two element');
         }
-        @Backbone.eventHandler('my-event')
+        @eventHandler('my-event')
         selfClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(el, 'target should be be the element instance');
@@ -109,19 +107,19 @@ describe('Backbone.view', function() {
         connectedCallback() {
           render(elHTML, this);
         }
-        @Backbone.eventHandler('click', '.one')
+        @eventHandler('click', '.one')
         oneClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(oneChildEl, 'target should be .one-child element');
           expect(e.selectorTarget).to.equal(oneEl, 'selectorTarget should be .one element');
         }
-        @Backbone.eventHandler('click', '.two')
+        @eventHandler('click', '.two')
         twoClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(twoEl, 'target should be .two element');
           expect(e.selectorTarget).to.equal(twoEl, 'selectorTarget should be .two element');
         }
-        @Backbone.eventHandler('my-event')
+        @eventHandler('my-event')
         selfClick(e) {
           expect(this).to.equal(el, 'this should be the element instance');
           expect(e.target).to.equal(el, 'target should be be the element instance');
@@ -149,14 +147,14 @@ describe('Backbone.view', function() {
         connectedCallback() {
           render(elHTML, this);
         }
-        @Backbone.eventHandler('my-event')
+        @eventHandler('my-event')
         selfClick(e) {
           eventThis = this;
           eventCounter++;
         }
       }
       class SubTest extends TestEventSubclassing {
-        @Backbone.eventHandler('my-sub-event')
+        @eventHandler('my-sub-event')
         selfClick(e) {
           subEventThis = this;
           subEventCounter++;
@@ -183,6 +181,9 @@ describe('Backbone.view', function() {
     it(`state${suffix}`, async function() {
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
+      /**
+       * @type {TestState}
+       */
       let el;
       let updateChangeMap;
       @classDecorator
@@ -191,14 +192,15 @@ describe('Backbone.view', function() {
           createPropertyCount++;
           super.createProperty(...args);
         }
+
         render() {
           return elHTML;
         }
 
-        @Backbone.state
-        model = new Backbone.Model();
+        @state
+        model = new Model();
 
-        @Backbone.state({
+        @state({
           events: {
             'the:event': 'onEvent',
             'other:event': function(params) {
@@ -207,12 +209,12 @@ describe('Backbone.view', function() {
             }
           }
         })
-        collection = new Backbone.Collection();
+        collection = new Collection();
 
-        @Backbone.state({ copy: true })
-        copyModel = new Backbone.Model();
+        @state({ copy: true })
+        copyModel = new Model();
 
-        @Backbone.state({ copy: true })
+        @state({ copy: true })
         unitializedCopyModel;
 
         update(changed) {
@@ -220,9 +222,9 @@ describe('Backbone.view', function() {
           return super.update(changed);
         }
 
-        _enqueueUpdate(...args) {
+        __enqueueUpdate(...args) {
           enqueueUpdateCount++;
-          super._enqueueUpdate(...args);
+          super.__enqueueUpdate(...args);
         }
 
         onEvent(params) {
@@ -231,20 +233,21 @@ describe('Backbone.view', function() {
         }
       }
       const tag = defineCE(TestState);
-      el = await fixtureSync(`<${tag}></${tag}>`);
+      el = fixtureSync(`<${tag}></${tag}>`);
       const parentEl = el.parentNode;
-      expect(enqueueUpdateCount).to.equal(1);
+      expect(enqueueUpdateCount).to.equal(1, 'initial update should be enqueued');
+      await el.updateComplete;
       // changes to model/collection should trigger element update
       el.model.set('test', 1);
       el.collection.reset([]);
-      expect(enqueueUpdateCount).to.equal(2);
+      expect(enqueueUpdateCount).to.equal(2, 'second update should be enqueued');
       await el.updateComplete;
       // property name must be passed to update changed map
       expect(updateChangeMap.has('model')).to.be['true'];
       expect(updateChangeMap.has('collection')).to.be['true'];
       // update property instance should trigger element update
-      const newModel = new Backbone.Model();
-      const newCollection = new Backbone.Collection();
+      const newModel = new Model();
+      const newCollection = new Collection();
       el.model = newModel;
       el.collection = newCollection;
       expect(enqueueUpdateCount).to.equal(3);
@@ -252,7 +255,7 @@ describe('Backbone.view', function() {
       // update property defined with copy: true should trigger element update
       // but should not change element instance
       const originalCopyModel = el.copyModel;
-      el.copyModel = new Backbone.Model({ foo: 'bar' });
+      el.copyModel = new Model({ foo: 'bar' });
       expect(originalCopyModel).to.equal(el.copyModel);
       expect(el.copyModel.get('foo')).to.equal('bar');
       expect(enqueueUpdateCount).to.equal(4);
@@ -287,7 +290,7 @@ describe('Backbone.view', function() {
       await el.updateComplete;
       // unitialized copy model should clone passed model
       el.unitializedCopyModel = newModel;
-      expect(el.unitializedCopyModel).to.be.an['instanceof'](Backbone.Model);
+      expect(el.unitializedCopyModel).to.be.an['instanceof'](Model);
       expect(_.isEqual(el.unitializedCopyModel.attributes, newModel.attributes)).to.be['true'];
       expect(el.unitializedCopyModel).to.not.equal(newModel);
       el.unitializedCopyModel.set('test', 'x');
@@ -310,31 +313,31 @@ describe('Backbone.view', function() {
         render() {
           return elHTML;
         }
-        @Backbone.state({
+        @state({
           events: {
             'the:event': 'onEvent'
           }
         })
-        model = new Backbone.Model();
+        model = new Model();
         onEvent() {
           eventThis = this;
           eventCounter++;
         }
       }
       class SubTest extends TestStateSubclassing {
-        @Backbone.state({
+        @state({
           events: {
             'the:sub:event': 'onSubEvent'
           }
         })
-        subModel = new Backbone.Model();
+        subModel = new Model();
         onSubEvent() {
           subEventThis = this;
           subEventCounter++;
         }
       }
       class OtherSubTest extends TestStateSubclassing {
-        subModel = new Backbone.Model();
+        subModel = new Model();
         onSubEvent() {
           subEventThis = this;
           subEventCounter++;
@@ -366,16 +369,16 @@ describe('Backbone.view', function() {
       }
       const tag = defineCE(Test);
       const el = await fixtureSync(`<${tag}></${tag}>`);
-      expect(!!Backbone.isView(el)).to.equal(classDecorator === Backbone.view);
+      expect(!!isView(el)).to.equal(classDecorator === view);
     });
   });
 
   it('on decorator', async () => {
     let counter = 0;
     let eventThis;
-    @Backbone.view
+    @view
     class TestOn extends LitElement {
-      @Backbone.on('event')
+      @on('event')
       eventHandler() {
         eventThis = this;
         counter++;
@@ -400,15 +403,15 @@ describe('Backbone.view', function() {
     const modelChangeSpy = spy();
     const copyModelChangeSpy = spy();
     const requestUpdateSpy = spy();
-    class TestStatesProperty extends Backbone.view(LitElement) {
+    class TestStatesProperty extends view(LitElement) {
       static states = {
         model: {},
         copyModel: { copy: true }
       };
       constructor() {
         super();
-        this.model = new Backbone.Model();
-        this.copyModel = new Backbone.Model();
+        this.model = new Model();
+        this.copyModel = new Model();
       }
       requestUpdate(...args) {
         requestUpdateSpy();
@@ -422,21 +425,14 @@ describe('Backbone.view', function() {
           copyModelChangeSpy();
         }
       }
-      update(changed) {
-        if (changed.has('model')) {
-          modelChangeSpy();
-        }
-        if (changed.has('copyModel')) {
-          copyModelChangeSpy();
-        }
-        return super.update(changed);
-      }
+
       render() {
         return elHTML;
       }
     }
     const tag = defineCE(TestStatesProperty);
-    const el = await fixtureSync(`<${tag}></${tag}>`);
+    const el = fixtureSync(`<${tag}></${tag}>`);
+    await el.updateComplete;
     expect(modelChangeSpy.callCount).to.equal(1, 'initial model change');
     expect(copyModelChangeSpy.callCount).to.equal(1, 'initial copyModel change');
     requestUpdateSpy.resetHistory();
@@ -447,7 +443,7 @@ describe('Backbone.view', function() {
     expect(modelChangeSpy.callCount).to.equal(2, 'model change');
     expect(copyModelChangeSpy.callCount).to.equal(2, 'copyModel change');
     const originalCopyModel = el.copyModel;
-    el.copyModel = new Backbone.Model({ foo: 'bar' });
+    el.copyModel = new Model({ foo: 'bar' });
     expect(originalCopyModel).to.equal(el.copyModel);
     expect(el.copyModel.get('foo')).to.equal('bar');
     await el.updateComplete;
@@ -459,18 +455,18 @@ describe('Backbone.view', function() {
     const collectionChangeSpy = spy();
     const requestUpdateSpy = spy();
 
-    class TestPropertyType extends Backbone.view(LitElement) {
+    class TestPropertyType extends view(LitElement) {
       static properties = {
-        model: { type: Backbone.Model, context: 'model' },
-        copyModel: { type: Backbone.Model, copy: true },
-        collection: { type: Backbone.Collection }
+        model: { type: Model, context: 'model' },
+        copyModel: { type: Model, copy: true },
+        collection: { type: Collection }
       };
 
       constructor() {
         super();
-        this.model = new Backbone.Model();
-        this.copyModel = new Backbone.Model();
-        this.collection = new Backbone.Collection();
+        this.model = new Model();
+        this.copyModel = new Model();
+        this.collection = new Collection();
       }
 
       requestUpdate(...args) {
@@ -490,19 +486,6 @@ describe('Backbone.view', function() {
         }
       }
 
-      update(changed) {
-        if (changed.has('model')) {
-          modelChangeSpy();
-        }
-        if (changed.has('copyModel')) {
-          copyModelChangeSpy();
-        }
-        if (changed.has('collection')) {
-          collectionChangeSpy();
-        }
-        return super.update(changed);
-      }
-
       render() {
         return elHTML;
       }
@@ -510,11 +493,11 @@ describe('Backbone.view', function() {
 
     const tag = defineCE(TestPropertyType);
 
-    // internal _classProperties is not public API
-    const modelOptions = TestPropertyType._classProperties.get('model');
+    const modelOptions = TestPropertyType.elementProperties.get('model');
     expect(modelOptions.context).to.equal('model');
 
-    const el = await fixtureSync(`<${tag}></${tag}>`);
+    const el = fixtureSync(`<${tag}></${tag}>`);
+    await el.updateComplete;
     expect(modelChangeSpy.callCount).to.equal(1, 'initial model change');
     expect(copyModelChangeSpy.callCount).to.equal(1, 'initial copyModel change');
     expect(collectionChangeSpy.callCount).to.equal(1, 'initial collection change');
@@ -528,7 +511,7 @@ describe('Backbone.view', function() {
     expect(copyModelChangeSpy.callCount).to.equal(2, 'copyModel change');
     expect(collectionChangeSpy.callCount).to.equal(2, 'collection change');
     const originalCopyModel = el.copyModel;
-    el.copyModel = new Backbone.Model({ foo: 'bar' });
+    el.copyModel = new Model({ foo: 'bar' });
     expect(originalCopyModel).to.equal(el.copyModel);
     expect(el.copyModel.get('foo')).to.equal('bar');
     await el.updateComplete;

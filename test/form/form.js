@@ -2,7 +2,7 @@ import { Model } from '../../nextbone';
 import { form, FormState, registerFormat, registerInput } from '../../form';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
-import { LitElement, html, property } from 'lit-element';
+import { LitElement, html } from 'lit';
 
 import { spy, assert } from 'sinon';
 
