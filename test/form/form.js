@@ -1,5 +1,5 @@
 import { Model } from '../../nextbone';
-import { form, FormState, registerFormat, registerInput } from '../../form';
+import { FormState, registerFormat, registerInput } from '../../form';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit';
@@ -36,7 +36,9 @@ function renderForm() {
   `;
 }
 
-class TestDefaultInputs extends form(LitElement) {
+class TestDefaultInputs extends LitElement {
+  form = new FormState(this);
+
   createRenderRoot() {
     return this;
   }
@@ -117,7 +119,9 @@ class TestNestedInput extends HTMLElement {
 }
 const testNestedTag = defineCE(TestNestedInput);
 
-class TestNoNameInputs extends form(LitElement) {
+class TestNoNameInputs extends LitElement {
+  form = new FormState(this);
+
   createRenderRoot() {
     return this;
   }

@@ -409,17 +409,6 @@ export class FormState {
   }
 }
 
-const createClass = (ctor, options = {}) => {
-  const { model, inputs, updateMethod } = options;
-
-  return class extends ctor {
-    constructor() {
-      super();
-      this.form = new FormState(this, { model, inputs, updateMethod });
-    }
-  };
-};
-
 export const registerFormat = (name, fn) => {
   formats[name] = fn;
 };
@@ -427,34 +416,6 @@ export const registerFormat = (name, fn) => {
 export const registerInput = (selector, events) => {
   defaultInputEvents = undefined;
   defaultInputs[selector] = events;
-};
-
-/**
- * @param {FormStateOptions} optionsOrCtorOrDescriptor
- * @returns {ClassDecorator}
- * @deprecated
- */
-export const form = (optionsOrCtorOrDescriptor, options) => {
-  // current state of decorators sucks. Lets abuse of duck typing
-  if (typeof optionsOrCtorOrDescriptor === 'function') {
-    // constructor -> typescript decorator
-    return createClass(optionsOrCtorOrDescriptor, options);
-  }
-  if (optionsOrCtorOrDescriptor.kind === 'class') {
-    // descriptor -> spec decorator
-    const { kind, elements } = optionsOrCtorOrDescriptor;
-    return {
-      kind,
-      elements,
-      finisher(ctor) {
-        return createClass(ctor, options);
-      }
-    };
-  }
-  // optionsOrCtorOrDescriptor === options
-  return ctorOrDescriptor => {
-    return form(ctorOrDescriptor, optionsOrCtorOrDescriptor);
-  };
 };
 
 /**
