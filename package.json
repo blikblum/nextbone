@@ -111,6 +111,7 @@
     "vitepress": "^1.0.0-alpha.75"
   },
   "scripts": {
+    "demo:start": "vite serve demo",
     "test": "web-test-runner test/core/*.js --node-resolve --puppeteer",
     "test:computed": "web-test-runner test/computed/*.js --node-resolve --puppeteer",
     "test:fetch": "mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
