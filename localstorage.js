@@ -31,7 +31,7 @@ const defaultSerializer = {
    */
   deserialize(data) {
     return JSON.parse(data);
-  }
+  },
 };
 
 function initializeData(instance, name, data) {
@@ -42,7 +42,7 @@ function initializeData(instance, name, data) {
     instance instanceof Collection
       ? (instance.model || instance.constructor.model || {}).idAttribute || 'id'
       : instance.idAttribute;
-  data.forEach(item => {
+  data.forEach((item) => {
     let id = item[idAttribute];
     if (!id && id !== 0) {
       item[idAttribute] = id = guid();
@@ -154,8 +154,8 @@ class LocalStorage {
   findAll() {
     const records = this.getRecords();
     return records
-      .map(id => this.serializer.deserialize(this._getItem(this._itemName(id))))
-      .filter(item => item != null);
+      .map((id) => this.serializer.deserialize(this._getItem(this._itemName(id))))
+      .filter((item) => item != null);
   }
 
   /** Delete a model from `this.data`, returning it.
@@ -164,7 +164,7 @@ class LocalStorage {
    */
   destroy(model) {
     this._removeItem(this._itemName(model.id));
-    const newRecords = this.getRecords().filter(id => id != model.id); // eslint-disable-line eqeqeq
+    const newRecords = this.getRecords().filter((id) => id != model.id); // eslint-disable-line eqeqeq
 
     this.save(newRecords);
 
@@ -298,7 +298,7 @@ const createClass = (ModelClass, name, options) => {
   };
 };
 
-export const localStorage = (name, options) => ctorOrDescriptor => {
+export const localStorage = (name, options) => (ctorOrDescriptor) => {
   if (typeof ctorOrDescriptor === 'function') {
     return createClass(ctorOrDescriptor, name, options);
   }
@@ -308,6 +308,6 @@ export const localStorage = (name, options) => ctorOrDescriptor => {
     elements,
     finisher(ctor) {
       return createClass(ctor, name, options);
-    }
+    },
   };
 };

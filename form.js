@@ -106,7 +106,7 @@ function parseNumber(value) {
 }
 
 const formats = {
-  number: parseNumber
+  number: parseNumber,
 };
 
 const NO_BIND_ATTRIBUTE = 'no-form-bind';
@@ -117,14 +117,14 @@ const defaultInputs = {
   textarea: ['change'],
   'input[type=radio]': ['change'],
   'input[type=checkbox]': ['change'],
-  '[form-bind]': ['change']
+  '[form-bind]': ['change'],
 };
 
 let defaultInputEvents;
 
 function createInputEvents(inputs) {
   return Object.keys(inputs).reduce((result, selector) => {
-    inputs[selector].forEach(event => result.push({ event, selector }));
+    inputs[selector].forEach((event) => result.push({ event, selector }));
     return result;
   }, []);
 }
@@ -194,7 +194,7 @@ function inputEventHandler(e) {
           el[updateMethod]();
         }
       },
-      { once: true }
+      { once: true },
     );
   }
 
@@ -226,8 +226,8 @@ export class FormState {
       model = 'model',
       updateMethod = 'requestUpdate',
       inputs,
-      events = getInputEvents(inputs)
-    } = {}
+      events = getInputEvents(inputs),
+    } = {},
   ) {
     this._data = {};
     this._attributes = new Set();
@@ -238,10 +238,13 @@ export class FormState {
     this.updateMethod = updateMethod;
     this.reset();
     events.forEach(({ event, selector }) =>
-      delegate(el.renderRoot || el, event, selector, inputEventHandler, this)
+      delegate(el.renderRoot || el, event, selector, inputEventHandler, this),
     );
   }
 
+  /**
+   * @returns {Model}
+   */
   get modelInstance() {
     return (
       this._modelInstance ||
@@ -249,17 +252,25 @@ export class FormState {
     );
   }
 
+  /**
+   * @param {string} prop
+   * @param {Event} event
+   * @returns {boolean}
+   */
   acceptInput(prop, event) {
     return true;
   }
 
+  /**
+   * @returns {string[]}
+   */
   getAttributes() {
     if (!this.__selector) {
-      this.__selector = this.events.map(event => event.selector).join(', ');
+      this.__selector = this.events.map((event) => event.selector).join(', ');
     }
     const renderRoot = this.el.renderRoot || this.el;
     const result = Array.from(this._attributes);
-    renderRoot.querySelectorAll(this.__selector).forEach(el => {
+    renderRoot.querySelectorAll(this.__selector).forEach((el) => {
       const name = el.getAttribute('name');
       if (name && result.indexOf(name) === -1 && !el.hasAttribute(NO_BIND_ATTRIBUTE)) {
         result.push(name);
@@ -268,10 +279,24 @@ export class FormState {
     return result;
   }
 
+  /**
+   * @param {string} attr
+   * @param {object} options
+   * @param {boolean} [options.meta=false] - if true, will return associated metadata
+   * @returns
+   */
   get(attr, { meta } = {}) {
     return meta ? this._data[attr] : getPath(this.modelInstance.attributes, attr);
   }
 
+  /**
+   * @param {string} attr
+   * @param {*} value
+   * @param {*} options
+   * @param {boolean} [options.meta=false] - if true, will set associated metadata
+   * @param {boolean} [options.reset=false] - if true, will reset attr error, touched and initial value
+   * @param {boolean} [options.silent=false] - if true, will not trigger update
+   */
   set(attr, value, { meta, reset, silent } = {}) {
     if (meta) {
       this._data[attr] = value;
@@ -381,14 +406,14 @@ export class FormState {
     const model = this.modelInstance;
     const result = model.isValid(attributes);
     if (result) {
-      attributes.forEach(key => {
+      attributes.forEach((key) => {
         delete this.errors[key];
       });
     } else if (isPlainObject(model.validationError)) {
       Object.assign(this.errors, model.validationError);
     }
     if (touch) {
-      Object.keys(this.errors).forEach(key => (this.touched[key] = true));
+      Object.keys(this.errors).forEach((key) => (this.touched[key] = true));
     }
     if (update && typeof this.el[this.updateMethod] === 'function') {
       this.el[this.updateMethod]();
@@ -409,10 +434,18 @@ export class FormState {
   }
 }
 
+/**
+ * @param {string} name
+ * @param {(value: any) => any} fn
+ */
 export const registerFormat = (name, fn) => {
   formats[name] = fn;
 };
 
+/**
+ * @param {string} selector
+ * @param {string[]} events
+ */
 export const registerInput = (selector, events) => {
   defaultInputEvents = undefined;
   defaultInputs[selector] = events;

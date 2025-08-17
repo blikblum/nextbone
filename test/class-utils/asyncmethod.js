@@ -5,14 +5,14 @@ import { defineAsyncMethods, asyncMethod } from '../../class-utils.js';
 
 use(sinonChai);
 
-describe('asyncMethod', function() {
+describe('asyncMethod', function () {
   let fooStub;
   let barSpy;
   let startSpy;
   let errorSpy;
   let myService;
 
-  beforeEach(function() {
+  beforeEach(function () {
     fooStub = sinon.stub();
     barSpy = sinon.spy();
     startSpy = sinon.spy();
@@ -41,17 +41,17 @@ describe('asyncMethod', function() {
     myService = new MyService();
   });
 
-  it('should return a promise', function() {
+  it('should return a promise', function () {
     expect(myService.foo()).to.be.instanceOf(Promise);
   });
 
-  it('should resolve the promise with the value returned by the method', function() {
-    return myService.bar().then(result => {
+  it('should resolve the promise with the value returned by the method', function () {
+    return myService.bar().then((result) => {
       expect(result).to.equal('x');
     });
   });
 
-  it('should call original method', function() {
+  it('should call original method', function () {
     return myService.foo(1, 'a').then(() => {
       expect(fooStub).to.have.been.calledOnce;
       expect(fooStub).to.have.been.calledWith(1, 'a');
@@ -59,19 +59,19 @@ describe('asyncMethod', function() {
     });
   });
 
-  it('should call start() before calling the function', function() {
+  it('should call start() before calling the function', function () {
     return myService.foo().then(() => {
       expect(startSpy).to.have.been.calledBefore(fooStub);
     });
   });
 
-  it('should only call start() once', function() {
+  it('should only call start() once', function () {
     return Promise.all([myService.foo(), myService.bar()]).then(() => {
       expect(startSpy).to.have.been.calledOnce;
     });
   });
 
-  it('should call onError when an async method errors', function() {
+  it('should call onError when an async method errors', function () {
     const err = new Error('Err!');
     fooStub['throws'](err);
 
@@ -79,23 +79,23 @@ describe('asyncMethod', function() {
       () => {
         expect(fooStub).to.have.thrown(err);
       },
-      error => {
+      (error) => {
         expect(error).to.equal(error);
         expect(errorSpy).to.have.been.calledWith(error);
         expect(errorSpy).to.have.been.calledOn(myService);
-      }
+      },
     );
   });
 });
 
-describe('defineAsyncMethods', function() {
+describe('defineAsyncMethods', function () {
   let fooStub;
   let barSpy;
   let startSpy;
   let errorSpy;
   let myService;
 
-  beforeEach(function() {
+  beforeEach(function () {
     fooStub = sinon.stub();
     barSpy = sinon.spy();
     startSpy = sinon.spy();
@@ -123,17 +123,17 @@ describe('defineAsyncMethods', function() {
     myService = new MyService();
   });
 
-  it('should return a promise', function() {
+  it('should return a promise', function () {
     expect(myService.foo()).to.be.instanceOf(Promise);
   });
 
-  it('should resolve the promise with the value returned by the method', function() {
-    return myService.bar().then(result => {
+  it('should resolve the promise with the value returned by the method', function () {
+    return myService.bar().then((result) => {
       expect(result).to.equal('x');
     });
   });
 
-  it('should call original method', function() {
+  it('should call original method', function () {
     return myService.foo(1, 'a').then(() => {
       expect(fooStub).to.have.been.calledOnce;
       expect(fooStub).to.have.been.calledWith(1, 'a');
@@ -141,19 +141,19 @@ describe('defineAsyncMethods', function() {
     });
   });
 
-  it('should call start() before calling the function', function() {
+  it('should call start() before calling the function', function () {
     return myService.foo().then(() => {
       expect(startSpy).to.have.been.calledBefore(fooStub);
     });
   });
 
-  it('should only call start() once', function() {
+  it('should only call start() once', function () {
     return Promise.all([myService.foo(), myService.bar()]).then(() => {
       expect(startSpy).to.have.been.calledOnce;
     });
   });
 
-  it('should call onError when an async method errors', function() {
+  it('should call onError when an async method errors', function () {
     const err = new Error('Err!');
     fooStub['throws'](err);
 
@@ -161,11 +161,11 @@ describe('defineAsyncMethods', function() {
       () => {
         expect(fooStub).to.have.thrown(err);
       },
-      error => {
+      (error) => {
         expect(error).to.equal(error);
         expect(errorSpy).to.have.been.calledWith(error);
         expect(errorSpy).to.have.been.calledOn(myService);
-      }
+      },
     );
   });
 });

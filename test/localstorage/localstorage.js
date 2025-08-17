@@ -10,7 +10,7 @@ const root = window;
 const attributes = {
   string: 'String',
   string2: 'String 2',
-  number: 1337
+  number: 1337,
 };
 
 @localStorage('SavedModel')
@@ -37,21 +37,21 @@ class DifferentIdAttribute extends Model {
   static idAttribute = 'number';
 }
 
-describe('LocalStorage Model', function() {
+describe('LocalStorage Model', function () {
   let mySavedModel;
 
-  beforeEach(function() {
+  beforeEach(function () {
     mySavedModel = new SavedModel({
-      id: 10
+      id: 10,
     });
   });
 
-  afterEach(function() {
+  afterEach(function () {
     mySavedModel = null;
     root.localStorage.clear();
   });
 
-  it('is saved with the given name', async function() {
+  it('is saved with the given name', async function () {
     await mySavedModel.save();
     const item = root.localStorage.getItem('SavedModel-10');
     const parsed = JSON.parse(item);
@@ -62,18 +62,18 @@ describe('LocalStorage Model', function() {
     expect(parsed.number).to.be.equal(1337);
   });
 
-  it('can be converted to JSON', function() {
+  it('can be converted to JSON', function () {
     expect(mySavedModel.toJSON()).to.eql({
       string: 'String',
       id: 10,
       number: 1337,
-      string2: 'String 2'
+      string2: 'String 2',
     });
   });
 
-  it('can be configured at runtime', async function() {
+  it('can be configured at runtime', async function () {
     const anyModel = new Model({
-      name: 'Jim'
+      name: 'Jim',
     });
 
     bindLocalStorage(anyModel, 'ModelAtRuntime');
@@ -88,8 +88,8 @@ describe('LocalStorage Model', function() {
     expect(parsed).to.eql(anyModel.attributes);
   });
 
-  describe('if not saved', function() {
-    it('will pass error callbacks from fetch', function(done) {
+  describe('if not saved', function () {
+    it('will pass error callbacks from fetch', function (done) {
       mySavedModel
         .fetch({
           error(model, error) {
@@ -97,24 +97,24 @@ describe('LocalStorage Model', function() {
             expect(error).to.be.instanceOf(Error);
             expect(error.message).to.equal('Record Not Found');
             done();
-          }
+          },
         })
-        ['catch'](error => {});
+        ['catch']((error) => {});
     });
   });
 
-  describe('once saved', function() {
-    beforeEach(async function() {
+  describe('once saved', function () {
+    beforeEach(async function () {
       await mySavedModel.save();
     });
 
-    afterEach(function() {
+    afterEach(function () {
       root.localStorage.clear();
     });
 
-    it('can fetch from localStorage', async function() {
+    it('can fetch from localStorage', async function () {
       const newModel = new SavedModel({
-        id: 10
+        id: 10,
       });
 
       await newModel.fetch();
@@ -124,31 +124,31 @@ describe('LocalStorage Model', function() {
       expect(newModel.get('number')).to.be.equal(1337);
     });
 
-    it('passes fetch calls to success', function(done) {
+    it('passes fetch calls to success', function (done) {
       mySavedModel.fetch({
         success(model, response, options) {
           expect(model).to.equal(mySavedModel);
           done();
-        }
+        },
       });
     });
 
-    it('can be updated', async function() {
+    it('can be updated', async function () {
       await mySavedModel.save({
         string: 'New String',
-        number2: 1234
+        number2: 1234,
       });
 
       expect(mySavedModel.pick('string', 'number2')).to.eql({
         string: 'New String',
-        number2: 1234
+        number2: 1234,
       });
     });
 
-    it('persists its update to localStorage', async function() {
+    it('persists its update to localStorage', async function () {
       await mySavedModel.save({
         string: 'New String',
-        number2: 1234
+        number2: 1234,
       });
 
       const item = root.localStorage.getItem(`SavedModel-${mySavedModel.id}`);
@@ -162,17 +162,17 @@ describe('LocalStorage Model', function() {
         string2: 'String 2',
         id: 10,
         number: 1337,
-        number2: 1234
+        number2: 1234,
       });
     });
 
-    it('saves to localStorage with patch', async function() {
+    it('saves to localStorage with patch', async function () {
       await mySavedModel.save(
         {
           string: 'New String',
-          number2: 1234
+          number2: 1234,
         },
-        { patch: true }
+        { patch: true },
       );
 
       const item = root.localStorage.getItem(`SavedModel-${mySavedModel.id}`);
@@ -186,11 +186,11 @@ describe('LocalStorage Model', function() {
         string2: 'String 2',
         id: 10,
         number: 1337,
-        number2: 1234
+        number2: 1234,
       });
     });
 
-    it('can be destroyed', async function() {
+    it('can be destroyed', async function () {
       await mySavedModel.destroy();
 
       const item = root.localStorage.getItem('SavedModel-10');
@@ -201,31 +201,31 @@ describe('LocalStorage Model', function() {
     });
   });
 
-  describe('with storage updated from elsewhere', function() {
+  describe('with storage updated from elsewhere', function () {
     let newModel;
-    beforeEach(async function() {
+    beforeEach(async function () {
       newModel = new SavedModel({
-        id: 10
+        id: 10,
       });
       await mySavedModel.save({
-        string: 'The string'
+        string: 'The string',
       });
     });
 
-    afterEach(function() {
+    afterEach(function () {
       root.localStorage.clear();
       newModel = null;
     });
 
-    it('will fetch saved data', async function() {
+    it('will fetch saved data', async function () {
       await newModel.fetch();
 
       expect(newModel.get('string')).to.eql('The string');
     });
 
-    it('will re-fetch new data', async function() {
+    it('will re-fetch new data', async function () {
       await mySavedModel.save({
-        string: 'Brand new string'
+        string: 'Brand new string',
       });
 
       await newModel.fetch();
@@ -234,16 +234,16 @@ describe('LocalStorage Model', function() {
     });
   });
 
-  describe('using ajaxSync: true', function() {
-    beforeEach(function() {
+  describe('using ajaxSync: true', function () {
+    beforeEach(function () {
       stub(ajax, 'handler').resolves({});
     });
 
-    afterEach(function() {
+    afterEach(function () {
       ajax.handler.restore();
     });
 
-    it('calls ajax.handler for fetch', async function() {
+    it('calls ajax.handler for fetch', async function () {
       await mySavedModel.fetch({ ajaxSync: true });
 
       expect(ajax.handler.called).to.be['true'];
@@ -251,7 +251,7 @@ describe('LocalStorage Model', function() {
       expect(ajax.handler.getCall(0).args[0].type).to.be.equal('GET');
     });
 
-    it('calls ajax.handler for save', async function() {
+    it('calls ajax.handler for save', async function () {
       await mySavedModel.save({}, { ajaxSync: true });
 
       expect(ajax.handler.called).to.be['true'];
@@ -264,25 +264,25 @@ describe('LocalStorage Model', function() {
         string: 'String',
         string2: 'String 2',
         number: 1337,
-        id: 10
+        id: 10,
       });
     });
   });
 });
 
-describe('Model with different idAttribute', function() {
+describe('Model with different idAttribute', function () {
   let mySavedModel;
 
-  beforeEach(function() {
+  beforeEach(function () {
     mySavedModel = new DifferentIdAttribute(attributes);
   });
 
-  afterEach(function() {
+  afterEach(function () {
     mySavedModel = null;
     root.localStorage.clear();
   });
 
-  it('saves using the new value', async function() {
+  it('saves using the new value', async function () {
     await mySavedModel.save();
     const item = root.localStorage.getItem('DifferentId-1337');
     const parsed = JSON.parse(item);
@@ -291,7 +291,7 @@ describe('Model with different idAttribute', function() {
     expect(parsed.string).to.be.a('string');
   });
 
-  it('fetches using the new value', async function() {
+  it('fetches using the new value', async function () {
     root.localStorage.setItem('DifferentId-1337', JSON.stringify(attributes));
     const newModel = new DifferentIdAttribute({ number: 1337 });
 
@@ -302,21 +302,21 @@ describe('Model with different idAttribute', function() {
   });
 });
 
-describe('New localStorage model', function() {
+describe('New localStorage model', function () {
   let mySavedModel;
 
-  beforeEach(function() {
+  beforeEach(function () {
     mySavedModel = new SavedModel();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     root.localStorage.clear();
     mySavedModel = null;
   });
 
-  it('creates a new item in localStorage', async function() {
+  it('creates a new item in localStorage', async function () {
     await mySavedModel.save({
-      data: 'value'
+      data: 'value',
     });
 
     const itemId = mySavedModel.id;
@@ -328,24 +328,24 @@ describe('New localStorage model', function() {
   });
 });
 
-describe('LocalStorage Collection', function() {
+describe('LocalStorage Collection', function () {
   let mySavedCollection;
 
-  beforeEach(function() {
+  beforeEach(function () {
     mySavedCollection = new SavedCollection();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     mySavedCollection = null;
     root.localStorage.clear();
   });
 
-  it('saves to localStorage', async function() {
+  it('saves to localStorage', async function () {
     await mySavedCollection.create(attributes);
     expect(mySavedCollection.length).to.be.equal(1);
   });
 
-  it('cannot duplicate id in localStorage', async function() {
+  it('cannot duplicate id in localStorage', async function () {
     const item = clone(attributes);
     item.id = 5;
 
@@ -361,11 +361,11 @@ describe('LocalStorage Collection', function() {
     expect(uniq(records)).to.eql(records);
   });
 
-  it('can be configured at runtime', function() {
+  it('can be configured at runtime', function () {
     const anyCollection = new Collection([
       {
-        name: 'Jones'
-      }
+        name: 'Jones',
+      },
     ]);
 
     bindLocalStorage(anyCollection, 'CollectionAtRuntime');
@@ -381,31 +381,31 @@ describe('LocalStorage Collection', function() {
     expect(parsed).to.eql(anyModel.attributes);
   });
 
-  describe('pulling from localStorage', function() {
+  describe('pulling from localStorage', function () {
     let model;
     let item;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       model = await mySavedCollection.create(attributes);
       const id = model.id;
       item = root.localStorage.getItem(`SavedCollection-${id}`);
     });
 
-    afterEach(function() {
+    afterEach(function () {
       model = item = null;
     });
 
-    it('saves into the localStorage', function() {
+    it('saves into the localStorage', function () {
       expect(item).to.not.be['null'];
     });
 
-    it('saves the right data', function() {
+    it('saves the right data', function () {
       const parsed = JSON.parse(item);
       expect(parsed.id).to.equal(model.id);
       expect(parsed.string).to.be.a('string');
     });
 
-    it('reads from localStorage', async function() {
+    it('reads from localStorage', async function () {
       const newCollection = new SavedCollection();
       await newCollection.fetch();
 
@@ -414,7 +414,7 @@ describe('LocalStorage Collection', function() {
       expect(newModel.get('string')).to.be.a('string');
     });
 
-    it('destroys models and removes from collection', async function() {
+    it('destroys models and removes from collection', async function () {
       const parsed = JSON.parse(item);
       const newModel = mySavedCollection.get(parsed.id);
       await newModel.destroy();
@@ -428,24 +428,24 @@ describe('LocalStorage Collection', function() {
     });
   });
 
-  describe('in another instance', function() {
+  describe('in another instance', function () {
     let newCollection = null;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       await mySavedCollection.create(attributes);
       newCollection = new SavedCollection();
       newCollection.fetch();
     });
 
-    afterEach(function() {
+    afterEach(function () {
       newCollection = null;
     });
 
-    it('fetches the items from the original collection', function() {
+    it('fetches the items from the original collection', function () {
       expect(newCollection.length).to.equal(1);
     });
 
-    it('reads data saved in first instance', async function() {
+    it('reads data saved in first instance', async function () {
       const newAttributes = clone(attributes);
       newAttributes.number = 1338;
       await mySavedCollection.create(newAttributes);
@@ -453,7 +453,7 @@ describe('LocalStorage Collection', function() {
       expect(newCollection.length).to.equal(2);
     });
 
-    it('reads data saved in both instances', async function() {
+    it('reads data saved in both instances', async function () {
       let newAttributes = clone(attributes);
       newAttributes.number = 1338;
       await mySavedCollection.create(newAttributes);
@@ -479,15 +479,15 @@ describe('Initial data', () => {
     const arrayData = [
       {
         id: 1,
-        name: 'John'
+        name: 'John',
       },
       {
-        name: 'Jim'
+        name: 'Jim',
       },
       {
         id: 2,
-        name: 'Jones'
-      }
+        name: 'Jones',
+      },
     ];
     @localStorage('SavedCollectionWithData', { initialData: arrayData })
     class SavedCollectionWithData extends Collection {}
@@ -504,7 +504,7 @@ describe('Initial data', () => {
   it('can be defined as a object', async () => {
     const objectData = {
       id: 1,
-      name: 'John'
+      name: 'John',
     };
     @localStorage('SavedModelWithData', { initialData: objectData })
     class SavedModelWithData extends Model {}
@@ -524,8 +524,8 @@ describe('Initial data', () => {
       return [
         {
           id: 2,
-          name: 'Jim'
-        }
+          name: 'Jim',
+        },
       ];
     }
     @localStorage('NewSavedModelWithData', { initialData: getData })

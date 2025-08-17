@@ -5,6 +5,13 @@ import { isEmpty, reduce, omit } from 'lodash-es';
  */
 
 /**
+ * @template T
+ * @typedef {new (...args: any[]) => T} Ctor
+ */
+
+// todo: add a generic type for the computed fields, so `fields` have the same type as the model attributes
+
+/**
  * @callback ComputedFieldGet
  * @param {Record<string, any>} fields
  * @returns {any}
@@ -13,7 +20,7 @@ import { isEmpty, reduce, omit } from 'lodash-es';
  * @property {string[]} depends
  * @property {ComputedFieldGet} get
  * @property {(value: any, fields: Record<string, any>) => any} set
- * Not possible to use rest arams here: https://github.com/Microsoft/TypeScript/issues/15190
+ * Not possible to use rest params here: https://github.com/Microsoft/TypeScript/issues/15190
  * @typedef {[string, ComputedFieldGet]}  ShortHandComputedField1
  * @typedef {[string, string, ComputedFieldGet]} ShortHandComputedField2
  * @typedef {[string, string, string, ComputedFieldGet]} ShortHandComputedField3
@@ -47,10 +54,10 @@ const getDependentValues = (depends, model) => {
   }, {});
 };
 
-const createFieldFromArray = arr => {
+const createFieldFromArray = (arr) => {
   const depends = [];
   let get, set;
-  arr.forEach(item => {
+  arr.forEach((item) => {
     switch (typeof item) {
       case 'string':
         depends.push(item);
@@ -70,7 +77,7 @@ const createFieldFromArray = arr => {
   return { depends, get, set };
 };
 
-const createNormalizedOptions = options => {
+const createNormalizedOptions = (options) => {
   if (!options) return;
   const excludeFromJSON = reduce(
     options,
@@ -80,7 +87,7 @@ const createNormalizedOptions = options => {
       }
       return result;
     },
-    []
+    [],
   );
 
   const fields = [];
@@ -103,7 +110,7 @@ class ComputedFields {
   }
 
   _bindModelEvents(fields) {
-    fields.forEach(computedField => {
+    fields.forEach((computedField) => {
       const fieldName = computedField.name;
       const field = computedField.field;
 
@@ -129,7 +136,7 @@ class ComputedFields {
       this.model.on('change:' + fieldName, updateDependent);
 
       if (field.depends) {
-        field.depends.forEach(dependent => {
+        field.depends.forEach((dependent) => {
           if (typeof dependent === 'string') {
             this.model.on('change:' + dependent, updateComputed);
           }
@@ -149,14 +156,14 @@ class ComputedFields {
 
 const excludeFromJSONKey = Symbol('excludeFromJSON');
 
-const getComputedOptions = ctor => {
+const getComputedOptions = (ctor) => {
   if (ctor.hasOwnProperty('__computedOptions')) {
     return ctor.__computedOptions;
   }
   return (ctor.__computedOptions = createNormalizedOptions(ctor.computed));
 };
 
-const createClass = ModelClass => {
+const createClass = (ModelClass) => {
   return class extends ModelClass {
     constructor(...args) {
       super(...args);
@@ -186,7 +193,7 @@ const createClass = ModelClass => {
  */
 
 /**
- * @template {typeof Model} BaseClass
+ * @template {Ctor<Model<any, any, any>>} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
  * @returns {BaseClass & ComputedStaticMixin}
  */
@@ -200,7 +207,7 @@ function withComputed(ctorOrDescriptor) {
     elements,
     finisher(ctor) {
       return createClass(ctor);
-    }
+    },
   };
 }
 

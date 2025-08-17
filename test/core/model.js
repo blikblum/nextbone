@@ -6,25 +6,25 @@ import { use, expect, assert } from 'chai';
 
 use(chaiAsPromised);
 
-describe('Backbone.Model', function() {
+describe('Backbone.Model', function () {
   let ProxyModel, Klass, doc, collection;
   let syncArgs, originalSync;
   let ajaxSettings, originalAjax, ajaxResponse;
 
-  before(function() {
+  before(function () {
     // Capture the arguments to Backbone.sync for comparison.
     originalSync = Backbone.sync.handler;
-    Backbone.sync.handler = function(method, model, options) {
+    Backbone.sync.handler = function (method, model, options) {
       syncArgs = {
         method: method,
         model: model,
-        options: options
+        options: options,
       };
       return originalSync.apply(this, arguments);
     };
 
     originalAjax = Backbone.ajax.handler;
-    Backbone.ajax.handler = async function(settings) {
+    Backbone.ajax.handler = async function (settings) {
       ajaxSettings = settings;
       var response = ajaxResponse;
       ajaxResponse = undefined;
@@ -33,12 +33,12 @@ describe('Backbone.Model', function() {
     };
   });
 
-  after(function() {
+  after(function () {
     Backbone.sync.handler = originalSync;
     Backbone.ajax.handler = originalAjax;
   });
 
-  beforeEach(function() {
+  beforeEach(function () {
     ProxyModel = class extends Backbone.Model {};
     Klass = class extends Backbone.Collection {
       url() {
@@ -49,13 +49,13 @@ describe('Backbone.Model', function() {
       id: '1-the-tempest',
       title: 'The Tempest',
       author: 'Bill Shakespeare',
-      length: 123
+      length: 123,
     });
     collection = new Klass();
     collection.add(doc);
   });
 
-  it('initialize', function() {
+  it('initialize', function () {
     let Model = class extends Backbone.Model {
       initialize() {
         this.one = 1;
@@ -67,12 +67,12 @@ describe('Backbone.Model', function() {
     expect(model.collection).to.equal(collection);
   });
 
-  it('Object.prototype properties are overridden by attributes', function() {
+  it('Object.prototype properties are overridden by attributes', function () {
     let model = new Backbone.Model({ hasOwnProperty: true });
     expect(model.get('hasOwnProperty')).to.be['true'];
   });
 
-  it('initialize with attributes and options', function() {
+  it('initialize with attributes and options', function () {
     let Model = class extends Backbone.Model {
       initialize(attributes, options) {
         this.one = options.one;
@@ -82,7 +82,7 @@ describe('Backbone.Model', function() {
     expect(model.one).to.equal(1);
   });
 
-  it('initialize with parsed attributes', function() {
+  it('initialize with parsed attributes', function () {
     let Model = class extends Backbone.Model {
       parse(attrs) {
         attrs.value += 1;
@@ -93,7 +93,7 @@ describe('Backbone.Model', function() {
     expect(model.get('value')).to.equal(2);
   });
 
-  it('preinitialize', function() {
+  it('preinitialize', function () {
     let Model = class extends Backbone.Model {
       preinitialize() {
         this.one = 1;
@@ -104,7 +104,7 @@ describe('Backbone.Model', function() {
     expect(model.collection).to.equal(collection);
   });
 
-  it('preinitialize occurs before the model is set up', function() {
+  it('preinitialize occurs before the model is set up', function () {
     let Model = class extends Backbone.Model {
       preinitialize() {
         expect(this.collection).to.be.undefined;
@@ -118,7 +118,7 @@ describe('Backbone.Model', function() {
     expect(model.cid).to.not.be.undefined;
   });
 
-  it('parse can return null', function() {
+  it('parse can return null', function () {
     let Model = class extends Backbone.Model {
       parse(attrs) {
         attrs.value += 1;
@@ -129,19 +129,19 @@ describe('Backbone.Model', function() {
     expect(JSON.stringify(model.toJSON())).to.equal('{}');
   });
 
-  it('url', function() {
+  it('url', function () {
     doc.urlRoot = null;
     expect(doc.url()).to.equal('/collection/1-the-tempest');
     doc.collection.url = '/collection/';
     expect(doc.url()).to.equal('/collection/1-the-tempest');
-    expect(function() {
+    expect(function () {
       doc.collection = null;
       doc.url();
     }).to['throw'](Error);
     doc.collection = collection;
   });
 
-  it('url when using urlRoot, and uri encoding', function() {
+  it('url when using urlRoot, and uri encoding', function () {
     let Model = class extends Backbone.Model {
       urlRoot = '/collection';
     };
@@ -151,7 +151,7 @@ describe('Backbone.Model', function() {
     expect(model.url()).to.equal('/collection/%2B1%2B');
   });
 
-  it('url when using urlRoot as a function to determine urlRoot at runtime', function() {
+  it('url when using urlRoot as a function to determine urlRoot at runtime', function () {
     let Model = class extends Backbone.Model {
       urlRoot() {
         return '/nested/' + this.get('parentId') + '/collection';
@@ -164,7 +164,7 @@ describe('Backbone.Model', function() {
     expect(model.url()).to.equal('/nested/1/collection/2');
   });
 
-  it('underscore methods', function() {
+  it('underscore methods', function () {
     let model = new Backbone.Model({ foo: 'a', bar: 'b', baz: 'c' });
     expect(model.keys()).to.deep.equal(['foo', 'bar', 'baz']);
     expect(model.values()).to.deep.equal(['a', 'b', 'c']);
@@ -173,20 +173,12 @@ describe('Backbone.Model', function() {
     expect(model.omit('foo', 'bar')).to.deep.equal({ baz: 'c' });
   });
 
-  it.skip('chain', function() {
+  it.skip('chain', function () {
     var model = new Backbone.Model({ a: 0, b: 1, c: 2 });
-    assert.deepEqual(
-      model
-        .chain()
-        .pick('a', 'b', 'c')
-        .values()
-        .compact()
-        .value(),
-      [1, 2]
-    );
+    assert.deepEqual(model.chain().pick('a', 'b', 'c').values().compact().value(), [1, 2]);
   });
 
-  it('clone', function() {
+  it('clone', function () {
     let a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });
     let b = a.clone();
     expect(a.get('foo')).to.equal(1);
@@ -216,7 +208,7 @@ describe('Backbone.Model', function() {
     c.clone();
   });
 
-  it('clone nested object / array', function() {
+  it('clone nested object / array', function () {
     let a = new Backbone.Model({ foo: { x: 1 }, bar: ['a'], x: 'a', y: 1, w: null, z: undefined });
     let b = a.clone();
     expect(a.get('foo')).to.deep.equal({ x: 1 });
@@ -236,7 +228,7 @@ describe('Backbone.Model', function() {
     expect(b.get('bar')).to.deep.equal(['a']);
   });
 
-  it('clone date', function() {
+  it('clone date', function () {
     let date = new Date();
     let a = new Backbone.Model({ foo: date });
     let b = a.clone();
@@ -244,7 +236,7 @@ describe('Backbone.Model', function() {
     expect(b.get('foo')).to.equal(a.get('foo'));
   });
 
-  it('clone class', function() {
+  it('clone class', function () {
     class FooClass {
       constructor(x, y) {
         this.x = x;
@@ -259,7 +251,7 @@ describe('Backbone.Model', function() {
     expect(b.get('foo')).to.equal(a.get('foo'));
   });
 
-  it('isNew', function() {
+  it('isNew', function () {
     let a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });
     expect(a.isNew()).to.be['true'];
     a = new Backbone.Model({ foo: 1, bar: 2, baz: 3, id: -5 });
@@ -271,12 +263,12 @@ describe('Backbone.Model', function() {
     expect(new Backbone.Model({ id: -5 }).isNew()).to.be['false'];
   });
 
-  it('get', function() {
+  it('get', function () {
     expect(doc.get('title')).to.equal('The Tempest');
     expect(doc.get('author')).to.equal('Bill Shakespeare');
   });
 
-  it('escape', function() {
+  it('escape', function () {
     expect(doc.escape('title')).to.equal('The Tempest');
     doc.set({ audience: 'Bill & Bob' });
     expect(doc.escape('audience')).to.equal('Bill &amp; Bob');
@@ -288,7 +280,7 @@ describe('Backbone.Model', function() {
     expect(doc.escape('audience')).to.equal('');
   });
 
-  it('has', function() {
+  it('has', function () {
     let model = new Backbone.Model();
 
     expect(model.has('name')).to.be['false'];
@@ -301,7 +293,7 @@ describe('Backbone.Model', function() {
       empty: '',
       name: 'name',
       null: null,
-      undefined: undefined
+      undefined: undefined,
     });
 
     expect(model.has('0')).to.be['true'];
@@ -318,7 +310,7 @@ describe('Backbone.Model', function() {
     expect(model.has('undefined')).to.be['false'];
   });
 
-  it('matches', function() {
+  it('matches', function () {
     let model = new Backbone.Model();
 
     expect(model.matches({ name: 'Jonas', cool: true })).to.be['false'];
@@ -330,28 +322,28 @@ describe('Backbone.Model', function() {
     expect(model.matches({ name: 'Jonas', cool: false })).to.be['false'];
   });
 
-  it('matches with predicate', function() {
+  it('matches with predicate', function () {
     let model = new Backbone.Model({ a: 0 });
 
     expect(
-      model.matches(function(attr) {
+      model.matches(function (attr) {
         return attr.a > 1 && attr.b != null;
-      })
+      }),
     ).to.be['false'];
 
     model.set({ a: 3, b: true });
 
     expect(
-      model.matches(function(attr) {
+      model.matches(function (attr) {
         return attr.a > 1 && attr.b != null;
-      })
+      }),
     ).to.be['true'];
   });
 
-  it('set and unset', function() {
+  it('set and unset', function () {
     let a = new Backbone.Model({ id: 'id', foo: 1, bar: 2, baz: 3 });
     let changeCount = 0;
-    a.on('change:foo', function() {
+    a.on('change:foo', function () {
       changeCount += 1;
     });
     a.set({ foo: 2 });
@@ -362,7 +354,7 @@ describe('Backbone.Model', function() {
     expect(a.get('foo')).to.equal(2);
     expect(changeCount).to.equal(1);
 
-    a.validate = function(attrs) {
+    a.validate = function (attrs) {
       expect(attrs.foo).to.be.undefined;
     };
     a.unset('foo', { validate: true });
@@ -374,22 +366,22 @@ describe('Backbone.Model', function() {
     expect(a.id).to.be.undefined;
   });
 
-  it('set with reset option', function() {
+  it('set with reset option', function () {
     let a = new Backbone.Model({ id: 'id', foo: 1, bar: 2 });
     let changeFooCount = 0;
     let changeBarCount = 0;
     let changeBazCount = 0;
     let changeIdCount = 0;
-    a.on('change:foo', function() {
+    a.on('change:foo', function () {
       changeFooCount += 1;
     });
-    a.on('change:bar', function() {
+    a.on('change:bar', function () {
       changeBarCount += 1;
     });
-    a.on('change:baz', function() {
+    a.on('change:baz', function () {
       changeBazCount += 1;
     });
-    a.on('change:id', function() {
+    a.on('change:id', function () {
       changeIdCount += 1;
     });
     a.set({ foo: 2, bar: 2, baz: 3 }, { reset: true });
@@ -406,22 +398,22 @@ describe('Backbone.Model', function() {
     expect(changeBazCount).to.equal(1);
   });
 
-  it('#2030 - set with reset option', function() {
+  it('#2030 - set with reset option', function () {
     let a = new Backbone.Model({ id: 'id', foo: 1, bar: 2 });
     let changeFooCount = 0;
     let changeBarCount = 0;
     let changeBazCount = 0;
     let changeIdCount = 0;
-    a.on('change:foo', function() {
+    a.on('change:foo', function () {
       changeFooCount += 1;
     });
-    a.on('change:bar', function() {
+    a.on('change:bar', function () {
       changeBarCount += 1;
     });
-    a.on('change:baz', function() {
+    a.on('change:baz', function () {
       changeBazCount += 1;
     });
-    a.on('change:id', function() {
+    a.on('change:id', function () {
       changeIdCount += 1;
     });
     a.set({ foo: 2, bar: 2, baz: 3 }, { reset: true });
@@ -438,7 +430,7 @@ describe('Backbone.Model', function() {
     expect(changeBazCount).to.equal(1);
   });
 
-  it('#2030 - set with failed validate, followed by another set triggers change', function() {
+  it('#2030 - set with failed validate, followed by another set triggers change', function () {
     let attr = 0,
       main = 0,
       error = 0;
@@ -451,10 +443,10 @@ describe('Backbone.Model', function() {
       }
     };
     let model = new Model({ x: 0 });
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       attr++;
     });
-    model.on('change', function() {
+    model.on('change', function () {
       main++;
     });
     model.set({ x: 2 }, { validate: true });
@@ -464,13 +456,13 @@ describe('Backbone.Model', function() {
     expect(error).to.equal(1);
   });
 
-  it('set triggers changes in the correct order', function() {
+  it('set triggers changes in the correct order', function () {
     let value = null;
     let model = new Backbone.Model();
-    model.on('last', function() {
+    model.on('last', function () {
       value = 'last';
     });
-    model.on('first', function() {
+    model.on('first', function () {
       value = 'first';
     });
     model.trigger('first');
@@ -478,9 +470,9 @@ describe('Backbone.Model', function() {
     expect(value).to.equal('last');
   });
 
-  it('set falsy values in the correct order', function() {
+  it('set falsy values in the correct order', function () {
     let model = new Backbone.Model({ result: 'result' });
-    model.on('change', function() {
+    model.on('change', function () {
       expect(model.changed.result).to.be.undefined;
       expect(model.previous('result')).to.be['false'];
     });
@@ -490,12 +482,12 @@ describe('Backbone.Model', function() {
     model.set({ result: undefined });
   });
 
-  it('nested set triggers with the correct options', function() {
+  it('nested set triggers with the correct options', function () {
     let model = new Backbone.Model();
     let o1 = {};
     let o2 = {};
     let o3 = {};
-    model.on('change', function(__, options) {
+    model.on('change', function (__, options) {
       switch (model.get('a')) {
         case 1:
           expect(options).to.equal(o1);
@@ -510,9 +502,9 @@ describe('Backbone.Model', function() {
     model.set('a', 1, o1);
   });
 
-  it('multiple unsets', function() {
+  it('multiple unsets', function () {
     let i = 0;
-    let counter = function() {
+    let counter = function () {
       i++;
     };
     let model = new Backbone.Model({ a: 1 });
@@ -523,15 +515,15 @@ describe('Backbone.Model', function() {
     expect(i).to.equal(2);
   });
 
-  it('unset and changedAttributes', function() {
+  it('unset and changedAttributes', function () {
     let model = new Backbone.Model({ a: 1 });
-    model.on('change', function() {
+    model.on('change', function () {
       expect('a' in model.changedAttributes()).to.be['true'];
     });
     model.unset('a');
   });
 
-  it('using a non-default id attribute.', function() {
+  it('using a non-default id attribute.', function () {
     let MongoModel = class extends Backbone.Model {
       static idAttribute = '_id';
     };
@@ -544,7 +536,7 @@ describe('Backbone.Model', function() {
     expect(model.isNew()).to.be['true'];
   });
 
-  it('setting an alternative cid prefix', function() {
+  it('setting an alternative cid prefix', function () {
     var Model = class extends Backbone.Model {
       static cidPrefix = 'm';
     };
@@ -564,39 +556,39 @@ describe('Backbone.Model', function() {
     col.set([{ id: 'c6', value: 'test' }], {
       merge: true,
       add: true,
-      remove: false
+      remove: false,
     });
     expect(col.get('c6').has('value')).to.be['true'];
   });
 
-  it('set an empty string', function() {
+  it('set an empty string', function () {
     var model = new Backbone.Model({ name: 'Model' });
     model.set({ name: '' });
     expect(model.get('name')).to.equal('');
   });
 
-  it('setting an object', function(done) {
+  it('setting an object', function (done) {
     var model = new Backbone.Model({
-      custom: { foo: 1 }
+      custom: { foo: 1 },
     });
-    model.on('change', function() {
+    model.on('change', function () {
       done(); // Assertion is the fact that this callback was called
     });
     model.set({
-      custom: { foo: 1 } // no change should be fired
+      custom: { foo: 1 }, // no change should be fired
     });
     model.set({
-      custom: { foo: 2 } // change event should be fired
+      custom: { foo: 2 }, // change event should be fired
     });
   });
 
-  it('clear', function() {
+  it('clear', function () {
     var changed;
     var model = new Backbone.Model({ id: 1, name: 'Model' });
-    model.on('change:name', function() {
+    model.on('change:name', function () {
       changed = true;
     });
-    model.on('change', function() {
+    model.on('change', function () {
       var changedAttrs = model.changedAttributes();
       expect('name' in changedAttrs).to.be['true'];
     });
@@ -605,11 +597,11 @@ describe('Backbone.Model', function() {
     expect(model.get('name')).to.equal(undefined);
   });
 
-  it('defaults', function() {
+  it('defaults', function () {
     var Defaulted = class extends Backbone.Model {
       static defaults = {
         one: 1,
-        two: 2
+        two: 2,
       };
     };
     var model = new Defaulted({ two: undefined });
@@ -622,7 +614,7 @@ describe('Backbone.Model', function() {
       defaults() {
         return {
           one: 3,
-          two: 4
+          two: 4,
         };
       }
     };
@@ -640,10 +632,10 @@ describe('Backbone.Model', function() {
     expect(model.get('hasOwnProperty')).to.equal(false);
   });
 
-  it('change, hasChanged, changedAttributes, previous, previousAttributes', function() {
+  it('change, hasChanged, changedAttributes, previous, previousAttributes', function () {
     var model = new Backbone.Model({ name: 'Tim', age: 10 });
     expect(model.changedAttributes()).to.equal(false);
-    model.on('change', function() {
+    model.on('change', function () {
       expect(model.hasChanged('name')).to.be['true'];
       expect(model.hasChanged('age')).to.be['false'];
       expect(model.changedAttributes()).to.deep.equal({ name: 'Rob' });
@@ -656,17 +648,17 @@ describe('Backbone.Model', function() {
     expect(model.get('name')).to.equal('Rob');
   });
 
-  it('changedAttributes', function() {
+  it('changedAttributes', function () {
     const model = new Backbone.Model({ a: 'a', b: 'b' });
     assert.deepEqual(model.changedAttributes(), false);
     assert.equal(model.changedAttributes({ a: 'a' }), false);
     assert.equal(model.changedAttributes({ a: 'b' }).a, 'b');
   });
 
-  it('change with options', function() {
+  it('change with options', function () {
     let value;
     const model = new Backbone.Model({ name: 'Rob' });
-    model.on('change', function(m, options) {
+    model.on('change', function (m, options) {
       value = options.prefix + m.get('name');
     });
     model.set({ name: 'Bob' }, { prefix: 'Mr. ' });
@@ -675,57 +667,57 @@ describe('Backbone.Model', function() {
     assert.equal(value, 'Ms. Sue');
   });
 
-  it('change after initialize', function() {
+  it('change after initialize', function () {
     let changed = 0;
     const attrs = { id: 1, label: 'c' };
     const obj = new Backbone.Model(attrs);
-    obj.on('change', function() {
+    obj.on('change', function () {
       changed += 1;
     });
     obj.set(attrs);
     assert.equal(changed, 0);
   });
 
-  it('save within change event', function() {
+  it('save within change event', function () {
     let model = new Backbone.Model({ firstName: 'Taylor', lastName: 'Swift' });
     model.url = '/test';
-    model.on('change', function() {
+    model.on('change', function () {
       model.save();
       assert.ok(_.isEqual(syncArgs.model, model));
     });
     model.set({ lastName: 'Hicks' });
   });
 
-  it('validate after save', function(done) {
+  it('validate after save', function (done) {
     let lastError,
       model = new Backbone.Model();
-    model.validate = function(attrs) {
+    model.validate = function (attrs) {
       if (attrs.admin) return "Can't change admin status.";
     };
-    model.sync = async function(method, options) {
+    model.sync = async function (method, options) {
       return { admin: true };
     };
-    model.on('invalid', function(m, error) {
+    model.on('invalid', function (m, error) {
       lastError = error;
     });
-    model.save(null).then(function() {
+    model.save(null).then(function () {
       assert.equal(lastError, "Can't change admin status.");
       assert.equal(model.validationError, "Can't change admin status.");
       done();
     });
   });
 
-  it('save', function() {
+  it('save', function () {
     doc.save({ title: 'Henry V' });
     assert.equal(syncArgs.method, 'update');
     assert.ok(_.isEqual(syncArgs.model, doc));
   });
 
-  it('save, fetch, destroy triggers error event when an error occurs', function(done) {
+  it('save, fetch, destroy triggers error event when an error occurs', function (done) {
     let count = 0;
     let model = new Backbone.Model();
     model.url = '/test';
-    model.on('error', function() {
+    model.on('error', function () {
       assert.ok(true);
       count++;
       if (count === 3) {
@@ -741,40 +733,40 @@ describe('Backbone.Model', function() {
     model.destroy();
   });
 
-  it('#3283 - save, fetch, destroy calls success with context', function(done) {
+  it('#3283 - save, fetch, destroy calls success with context', function (done) {
     let count = 0;
     let model = new Backbone.Model();
     model.url = '/test';
     let obj = {};
     let options = {
       context: obj,
-      success: function() {
+      success: function () {
         assert.equal(this, obj);
         count++;
         if (count === 3) {
           done();
         }
-      }
+      },
     };
     model.save({ data: 2, id: 1 }, options);
     model.fetch(options);
     model.destroy(options);
   });
 
-  it('#3283 - save, fetch, destroy calls error with context', function(done) {
+  it('#3283 - save, fetch, destroy calls error with context', function (done) {
     let count = 0;
     let model = new Backbone.Model();
     model.url = '/test';
     let obj = {};
     let options = {
       context: obj,
-      error: function() {
+      error: function () {
         assert.equal(this, obj);
         count++;
         if (count === 3) {
           done();
         }
-      }
+      },
     };
     ajaxResponse = Promise.reject();
     model.save({ data: 2, id: 1 }, options);
@@ -784,27 +776,27 @@ describe('Backbone.Model', function() {
     model.destroy(options);
   });
 
-  it('#3470 - save and fetch with parse false', function(done) {
+  it('#3470 - save and fetch with parse false', function (done) {
     let i = 0;
     let model = new Backbone.Model();
     model.url = '/test';
-    model.parse = function() {
+    model.parse = function () {
       assert.ok(false);
     };
-    model.sync = async function(method, options) {
+    model.sync = async function (method, options) {
       return { i: ++i };
     };
-    model.fetch({ parse: false }).then(function() {
+    model.fetch({ parse: false }).then(function () {
       assert.equal(model.get('i'), 1);
     });
 
-    model.save(null, { parse: false }).then(function() {
+    model.save(null, { parse: false }).then(function () {
       assert.equal(model.get('i'), 2);
       done();
     });
   });
 
-  it('save with PATCH', function() {
+  it('save with PATCH', function () {
     doc.clear().set({ id: 1, a: 1, b: 2, c: 3, d: 4 });
     doc.save();
     assert.equal(syncArgs.method, 'update');
@@ -818,7 +810,7 @@ describe('Backbone.Model', function() {
     assert.equal(ajaxSettings.data, '{"b":2,"d":4}');
   });
 
-  it('save with PATCH and different attrs', function() {
+  it('save with PATCH and different attrs', function () {
     doc.clear().save({ b: 2, d: 4 }, { patch: true, attrs: { B: 1, D: 3 } });
     expect(syncArgs.options.attrs.D).to.equal(3);
     expect(syncArgs.options.attrs.d).to.be.undefined;
@@ -826,44 +818,44 @@ describe('Backbone.Model', function() {
     expect(doc.attributes).to.deep.equal({ b: 2, d: 4 });
   });
 
-  it('save in positional style', function() {
+  it('save in positional style', function () {
     var model = new Backbone.Model();
     model.url = '/test';
     model.save('title', 'Twelfth Night');
     expect(model.get('title')).to.equal('Twelfth Night');
   });
 
-  it('save with non-object (empty string) success response', function(done) {
+  it('save with non-object (empty string) success response', function (done) {
     var model = new Backbone.Model();
     model.url = '/test';
     ajaxResponse = '';
     model.save(
       { testing: 'empty' },
       {
-        success: function(m) {
+        success: function (m) {
           expect(m.attributes).to.deep.equal({ testing: 'empty' });
           done();
-        }
-      }
+        },
+      },
     );
   });
 
-  it('save with non-object (null) success response', function(done) {
+  it('save with non-object (null) success response', function (done) {
     var model = new Backbone.Model();
     model.url = '/test';
     ajaxResponse = null;
     model.save(
       { testing: 'empty' },
       {
-        success: function(m) {
+        success: function (m) {
           expect(m.attributes).to.deep.equal({ testing: 'empty' });
           done();
-        }
-      }
+        },
+      },
     );
   });
 
-  it('save with wait and supplied id', function() {
+  it('save with wait and supplied id', function () {
     var Model = class extends Backbone.Model {
       urlRoot = '/collection';
     };
@@ -872,7 +864,7 @@ describe('Backbone.Model', function() {
     expect(ajaxSettings.url).to.equal('/collection/42');
   });
 
-  it('save will pass extra options to success callback', function(done) {
+  it('save will pass extra options to success callback', function (done) {
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, options) {
         _.extend(options, { specialSync: true });
@@ -883,7 +875,7 @@ describe('Backbone.Model', function() {
 
     var model = new SpecialSyncModel();
 
-    var onSuccess = function(m, response, options) {
+    var onSuccess = function (m, response, options) {
       expect(options.specialSync).to.be.true;
       done();
     };
@@ -891,13 +883,13 @@ describe('Backbone.Model', function() {
     model.save(null, { success: onSuccess });
   });
 
-  it('fetch', function() {
+  it('fetch', function () {
     doc.fetch();
     expect(syncArgs.method).to.equal('read');
     expect(_.isEqual(syncArgs.model, doc)).to.be.true;
   });
 
-  it('fetch will pass extra options to success callback', function(done) {
+  it('fetch will pass extra options to success callback', function (done) {
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, options) {
         _.extend(options, { specialSync: true });
@@ -908,7 +900,7 @@ describe('Backbone.Model', function() {
 
     var model = new SpecialSyncModel();
 
-    var onSuccess = function(m, response, options) {
+    var onSuccess = function (m, response, options) {
       expect(options.specialSync).to.be.true;
       done();
     };
@@ -916,7 +908,7 @@ describe('Backbone.Model', function() {
     model.fetch({ success: onSuccess });
   });
 
-  it('`fetch` promise should resolve after success callback', function(done) {
+  it('`fetch` promise should resolve after success callback', function (done) {
     var successCalled = false;
     var model = new Backbone.Model({ x: 1, y: 2 });
     model.url = '/x';
@@ -926,7 +918,7 @@ describe('Backbone.Model', function() {
     });
   });
 
-  it('customized sync', function(done) {
+  it('customized sync', function (done) {
     var model;
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, options) {
@@ -939,7 +931,7 @@ describe('Backbone.Model', function() {
 
     model = new SpecialSyncModel();
 
-    var onSuccess = function(m, response, options) {
+    var onSuccess = function (m, response, options) {
       expect(response).to.deep.equal({ x: 'y' });
       done();
     };
@@ -947,19 +939,19 @@ describe('Backbone.Model', function() {
     model.fetch({ success: onSuccess });
   });
 
-  it('destroy', function(done) {
+  it('destroy', function (done) {
     doc.destroy();
     expect(syncArgs.method).to.equal('delete');
     expect(_.isEqual(syncArgs.model, doc)).to.be.true;
 
     var newModel = new Backbone.Model();
-    newModel.destroy().then(function(value) {
+    newModel.destroy().then(function (value) {
       expect(value).to.be.undefined;
       done();
     });
   });
 
-  it('destroy will pass extra options to success callback', function(done) {
+  it('destroy will pass extra options to success callback', function (done) {
     var SpecialSyncModel = class extends Backbone.Model {
       sync(method, options) {
         _.extend(options, { specialSync: true });
@@ -970,7 +962,7 @@ describe('Backbone.Model', function() {
 
     var model = new SpecialSyncModel({ id: 'id' });
 
-    var onSuccess = function(m, response, options) {
+    var onSuccess = function (m, response, options) {
       expect(options.specialSync).to.be.true;
       done();
     };
@@ -978,7 +970,7 @@ describe('Backbone.Model', function() {
     model.destroy({ success: onSuccess });
   });
 
-  it('`destroy` promise should resolve after success callback', function(done) {
+  it('`destroy` promise should resolve after success callback', function (done) {
     var successCalled = false;
     var model = new Backbone.Model({ x: 1, y: 2 });
     model.destroy({ success: () => (successCalled = true) }).then(() => {
@@ -987,24 +979,24 @@ describe('Backbone.Model', function() {
     });
   });
 
-  it('non-persisted destroy', function() {
+  it('non-persisted destroy', function () {
     var a = new Backbone.Model({ foo: 1, bar: 2, baz: 3 });
-    a.sync = function() {
+    a.sync = function () {
       throw 'should not be called';
     };
     a.destroy();
     expect(true).to.be.true;
   });
 
-  it('isLoading with successful fetch', function(done) {
+  it('isLoading with successful fetch', function (done) {
     let model = new Backbone.Model();
     model.url = '/test';
     let resolve;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       resolve = res;
     });
     let successCalled = false;
-    model.on('load', function() {
+    model.on('load', function () {
       expect(successCalled).to.be.true;
       expect(model.get('a')).to.equal(1);
     });
@@ -1014,9 +1006,9 @@ describe('Backbone.Model', function() {
         success() {
           expect(model.isLoading).to.equal(false);
           successCalled = true;
-        }
+        },
       })
-      .then(function() {
+      .then(function () {
         expect(model.isLoading).to.equal(false);
         expect(successCalled).to.be.true;
         done();
@@ -1025,15 +1017,15 @@ describe('Backbone.Model', function() {
     resolve({ a: 1 });
   });
 
-  it('isLoading with failed fetch', function(done) {
+  it('isLoading with failed fetch', function (done) {
     let model = new Backbone.Model();
     model.url = '/test';
     let reject;
     let errorCalled = false;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       reject = rej;
     });
-    model.on('load', function() {
+    model.on('load', function () {
       expect(errorCalled).to.be.true;
     });
     expect(model.isLoading).to.equal(false);
@@ -1042,9 +1034,9 @@ describe('Backbone.Model', function() {
         error() {
           errorCalled = true;
           expect(model.isLoading).to.equal(false);
-        }
+        },
       })
-      .catch(function() {
+      .catch(function () {
         expect(model.isLoading).to.equal(false);
         expect(errorCalled).to.be.true;
         done();
@@ -1053,24 +1045,24 @@ describe('Backbone.Model', function() {
     reject({ fail: true });
   });
 
-  it('waitLoading with successful fetch', function(done) {
+  it('waitLoading with successful fetch', function (done) {
     let model = new Backbone.Model();
     model.url = '/test';
     let resolve;
     let loadCalled = false;
     let changeCalled = false;
     let fetchResolved = false;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       resolve = res;
     });
-    model.on('load', function() {
+    model.on('load', function () {
       loadCalled = true;
     });
-    model.on('change', function() {
+    model.on('change', function () {
       changeCalled = true;
     });
     expect(model.isLoading).to.equal(false);
-    model.fetch().then(function() {
+    model.fetch().then(function () {
       fetchResolved = true;
     });
     expect(model.isLoading).to.equal(true);
@@ -1085,22 +1077,22 @@ describe('Backbone.Model', function() {
     resolve({ a: 1 });
   });
 
-  it('waitLoading with failed fetch', function(done) {
+  it('waitLoading with failed fetch', function (done) {
     let model = new Backbone.Model();
     model.url = '/test';
     let reject;
     let loadCalled = false;
     let fetchResolved = false;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       reject = rej;
     });
 
-    model.on('load', function() {
+    model.on('load', function () {
       loadCalled = true;
     });
 
     expect(model.isLoading).to.equal(false);
-    model.fetch().catch(function() {
+    model.fetch().catch(function () {
       fetchResolved = true;
     });
 
@@ -1114,11 +1106,11 @@ describe('Backbone.Model', function() {
     reject();
   });
 
-  it('isLoading with successful save', function(done) {
+  it('isLoading with successful save', function (done) {
     let model = new Backbone.Model();
     model.url = '/test';
     let resolve;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       resolve = res;
     });
     expect(model.isLoading).to.equal(false);
@@ -1126,9 +1118,9 @@ describe('Backbone.Model', function() {
       .save(null, {
         success() {
           expect(model.isLoading).to.equal(false);
-        }
+        },
       })
-      .then(function() {
+      .then(function () {
         expect(model.isLoading).to.equal(false);
         done();
       });
@@ -1136,11 +1128,11 @@ describe('Backbone.Model', function() {
     resolve({ a: 1 });
   });
 
-  it('isLoading with failed save', function(done) {
+  it('isLoading with failed save', function (done) {
     let model = new Backbone.Model();
     model.url = '/test';
     let reject;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       reject = rej;
     });
     expect(model.isLoading).to.equal(false);
@@ -1148,9 +1140,9 @@ describe('Backbone.Model', function() {
       .save(null, {
         error() {
           expect(model.isLoading).to.equal(false);
-        }
+        },
       })
-      .catch(function() {
+      .catch(function () {
         expect(model.isLoading).to.equal(false);
         done();
       });
@@ -1158,11 +1150,11 @@ describe('Backbone.Model', function() {
     reject({ fail: true });
   });
 
-  it('isLoading with successful destroy', function(done) {
+  it('isLoading with successful destroy', function (done) {
     let model = new Backbone.Model({ id: 1 });
     model.url = '/test';
     let resolve;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       resolve = res;
     });
     expect(model.isLoading).to.equal(false);
@@ -1170,9 +1162,9 @@ describe('Backbone.Model', function() {
       .destroy({
         success() {
           expect(model.isLoading).to.equal(false);
-        }
+        },
       })
-      .then(function() {
+      .then(function () {
         expect(model.isLoading).to.equal(false);
         done();
       });
@@ -1180,11 +1172,11 @@ describe('Backbone.Model', function() {
     resolve({ a: 1 });
   });
 
-  it('isLoading with failed destroy', function(done) {
+  it('isLoading with failed destroy', function (done) {
     let model = new Backbone.Model({ id: 1 });
     model.url = '/test';
     let reject;
-    ajaxResponse = new Promise(function(res, rej) {
+    ajaxResponse = new Promise(function (res, rej) {
       reject = rej;
     });
     expect(model.isLoading).to.equal(false);
@@ -1192,9 +1184,9 @@ describe('Backbone.Model', function() {
       .destroy({
         error() {
           expect(model.isLoading).to.equal(false);
-        }
+        },
       })
-      .catch(function() {
+      .catch(function () {
         expect(model.isLoading).to.equal(false);
         done();
       });
@@ -1202,13 +1194,13 @@ describe('Backbone.Model', function() {
     reject({ fail: true });
   });
 
-  it('validate', function() {
+  it('validate', function () {
     var lastError;
     var model = new Backbone.Model();
-    model.validate = function(attrs) {
+    model.validate = function (attrs) {
       if (attrs.admin !== this.get('admin')) return "Can't change admin status.";
     };
-    model.on('invalid', function(m, error) {
+    model.on('invalid', function (m, error) {
       lastError = error;
     });
     var result = model.set({ a: 100 });
@@ -1224,10 +1216,10 @@ describe('Backbone.Model', function() {
     expect(model.get('a')).to.equal(200);
   });
 
-  it('validate on unset and clear', function() {
+  it('validate on unset and clear', function () {
     var error;
     var model = new Backbone.Model({ name: 'One' });
-    model.validate = function(attrs) {
+    model.validate = function (attrs) {
       if (!attrs.name) {
         error = true;
         return 'No thanks.';
@@ -1247,13 +1239,13 @@ describe('Backbone.Model', function() {
     expect(model.get('name')).to.be.undefined;
   });
 
-  it('validate with error callback', function() {
+  it('validate with error callback', function () {
     var lastError, boundError;
     var model = new Backbone.Model();
-    model.validate = function(attrs) {
+    model.validate = function (attrs) {
       if (attrs.admin) return "Can't change admin status.";
     };
-    model.on('invalid', function(m, error) {
+    model.on('invalid', function (m, error) {
       boundError = true;
     });
     var result = model.set({ a: 100 }, { validate: true });
@@ -1268,7 +1260,7 @@ describe('Backbone.Model', function() {
     expect(boundError).to.be.true;
   });
 
-  it('defaults always extend attrs (#459)', function() {
+  it('defaults always extend attrs (#459)', function () {
     var Defaulted = class extends Backbone.Model {
       defaults() {
         return { one: 1 };
@@ -1281,9 +1273,9 @@ describe('Backbone.Model', function() {
     var emptyattrs = new Defaulted();
   });
 
-  it('Inherit class properties', function() {
+  it('Inherit class properties', function () {
     var Parent = class extends Backbone.Model {
-      static classProp = function() {};
+      static classProp = function () {};
 
       instancePropSame() {}
       instancePropDiff() {}
@@ -1306,39 +1298,39 @@ describe('Backbone.Model', function() {
     expect(Child.prototype.instancePropDiff).to.not.be.undefined;
   });
 
-  it("Nested change events don't clobber previous attributes", function() {
+  it("Nested change events don't clobber previous attributes", function () {
     new Backbone.Model()
-      .on('change:state', function(m, newState) {
+      .on('change:state', function (m, newState) {
         expect(m.previous('state')).to.be.undefined;
         expect(newState).to.equal('hello');
         // Fire a nested change event.
         m.set({ other: 'whatever' });
       })
-      .on('change:state', function(m, newState) {
+      .on('change:state', function (m, newState) {
         expect(m.previous('state')).to.be.undefined;
         expect(newState).to.equal('hello');
       })
       .set({ state: 'hello' });
   });
 
-  it('hasChanged/set should use same comparison', function() {
+  it('hasChanged/set should use same comparison', function () {
     var changed = 0,
       model = new Backbone.Model({ a: null });
     model
-      .on('change', function() {
+      .on('change', function () {
         expect(this.hasChanged('a')).to.be.true;
       })
-      .on('change:a', function() {
+      .on('change:a', function () {
         changed++;
       })
       .set({ a: undefined });
     expect(changed).to.equal(1);
   });
 
-  it('#582, #425, change:attribute callbacks should fire after all changes have occurred', function() {
+  it('#582, #425, change:attribute callbacks should fire after all changes have occurred', function () {
     var model = new Backbone.Model();
 
-    var assertion = function() {
+    var assertion = function () {
       expect(model.get('a')).to.equal('a');
       expect(model.get('b')).to.equal('b');
       expect(model.get('c')).to.equal('c');
@@ -1351,44 +1343,44 @@ describe('Backbone.Model', function() {
     model.set({ a: 'a', b: 'b', c: 'c' });
   });
 
-  it('#871, set with attributes property', function() {
+  it('#871, set with attributes property', function () {
     var model = new Backbone.Model();
     model.set({ attributes: true });
     expect(model.has('attributes')).to.be.true;
   });
 
-  it('set value regardless of equality/change', function() {
+  it('set value regardless of equality/change', function () {
     var model = new Backbone.Model({ x: [] });
     var a = [];
     model.set({ x: a });
     expect(model.get('x') === a).to.be.true;
   });
 
-  it('set same value does not trigger change', function() {
+  it('set same value does not trigger change', function () {
     var model = new Backbone.Model({ x: 1 });
-    model.on('change change:x', function() {
+    model.on('change change:x', function () {
       expect(false).to.be.true;
     });
     model.set({ x: 1 });
     model.set({ x: 1 });
   });
 
-  it('unset does not fire a change for undefined attributes', function() {
+  it('unset does not fire a change for undefined attributes', function () {
     var model = new Backbone.Model({ x: undefined });
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       expect(false).to.be.true;
     });
     model.unset('x');
   });
 
-  it('set: undefined values', function() {
+  it('set: undefined values', function () {
     var model = new Backbone.Model({ x: undefined });
     expect('x' in model.attributes).to.be.true;
   });
 
-  it('hasChanged works outside of change events, and true within', function() {
+  it('hasChanged works outside of change events, and true within', function () {
     var model = new Backbone.Model({ x: 1 });
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       expect(model.hasChanged('x')).to.be.true;
       expect(model.get('x')).to.equal(1);
     });
@@ -1400,7 +1392,7 @@ describe('Backbone.Model', function() {
     expect(model.hasChanged('x')).to.be.true;
   });
 
-  it('hasChanged gets cleared on the following set', function() {
+  it('hasChanged gets cleared on the following set', function () {
     var model = new Backbone.Model();
     model.set({ x: 1 });
     expect(model.hasChanged()).to.be.true;
@@ -1412,55 +1404,55 @@ describe('Backbone.Model', function() {
     expect(model.hasChanged()).to.be.false;
   });
 
-  it('save with `wait` succeeds without `validate`', function() {
+  it('save with `wait` succeeds without `validate`', function () {
     var model = new Backbone.Model();
     model.url = '/test';
     model.save({ x: 1 }, { wait: true });
     expect(syncArgs.model === model).to.be.true;
   });
 
-  it('save without `wait` set invalid attributes but returns rejected promise', function() {
+  it('save without `wait` set invalid attributes but returns rejected promise', function () {
     var model = new Backbone.Model();
-    model.validate = function() {
+    model.validate = function () {
       return 1;
     };
     expect(model.save({ a: 1 })).to.be.rejectedWith(Backbone.ValidationError);
     expect(model.get('a')).to.equal(1);
   });
 
-  it("save doesn't validate twice", function(done) {
+  it("save doesn't validate twice", function (done) {
     var model = new Backbone.Model();
     var times = 0;
     model.url = '/test';
 
-    model.validate = function() {
+    model.validate = function () {
       ++times;
     };
-    model.save({}).then(function() {
+    model.save({}).then(function () {
       expect(times).to.equal(1);
       done();
     });
   });
 
-  it('`hasChanged` for falsey keys', function() {
+  it('`hasChanged` for falsey keys', function () {
     var model = new Backbone.Model();
     model.set({ x: true }, { silent: true });
     expect(model.hasChanged(0)).to.be.false;
     expect(model.hasChanged('')).to.be.false;
   });
 
-  it('`previous` for falsey keys', function() {
-    var model = new Backbone.Model({ '0': true, '': true });
-    model.set({ '0': false, '': false }, { silent: true });
+  it('`previous` for falsey keys', function () {
+    var model = new Backbone.Model({ 0: true, '': true });
+    model.set({ 0: false, '': false }, { silent: true });
     expect(model.previous(0)).to.equal(true);
     expect(model.previous('')).to.equal(true);
   });
 
-  it('`save` with `wait` sends correct attributes', function() {
+  it('`save` with `wait` sends correct attributes', function () {
     var changed = 0;
     var model = new Backbone.Model({ x: 1, y: 2 });
     model.url = '/test';
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       changed++;
     });
     model.save({ x: 3 }, { wait: true });
@@ -1472,35 +1464,35 @@ describe('Backbone.Model', function() {
     expect(changed).to.equal(1);
   });
 
-  it("a failed `save` with `wait` doesn't leave attributes behind", function() {
+  it("a failed `save` with `wait` doesn't leave attributes behind", function () {
     var model = new Backbone.Model();
     model.url = '/test';
     model.save({ x: 1 }, { wait: true });
     expect(model.get('x')).to.be.undefined;
   });
 
-  it('#1030 - `save` with `wait` results in correct attributes if success is called during sync', function(done) {
+  it('#1030 - `save` with `wait` results in correct attributes if success is called during sync', function (done) {
     var model = new Backbone.Model({ x: 1, y: 2 });
     model.url = '/test';
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       expect(true).to.be.true;
     });
-    model.save({ x: 3 }, { wait: true }).then(function() {
+    model.save({ x: 3 }, { wait: true }).then(function () {
       expect(model.get('x')).to.equal(3);
       done();
     });
   });
 
-  it('save with wait validates attributes', function() {
+  it('save with wait validates attributes', function () {
     var model = new Backbone.Model();
     model.url = '/test';
-    model.validate = function() {
+    model.validate = function () {
       expect(true).to.be.true;
     };
     model.save({ x: 1 }, { wait: true });
   });
 
-  it('save turns on parse flag', function() {
+  it('save turns on parse flag', function () {
     var Model = class extends Backbone.Model {
       async sync(method, options) {
         expect(options.parse).to.be.true;
@@ -1509,7 +1501,7 @@ describe('Backbone.Model', function() {
     new Model().save();
   });
 
-  it('`save` promise should resolve after success callback', function(done) {
+  it('`save` promise should resolve after success callback', function (done) {
     var successCalled = false;
     var model = new Backbone.Model({ x: 1, y: 2 });
     model.url = '/x';
@@ -1519,16 +1511,16 @@ describe('Backbone.Model', function() {
     });
   });
 
-  it("nested `set` during `'change:attr'`", function() {
+  it("nested `set` during `'change:attr'`", function () {
     var events = [];
     var model = new Backbone.Model();
-    model.on('all', function(event) {
+    model.on('all', function (event) {
       events.push(event);
     });
-    model.on('change', function() {
+    model.on('change', function () {
       model.set({ z: true }, { silent: true });
     });
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       model.set({ y: true });
     });
     model.set({ x: true });
@@ -1538,19 +1530,19 @@ describe('Backbone.Model', function() {
     expect(events).to.eql([]);
   });
 
-  it('nested `change` only fires once', function() {
+  it('nested `change` only fires once', function () {
     var model = new Backbone.Model();
-    model.on('change', function() {
+    model.on('change', function () {
       expect(true).to.be.true;
       model.set({ x: true });
     });
     model.set({ x: true });
   });
 
-  it("nested `set` during `'change'`", function() {
+  it("nested `set` during `'change'`", function () {
     var count = 0;
     var model = new Backbone.Model();
-    model.on('change', function() {
+    model.on('change', function () {
       switch (count++) {
         case 0:
           expect(this.changedAttributes()).to.eql({ x: true });
@@ -1566,7 +1558,7 @@ describe('Backbone.Model', function() {
           expect(this.changedAttributes()).to.eql({
             x: true,
             y: true,
-            z: true
+            z: true,
           });
           expect(model.previous('y')).to.be.undefined;
           break;
@@ -1577,13 +1569,13 @@ describe('Backbone.Model', function() {
     model.set({ x: true });
   });
 
-  it('nested `change` with silent', function() {
+  it('nested `change` with silent', function () {
     var count = 0;
     var model = new Backbone.Model();
-    model.on('change:y', function() {
+    model.on('change:y', function () {
       expect(false).to.be.true;
     });
-    model.on('change', function() {
+    model.on('change', function () {
       switch (count++) {
         case 0:
           expect(this.changedAttributes()).to.eql({ x: true });
@@ -1594,7 +1586,7 @@ describe('Backbone.Model', function() {
           expect(this.changedAttributes()).to.eql({
             x: true,
             y: true,
-            z: true
+            z: true,
           });
           break;
         case 2:
@@ -1608,141 +1600,141 @@ describe('Backbone.Model', function() {
     model.set({ z: false });
   });
 
-  it('nested `change:attr` with silent', function() {
+  it('nested `change:attr` with silent', function () {
     var model = new Backbone.Model();
-    model.on('change:y', function() {
+    model.on('change:y', function () {
       expect(false).to.be.true;
     });
-    model.on('change', function() {
+    model.on('change', function () {
       model.set({ y: true }, { silent: true });
       model.set({ z: true });
     });
     model.set({ x: true });
   });
 
-  it('multiple nested changes with silent', function() {
+  it('multiple nested changes with silent', function () {
     var model = new Backbone.Model();
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       model.set({ y: 1 }, { silent: true });
       model.set({ y: 2 });
     });
-    model.on('change:y', function(m, val) {
+    model.on('change:y', function (m, val) {
       expect(val).to.equal(2);
     });
     model.set({ x: true });
   });
 
-  it('multiple nested changes with silent', function() {
+  it('multiple nested changes with silent', function () {
     var changes = [];
     var model = new Backbone.Model();
-    model.on('change:b', function(m, val) {
+    model.on('change:b', function (m, val) {
       changes.push(val);
     });
-    model.on('change', function() {
+    model.on('change', function () {
       model.set({ b: 1 });
     });
     model.set({ b: 0 });
     expect(changes).to.eql([0, 1]);
   });
 
-  it('basic silent change semantics', function() {
+  it('basic silent change semantics', function () {
     var model = new Backbone.Model();
     model.set({ x: 1 });
-    model.on('change', function() {
+    model.on('change', function () {
       expect(true).to.be.true;
     });
     model.set({ x: 2 }, { silent: true });
     model.set({ x: 1 });
   });
 
-  it('nested set multiple times', function() {
+  it('nested set multiple times', function () {
     var model = new Backbone.Model();
-    model.on('change:b', function() {
+    model.on('change:b', function () {
       expect(true).to.be.true;
     });
-    model.on('change:a', function() {
+    model.on('change:a', function () {
       model.set({ b: true });
       model.set({ b: true });
     });
     model.set({ a: true });
   });
 
-  it('#1122 - clear does not alter options.', function() {
+  it('#1122 - clear does not alter options.', function () {
     var model = new Backbone.Model();
     var options = {};
     model.clear(options);
     expect(options.unset).to.be.undefined;
   });
 
-  it('#1122 - unset does not alter options.', function() {
+  it('#1122 - unset does not alter options.', function () {
     var model = new Backbone.Model();
     var options = {};
     model.unset('x', options);
     expect(options.unset).to.be.undefined;
   });
 
-  it('#1355 - `options` is passed to success callbacks', function(done) {
+  it('#1355 - `options` is passed to success callbacks', function (done) {
     var model = new Backbone.Model();
     var opts = {
-      success: function(m, resp, options) {
+      success: function (m, resp, options) {
         expect(options).to.exist;
-      }
+      },
     };
 
     model.url = '/test';
 
     Promise.all([model.save({ id: 1 }, opts), model.fetch(opts), model.destroy(opts)]).then(
-      function() {
+      function () {
         done();
-      }
+      },
     );
   });
 
-  it("#1412 - Trigger 'sync' event.", function(done) {
+  it("#1412 - Trigger 'sync' event.", function (done) {
     var model = new Backbone.Model({ id: 1 });
     model.url = '/test';
-    model.on('sync', function() {
+    model.on('sync', function () {
       expect(true).to.be.true;
     });
-    Promise.all([model.fetch(), model.save(), model.destroy()]).then(function() {
+    Promise.all([model.fetch(), model.save(), model.destroy()]).then(function () {
       done();
     });
   });
 
-  it('#1365 - Destroy: New models execute success callback.', function(done) {
+  it('#1365 - Destroy: New models execute success callback.', function (done) {
     new Backbone.Model()
-      .on('sync', function() {
+      .on('sync', function () {
         expect(false).to.be.true;
       })
-      .on('destroy', function() {
+      .on('destroy', function () {
         expect(true).to.be.true;
       })
       .destroy({
-        success: function() {
+        success: function () {
           expect(true).to.be.true;
           done();
-        }
+        },
       });
   });
 
-  it('#1433 - Save: An invalid model cannot be persisted.', function(done) {
+  it('#1433 - Save: An invalid model cannot be persisted.', function (done) {
     var model = new Backbone.Model();
-    model.validate = function() {
+    model.validate = function () {
       return 'invalid';
     };
-    model.sync = function() {
+    model.sync = function () {
       expect(false).to.be.true;
     };
 
     var promise = model.save();
 
     expect(promise).to.be.rejected;
-    promise.catch(function() {
+    promise.catch(function () {
       done();
     });
   });
 
-  it("#1377 - Save without attrs triggers 'error'.", function() {
+  it("#1377 - Save without attrs triggers 'error'.", function () {
     var Model = class extends Backbone.Model {
       url = '/test/';
       sync(method, options) {
@@ -1753,13 +1745,13 @@ describe('Backbone.Model', function() {
       }
     };
     var model = new Model({ id: 1 });
-    model.on('invalid', function() {
+    model.on('invalid', function () {
       expect(true).to.be.true;
     });
     expect(model.save()).to.be.rejected;
   });
 
-  it('#1545 - `undefined` can be passed to a model constructor without coersion', function() {
+  it('#1545 - `undefined` can be passed to a model constructor without coersion', function () {
     var Model = class extends Backbone.Model {
       defaults() {
         return { one: 1 };
@@ -1772,11 +1764,11 @@ describe('Backbone.Model', function() {
     var undefinedattrs = new Model(undefined);
   });
 
-  it('#1478 - Model `save` does not trigger change on unchanged attributes', function(done) {
+  it('#1478 - Model `save` does not trigger change on unchanged attributes', function (done) {
     var Model = class extends Backbone.Model {
       sync(method, options) {
-        return new Promise(function(resolve) {
-          setTimeout(function() {
+        return new Promise(function (resolve) {
+          setTimeout(function () {
             options.success();
             done();
             resolve();
@@ -1785,15 +1777,15 @@ describe('Backbone.Model', function() {
       }
     };
     new Model({ x: true })
-      .on('change:x', function() {
+      .on('change:x', function () {
         assert.ok(false);
       })
       .save(null, { wait: true });
   });
 
-  it('#1664 - Changing from one value, silently to another, back to original triggers a change.', function() {
+  it('#1664 - Changing from one value, silently to another, back to original triggers a change.', function () {
     var model = new Backbone.Model({ x: 1 });
-    model.on('change:x', function() {
+    model.on('change:x', function () {
       assert.ok(true);
     });
     model.set({ x: 2 }, { silent: true });
@@ -1801,15 +1793,15 @@ describe('Backbone.Model', function() {
     model.set({ x: 1 });
   });
 
-  it('#1664 - multiple silent changes nested inside a change event', function() {
+  it('#1664 - multiple silent changes nested inside a change event', function () {
     var changes = [];
     var model = new Backbone.Model();
-    model.on('change', function() {
+    model.on('change', function () {
       model.set({ a: 'c' }, { silent: true });
       model.set({ b: 2 }, { silent: true });
       model.unset('c', { silent: true });
     });
-    model.on('change:a change:b change:c', function(m, val) {
+    model.on('change:a change:b change:c', function (m, val) {
       changes.push(val);
     });
     model.set({ a: 'a', b: 1, c: 'item' });
@@ -1817,7 +1809,7 @@ describe('Backbone.Model', function() {
     assert.deepEqual(model.attributes, { a: 'c', b: 2 });
   });
 
-  it('#1791 - `attributes` is available for `parse`', function() {
+  it('#1791 - `attributes` is available for `parse`', function () {
     var Model = class extends Backbone.Model {
       parse() {
         this.has('a');
@@ -1826,13 +1818,13 @@ describe('Backbone.Model', function() {
     var model = new Model(null, { parse: true });
   });
 
-  it('silent changes in last `change` event back to original triggers change', function() {
+  it('silent changes in last `change` event back to original triggers change', function () {
     var changes = [];
     var model = new Backbone.Model();
-    model.on('change:a change:b change:c', function(m, val) {
+    model.on('change:a change:b change:c', function (m, val) {
       changes.push(val);
     });
-    model.on('change', function() {
+    model.on('change', function () {
       model.set({ a: 'c' }, { silent: true });
     });
     model.set({ a: 'a' });
@@ -1841,26 +1833,26 @@ describe('Backbone.Model', function() {
     assert.deepEqual(changes, ['a', 'a']);
   });
 
-  it('#1943 change calculations should use _.isEqual', function() {
+  it('#1943 change calculations should use _.isEqual', function () {
     var model = new Backbone.Model({ a: { key: 'value' } });
     model.set('a', { key: 'value' }, { silent: true });
     assert.equal(model.changedAttributes(), false);
   });
 
-  it('#1964 - final `change` event is always fired, regardless of interim changes', function() {
+  it('#1964 - final `change` event is always fired, regardless of interim changes', function () {
     var model = new Backbone.Model();
-    model.on('change:property', function() {
+    model.on('change:property', function () {
       model.set('property', 'bar');
     });
-    model.on('change', function() {
+    model.on('change', function () {
       assert.ok(true);
     });
     model.set('property', 'foo');
   });
 
-  it('isValid', function() {
+  it('isValid', function () {
     var model = new Backbone.Model({ valid: true });
-    model.validate = function(attrs) {
+    model.validate = function (attrs) {
       if (!attrs.valid) return 'invalid';
     };
     assert.equal(model.isValid(), true);
@@ -1868,13 +1860,13 @@ describe('Backbone.Model', function() {
     assert.equal(model.isValid(), false);
   });
 
-  it('#1179 - isValid returns true in the absence of validate.', function() {
+  it('#1179 - isValid returns true in the absence of validate.', function () {
     var model = new Backbone.Model();
     model.validate = null;
     assert.ok(model.isValid());
   });
 
-  it('#1961 - Creating a model with {validate:true} will call validate and use the error callback', function() {
+  it('#1961 - Creating a model with {validate:true} will call validate and use the error callback', function () {
     var Model = class extends Backbone.Model {
       validate(attrs) {
         if (attrs.id === 1) return "This shouldn't happen";
@@ -1884,7 +1876,7 @@ describe('Backbone.Model', function() {
     assert.equal(model.validationError, "This shouldn't happen");
   });
 
-  it('toJSON receives attrs during save(..., {wait: true})', function() {
+  it('toJSON receives attrs during save(..., {wait: true})', function () {
     var Model = class extends Backbone.Model {
       url = '/test';
       toJSON() {
@@ -1896,16 +1888,16 @@ describe('Backbone.Model', function() {
     model.save({ x: 1 }, { wait: true });
   });
 
-  it('#2034 - nested set with silent only triggers one change', function() {
+  it('#2034 - nested set with silent only triggers one change', function () {
     var model = new Backbone.Model();
-    model.on('change', function() {
+    model.on('change', function () {
       model.set({ b: true }, { silent: true });
       assert.ok(true);
     });
     model.set({ a: true });
   });
 
-  it('#3778 - id will only be updated if it is set', function() {
+  it('#3778 - id will only be updated if it is set', function () {
     var model = new Backbone.Model({ id: 1 });
     model.id = 2;
     model.set({ foo: 'bar' });
@@ -1914,7 +1906,7 @@ describe('Backbone.Model', function() {
     assert.equal(model.id, 3);
   });
 
-  it('assign', function() {
+  it('assign', function () {
     var assignOptions = { x: 'a' };
     var Model = class extends Backbone.Model {
       assignTo(target, options) {

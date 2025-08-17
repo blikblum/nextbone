@@ -1,7 +1,5 @@
 /// <reference types="lodash-es" />
 
-import { Part } from "lit";
-
 type _Result<T> = T | (() => T);
 type _StringKey<T> = keyof T & string;
 
@@ -62,7 +60,7 @@ interface ModelConstructorOptions<TModel extends Model = Model> extends ModelSet
 
 type CombinedModelConstructorOptions<
   E,
-  M extends Model<any, any, E> = Model
+  M extends Model<any, any, E> = Model,
 > = ModelConstructorOptions<M> & E;
 
 interface ModelSetOptions extends Silenceable, Validable {
@@ -145,7 +143,7 @@ export interface Events_Off<BaseT> {
     this: T,
     eventName?: string | null,
     callback?: EventHandler | null,
-    context?: any
+    context?: any,
   ): T;
 }
 export interface Events_Trigger<BaseT> {
@@ -386,7 +384,7 @@ export class Collection<TModel extends Model = Model> extends Events {
     event: string,
     model: TModel,
     collection: Collection<TModel>,
-    options: any
+    options: any,
   ): void;
   private _isModel(obj: any): obj is Model;
 
@@ -430,7 +428,7 @@ export class Collection<TModel extends Model = Model> extends Events {
   inject<TResult>(
     iterator: _.MemoIterator<TModel, TResult>,
     memo?: TResult,
-    context?: any
+    context?: any,
   ): TResult;
   invoke(methodName: string, ...args: any[]): any;
   isEmpty(): boolean;
@@ -444,12 +442,12 @@ export class Collection<TModel extends Model = Model> extends Events {
   reduce<TResult>(
     iterator: _.MemoIterator<TModel, TResult>,
     memo?: TResult,
-    context?: any
+    context?: any,
   ): TResult;
   reduceRight<TResult>(
     iterator: _.MemoIterator<TModel, TResult>,
     memo?: TResult,
-    context?: any
+    context?: any,
   ): TResult;
   reject(iterator: _.ListIterator<TModel, boolean>, context?: any): TModel[];
   rest(n?: number): TModel[];
@@ -557,17 +555,15 @@ export const ajax: Ajax;
 
 export function eventHandler(
   event: string,
-  selector?: string
+  selector?: string,
 ): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 
-export function view<
-  TBase extends abstract new (...args: any[]) => HTMLElement
->(klass: TBase): abstract new (
-  ...args: ConstructorParameters<TBase>
-) => InstanceType<TBase> & EventsMixin;
+export function view<TBase extends abstract new (...args: any[]) => HTMLElement>(
+  klass: TBase,
+): abstract new (...args: ConstructorParameters<TBase>) => InstanceType<TBase> & EventsMixin;
 
 export function on(
-  event: string
+  event: string,
 ): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 
 export function observable(target: Object, propertyKey: string | symbol): void;
@@ -583,9 +579,9 @@ export function state(options?: {
 
 type Constructor = abstract new (...args: any[]) => {};
 
-export function withEvents<T extends Constructor>(Base: T): abstract new (
-  ...args: ConstructorParameters<T>
-) => InstanceType<T> & EventsMixin;
+export function withEvents<T extends Constructor>(
+  Base: T,
+): abstract new (...args: ConstructorParameters<T>) => InstanceType<T> & EventsMixin;
 // utils
 
 export function delegate(
@@ -593,7 +589,7 @@ export function delegate(
   eventName: string,
   selector: string,
   listener: () => void,
-  context: HTMLElement
+  context: HTMLElement,
 ): () => void;
 
 export function undelegate(el: HTMLElement, handler: () => void): void;

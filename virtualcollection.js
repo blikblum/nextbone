@@ -20,20 +20,20 @@ import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
-var clone = function(obj) {
+var clone = function (obj) {
   return obj ? Object.assign({}, obj) : {};
 };
 
-var buildFilter = function(options) {
+var buildFilter = function (options) {
   if (!options) {
-    return function() {
+    return function () {
       return true;
     };
   } else if (isFunction(options)) {
     return options;
   } else if (options.constructor === Object) {
-    return function(model) {
-      return Object.keys(options).every(function(key) {
+    return function (model) {
+      return Object.keys(options).every(function (key) {
         return model.get(key) === options[key];
       });
     };
@@ -104,7 +104,7 @@ class VirtualCollection extends Collection {
   }
 
   _rebuildIndex() {
-    this.models.forEach(model => model.off('all', this._onAllEvent, this));
+    this.models.forEach((model) => model.off('all', this._onAllEvent, this));
     this._reset();
     this._parent.each((model, i) => {
       if (this.accepts(model, i)) {
@@ -120,7 +120,7 @@ class VirtualCollection extends Collection {
   }
 
   orderViaParent(options) {
-    this.models = this._parent.filter(model => {
+    this.models = this._parent.filter((model) => {
       return this._byId[model.cid] !== undefined;
     });
     if (!options.silent) this.trigger('sort', this, options);
@@ -132,7 +132,7 @@ class VirtualCollection extends Collection {
   }
 
   _proxyParentEvents(collection, events) {
-    events.forEach(eventName => {
+    events.forEach((eventName) => {
       this.listenTo(collection, eventName, (...args) => {
         this.isLoading = collection.isLoading;
         this.trigger(eventName, ...args);
@@ -144,7 +144,7 @@ class VirtualCollection extends Collection {
     this._changeCache = {
       added: [],
       removed: [],
-      merged: []
+      merged: [],
     };
   }
 
@@ -212,7 +212,7 @@ class VirtualCollection extends Collection {
   sortedIndex(model, value, context) {
     var iterator = isFunction(value)
       ? value
-      : function(target) {
+      : function (target) {
           return target.get(value);
         };
 
@@ -231,11 +231,11 @@ class VirtualCollection extends Collection {
     } else if (this.comparator === undefined) {
       i = this.sortedIndex(
         model,
-        function(target) {
+        function (target) {
           //TODO: indexOf traverses the array every time the iterator is called
           return this._parent.indexOf(target);
         },
-        this
+        this,
       );
     } else {
       i = this.length;
@@ -282,9 +282,9 @@ class VirtualCollection extends Collection {
   'slice',
   'sync',
   'fetch',
-  'url'
-].forEach(function(methodName) {
-  VirtualCollection.prototype[methodName] = function() {
+  'url',
+].forEach(function (methodName) {
+  VirtualCollection.prototype[methodName] = function () {
     var method = this._parent[methodName];
     if (isFunction(method)) {
       return method.apply(this._parent, arguments);

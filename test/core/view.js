@@ -15,17 +15,17 @@ const elHTML = html`
   <div class="one"></div>
 `;
 
-describe('view', function() {
+describe('view', function () {
   it('decorated class name', () => {
     class Test extends HTMLElement {}
 
     expect(Test.name).to.equal('Test');
   });
 
-  [view, _.noop].forEach(classDecorator => {
+  [view, _.noop].forEach((classDecorator) => {
     const suffix = classDecorator === view ? '' : ' - without class decorator';
 
-    it(`event${suffix}`, async function() {
+    it(`event${suffix}`, async function () {
       let el, oneEl, oneChildEl, twoEl;
       @classDecorator
       class TestEvent extends LitElement {
@@ -64,7 +64,7 @@ describe('view', function() {
       el.dispatchEvent(new CustomEvent('my-event'));
     });
 
-    it(`event - with shadowDOM${suffix}`, async function() {
+    it(`event - with shadowDOM${suffix}`, async function () {
       let el, oneEl, oneChildEl, twoEl;
       @classDecorator
       class TestEventShadowDOM extends LitElement {
@@ -100,7 +100,7 @@ describe('view', function() {
       el.dispatchEvent(new CustomEvent('my-event'));
     });
 
-    it(`event - with HTMLElement${suffix}`, async function() {
+    it(`event - with HTMLElement${suffix}`, async function () {
       let el, oneEl, oneChildEl, twoEl;
       @classDecorator
       class TestEvent extends HTMLElement {
@@ -136,7 +136,7 @@ describe('view', function() {
       el.dispatchEvent(new CustomEvent('my-event'));
     });
 
-    it(`event subclassing${suffix}`, async function() {
+    it(`event subclassing${suffix}`, async function () {
       let subEl, otherSubEl;
       let eventCounter = 0;
       let subEventCounter = 0;
@@ -178,7 +178,7 @@ describe('view', function() {
       expect(subEventCounter, 1, 'sub class counter should not be incremented on other sub class.');
     });
 
-    it(`state${suffix}`, async function() {
+    it(`state${suffix}`, async function () {
       let enqueueUpdateCount = 0;
       let createPropertyCount = 0;
       /**
@@ -203,11 +203,11 @@ describe('view', function() {
         @state({
           events: {
             'the:event': 'onEvent',
-            'other:event': function(params) {
+            'other:event': function (params) {
               expect(params).to.equal(2);
               expect(this).to.equal(el);
-            }
-          }
+            },
+          },
         })
         collection = new Collection();
 
@@ -302,7 +302,7 @@ describe('view', function() {
       await el.updateComplete;
     });
 
-    it(`state subclassing${suffix}`, async function() {
+    it(`state subclassing${suffix}`, async function () {
       let subEl, otherSubEl;
       let eventCounter = 0;
       let subEventCounter = 0;
@@ -315,8 +315,8 @@ describe('view', function() {
         }
         @state({
           events: {
-            'the:event': 'onEvent'
-          }
+            'the:event': 'onEvent',
+          },
         })
         model = new Model();
         onEvent() {
@@ -327,8 +327,8 @@ describe('view', function() {
       class SubTest extends TestStateSubclassing {
         @state({
           events: {
-            'the:sub:event': 'onSubEvent'
-          }
+            'the:sub:event': 'onSubEvent',
+          },
         })
         subModel = new Model();
         onSubEvent() {
@@ -360,7 +360,7 @@ describe('view', function() {
       expect(subEventCounter, 1, 'sub class counter should not be incremented on other sub class.');
     });
 
-    it(`isView${suffix}`, async function() {
+    it(`isView${suffix}`, async function () {
       @classDecorator
       class Test extends LitElement {
         render() {
@@ -406,7 +406,7 @@ describe('view', function() {
     class TestStatesProperty extends view(LitElement) {
       static states = {
         model: {},
-        copyModel: { copy: true }
+        copyModel: { copy: true },
       };
       constructor() {
         super();
@@ -459,7 +459,7 @@ describe('view', function() {
       static properties = {
         model: { type: Model, context: 'model' },
         copyModel: { type: Model, copy: true },
-        collection: { type: Collection }
+        collection: { type: Collection },
       };
 
       constructor() {

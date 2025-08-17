@@ -11,11 +11,16 @@ import {
   each,
   includes,
   extend,
-  pick
+  pick,
 } from 'lodash-es';
 
 /**
  * @import { Model } from './nextbone.js'
+ */
+
+/**
+ * @template T
+ * @typedef {new (...args: any[]) => T} Ctor
  */
 
 /**
@@ -52,7 +57,7 @@ var keys = Object.keys;
 var options = {
   labelFormatter: 'sentenceCase',
   valid: Function.prototype,
-  invalid: Function.prototype
+  invalid: Function.prototype,
 };
 
 // Helper functions
@@ -92,11 +97,11 @@ var options = {
 // This may seem redundant, but it allows for maximum flexibility
 // in validation rules.
 
-var flatten = function(obj, into, prefix) {
+var flatten = function (obj, into, prefix) {
   into = into || {};
   prefix = prefix || '';
 
-  each(obj, function(val, key) {
+  each(obj, function (val, key) {
     if (obj.hasOwnProperty(key)) {
       if (!!val && typeof val === 'object' && val.constructor === Object) {
         flatten(val, into, prefix + key + '.');
@@ -111,7 +116,7 @@ var flatten = function(obj, into, prefix) {
 };
 
 // Determines whether or not a value is empty
-var hasValue = function(value) {
+var hasValue = function (value) {
   return !(
     value == null ||
     (isString(value) && value.trim() === '') ||
@@ -120,7 +125,7 @@ var hasValue = function(value) {
 };
 
 // Determines if two objects have at least on key in common
-var hasCommonKeys = function(obj1, obj2) {
+var hasCommonKeys = function (obj1, obj2) {
   for (let key in obj1) {
     if (key in obj2) return true;
   }
@@ -130,22 +135,22 @@ var hasCommonKeys = function(obj1, obj2) {
 // Returns an object with undefined properties for all
 // attributes on the model that has defined one or more
 // validation rules.
-var getValidatedAttrs = function(attrs, rules) {
+var getValidatedAttrs = function (attrs, rules) {
   attrs = attrs || keys(rules);
   return reduce(
     attrs,
-    function(memo, key) {
+    function (memo, key) {
       memo[key] = void 0;
       return memo;
     },
-    {}
+    {},
   );
 };
 
 // Looks on the model for validations for a specified
 // attribute. Returns an array of any validators defined,
 // or an empty array if none is defined.
-var getValidators = function(attr, rules) {
+var getValidators = function (attr, rules) {
   var attrValidationSet = rules[attr];
 
   // Stick the validator object into an array
@@ -158,26 +163,26 @@ var getValidators = function(attr, rules) {
   // and the specified error message, if any
   return reduce(
     attrValidationSet,
-    function(memo, attrValidation) {
+    function (memo, attrValidation) {
       // If the validator is a function or a string, wrap it in a function validator
       if (isFunction(attrValidation) || isString(attrValidation)) {
         attrValidation = {
-          fn: attrValidation
+          fn: attrValidation,
         };
       }
 
       attrValidation &&
-        each(keys(attrValidation), function(validator) {
+        each(keys(attrValidation), function (validator) {
           if (validator === 'msg') return;
           memo.push({
             fn: validators[validator],
             val: attrValidation[validator],
-            msg: attrValidation.msg
+            msg: attrValidation.msg,
           });
         });
       return memo;
     },
-    []
+    [],
   );
 };
 
@@ -185,13 +190,13 @@ var getValidators = function(attr, rules) {
 // for that attribute. If one or more errors are found,
 // the first error message is returned.
 // If the attribute is valid, an empty string is returned.
-var validateAttr = function(model, attr, value, computed, rules) {
+var validateAttr = function (model, attr, value, computed, rules) {
   // Reduces the array of validators to an error message by
   // applying all the validators and returning the first error
   // message, if any.
   return reduce(
     getValidators(attr, rules),
-    function(memo, validator) {
+    function (memo, validator) {
       var result = validator.fn.call(validators, value, attr, validator.val, model, computed);
 
       if (result === false) {
@@ -203,14 +208,14 @@ var validateAttr = function(model, attr, value, computed, rules) {
       }
       return memo;
     },
-    ''
+    '',
   );
 };
 
 // Loops through the model's attributes and validates the specified attrs.
 // Returns and object containing names of invalid attributes
 // as well as error messages.
-var validateModel = function(model, allAttrs, validatedAttrs, rules) {
+var validateModel = function (model, allAttrs, validatedAttrs, rules) {
   var error,
     invalidAttrs = null;
 
@@ -236,7 +241,7 @@ function formatLabel(attrName, model) {
 // Replaces numeric placeholders like {0} in a string with arguments
 // passed to the function
 function format(text, ...args) {
-  return text.replace(/{(\d+)}/g, function(match, number) {
+  return text.replace(/{(\d+)}/g, function (match, number) {
     return typeof args[number] !== 'undefined' ? args[number] : match;
   });
 }
@@ -254,14 +259,14 @@ function format(text, ...args) {
 //     });
 var labelFormatters = {
   // Returns the attribute name with applying any formatting
-  none: function(attrName) {
+  none: function (attrName) {
     return attrName;
   },
 
   // Converts attributeName or attribute_name to Attribute name
-  sentenceCase: function(attrName) {
+  sentenceCase: function (attrName) {
     return attrName
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, function(match, index) {
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, function (match, index) {
         return index === 0 ? match.toUpperCase() : ' ' + match.toLowerCase();
       })
       .replace(/_/g, ' ');
@@ -280,11 +285,11 @@ var labelFormatters = {
   //          someAttribute: 'Custom label'
   //        }
   //      };
-  label: function(attrName, model) {
+  label: function (attrName, model) {
     return (
       (model.labels && model.labels[attrName]) || labelFormatters.sentenceCase(attrName, model)
     );
-  }
+  },
 };
 
 // Patterns
@@ -298,10 +303,11 @@ var patterns = {
   number: /^-?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d*)?$/,
 
   // Matches a valid email address (e.g. mail@example.com)
-  email: /^((([a-z]|\d|[\[\]()!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[\[\]()!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i,
+  email:
+    /^((([a-z]|\d|[\[\]()!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[\[\]()!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i,
 
   // Mathes any valid url (e.g. http://www.xample.com)
-  url: /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i
+  url: /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i,
 };
 
 // Error messages
@@ -325,21 +331,21 @@ var messages = {
   number: '{0} must be a number',
   email: '{0} must be a valid email',
   url: '{0} must be a valid url',
-  inlinePattern: '{0} is invalid'
+  inlinePattern: '{0} is invalid',
 };
 
 // Built in validators
 // -------------------
 
 // Determines whether or not a value is a number
-var isNumeric = function(value) {
+var isNumeric = function (value) {
   return isNumber(value) || (isString(value) && value.match(patterns.number));
 };
 
 var validators = {
   // Function validator
   // Lets you implement a custom function used for validation
-  fn: function(value, attr, fn, model, computed) {
+  fn: function (value, attr, fn, model, computed) {
     if (isString(fn)) {
       fn = model[fn];
     }
@@ -349,7 +355,7 @@ var validators = {
   // Required validator
   // Validates if the attribute is required or not
   // This can be specified as either a boolean value or a function that returns a boolean value
-  required: function(value, attr, required, model, computed) {
+  required: function (value, attr, required, model, computed) {
     var isRequired = isFunction(required) ? required.call(model, value, attr, computed) : required;
     if (!isRequired && !hasValue(value)) {
       return false; // overrides all other validators
@@ -362,7 +368,7 @@ var validators = {
   // Acceptance validator
   // Validates that something has to be accepted, e.g. terms of use
   // `true` or 'true' are valid
-  acceptance: function(value, attr, accept, model) {
+  acceptance: function (value, attr, accept, model) {
     if (value !== 'true' && (!isBoolean(value) || value === false)) {
       return this.format(messages.acceptance, this.formatLabel(attr, model));
     }
@@ -371,7 +377,7 @@ var validators = {
   // Min validator
   // Validates that the value has to be a number and equal to or greater than
   // the min value specified
-  min: function(value, attr, minValue, model) {
+  min: function (value, attr, minValue, model) {
     if (!isNumeric(value) || value < minValue) {
       return this.format(messages.min, this.formatLabel(attr, model), minValue);
     }
@@ -380,7 +386,7 @@ var validators = {
   // Max validator
   // Validates that the value has to be a number and equal to or less than
   // the max value specified
-  max: function(value, attr, maxValue, model) {
+  max: function (value, attr, maxValue, model) {
     if (!isNumeric(value) || value > maxValue) {
       return this.format(messages.max, this.formatLabel(attr, model), maxValue);
     }
@@ -389,7 +395,7 @@ var validators = {
   // Range validator
   // Validates that the value has to be a number and equal to or between
   // the two numbers specified
-  range: function(value, attr, range, model) {
+  range: function (value, attr, range, model) {
     if (!isNumeric(value) || value < range[0] || value > range[1]) {
       return this.format(messages.range, this.formatLabel(attr, model), range[0], range[1]);
     }
@@ -398,7 +404,7 @@ var validators = {
   // Length validator
   // Validates that the value has to be a string with length equal to
   // the length value specified
-  length: function(value, attr, length, model) {
+  length: function (value, attr, length, model) {
     if (!isString(value) || value.length !== length) {
       return this.format(messages.length, this.formatLabel(attr, model), length);
     }
@@ -407,7 +413,7 @@ var validators = {
   // Min length validator
   // Validates that the value has to be a string with length equal to or greater than
   // the min length value specified
-  minLength: function(value, attr, minLength, model) {
+  minLength: function (value, attr, minLength, model) {
     if (!isString(value) || value.length < minLength) {
       return this.format(messages.minLength, this.formatLabel(attr, model), minLength);
     }
@@ -416,7 +422,7 @@ var validators = {
   // Max length validator
   // Validates that the value has to be a string with length equal to or less than
   // the max length value specified
-  maxLength: function(value, attr, maxLength, model) {
+  maxLength: function (value, attr, maxLength, model) {
     if (!isString(value) || value.length > maxLength) {
       return this.format(messages.maxLength, this.formatLabel(attr, model), maxLength);
     }
@@ -425,7 +431,7 @@ var validators = {
   // Range length validator
   // Validates that the value has to be a string and equal to or between
   // the two numbers specified
-  rangeLength: function(value, attr, range, model) {
+  rangeLength: function (value, attr, range, model) {
     if (!isString(value) || value.length < range[0] || value.length > range[1]) {
       return this.format(messages.rangeLength, this.formatLabel(attr, model), range[0], range[1]);
     }
@@ -434,7 +440,7 @@ var validators = {
   // One of validator
   // Validates that the value has to be equal to one of the elements in
   // the specified array. Case sensitive matching
-  oneOf: function(value, attr, values, model) {
+  oneOf: function (value, attr, values, model) {
     if (!includes(values, value)) {
       return this.format(messages.oneOf, this.formatLabel(attr, model), values.join(', '));
     }
@@ -443,12 +449,12 @@ var validators = {
   // Equal to validator
   // Validates that the value has to be equal to the value of the attribute
   // with the name specified
-  equalTo: function(value, attr, equalTo, model, computed) {
+  equalTo: function (value, attr, equalTo, model, computed) {
     if (value !== computed[equalTo]) {
       return this.format(
         messages.equalTo,
         this.formatLabel(attr, model),
-        this.formatLabel(equalTo, model)
+        this.formatLabel(equalTo, model),
       );
     }
   },
@@ -456,22 +462,22 @@ var validators = {
   // Pattern validator
   // Validates that the value has to match the pattern specified.
   // Can be a regular expression or the name of one of the built in patterns
-  pattern: function(value, attr, pattern, model) {
+  pattern: function (value, attr, pattern, model) {
     if (!hasValue(value) || !value.toString().match(patterns[pattern] || pattern)) {
       return this.format(
         messages[pattern] || messages.inlinePattern,
         this.formatLabel(attr, model),
-        pattern
+        pattern,
       );
     }
-  }
+  },
 };
 
 // Set helper functions using Object.defineProperty (non writable, configurable or enumerable)
 Object.defineProperty(validators, 'format', { value: format });
 Object.defineProperty(validators, 'formatLabel', { value: formatLabel });
 
-const getRules = ctor => {
+const getRules = (ctor) => {
   if (ctor.hasOwnProperty('__validationRules')) {
     return ctor.__validationRules;
   }
@@ -505,7 +511,7 @@ function createClass(ModelClass) {
         // regular validation
         extend(allAttrs, attr);
 
-        each(attr, function(attrValue, attrKey) {
+        each(attr, function (attrValue, attrKey) {
           error = validateAttr(self, attrKey, attrValue, allAttrs, rules);
           if (error) {
             result[attrKey] = error;
@@ -552,7 +558,7 @@ function createClass(ModelClass) {
 
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
-      each(validatedAttrs, function(val, attr) {
+      each(validatedAttrs, function (val, attr) {
         var invalid = invalidAttrs && attr in invalidAttrs,
           changed = attr in changedAttrs;
 
@@ -586,11 +592,11 @@ function createClass(ModelClass) {
  */
 
 /**
- * @template {typeof Model} BaseClass
+ * @template {Ctor<Model<any, any, any>>} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
  * @returns {BaseClass & ValidationStaticMixin}
  */
-const withValidation = ctorOrDescriptor => {
+const withValidation = (ctorOrDescriptor) => {
   if (typeof ctorOrDescriptor === 'function') {
     return createClass(ctorOrDescriptor);
   }
@@ -600,7 +606,7 @@ const withValidation = ctorOrDescriptor => {
     elements,
     finisher(ctor) {
       return createClass(ctor);
-    }
+    },
   };
 };
 

@@ -1,4 +1,4 @@
-global.XMLHttpRequest = function() {
+global.XMLHttpRequest = function () {
   this.withCredentials = true;
 };
 

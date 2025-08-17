@@ -31,7 +31,7 @@ import {
   sortBy,
   countBy,
   groupBy,
-  take
+  take,
 } from 'lodash-es';
 import { cloneObject, deepCloneLite } from './utils.js';
 
@@ -39,14 +39,14 @@ import { cloneObject, deepCloneLite } from './utils.js';
 // -------------
 
 // Underscore like functions
-var keys = function(obj) {
+var keys = function (obj) {
   return obj ? Object.keys(obj) : [];
 };
 
 var isArray = Array.isArray;
 
 // Returns whether an object has a given set of `key:value` pairs.
-var isMatch = function(object, attrs) {
+var isMatch = function (object, attrs) {
   var objKeys = keys(attrs),
     length = objKeys.length;
   if (object == null) return !length;
@@ -58,13 +58,13 @@ var isMatch = function(object, attrs) {
   return true;
 };
 
-var isObjectEmpty = function(obj) {
+var isObjectEmpty = function (obj) {
   return obj == null || Object.keys(obj).length === 0;
 };
 
-var matches = function(attrs) {
+var matches = function (attrs) {
   attrs = Object.assign({}, attrs);
-  return function(obj) {
+  return function (obj) {
     return isMatch(obj, attrs);
   };
 };
@@ -72,12 +72,12 @@ var matches = function(attrs) {
 class ValidationError extends Error {}
 
 // try to get a prop from instance, with fallback to constructor (class property)
-var getClassProp = function(obj, prop) {
+var getClassProp = function (obj, prop) {
   var value = obj[prop];
   return typeof value === 'function' ? value.call(obj) : value ? value : obj.constructor[prop];
 };
 
-var ensureClassProperty = function(ctor, prop) {
+var ensureClassProperty = function (ctor, prop) {
   if (!ctor.hasOwnProperty(prop)) {
     var superProperties = Object.getPrototypeOf(ctor)[prop];
     ctor[prop] = superProperties ? [...superProperties] : [];
@@ -106,7 +106,7 @@ var _listening;
 // Iterates over the standard `event, callback` (as well as the fancy multiple
 // space-separated events `"change blur", callback` and jQuery-style event
 // maps `{event: callback}`).
-var eventsApi = function(iteratee, events, name, callback, opts) {
+var eventsApi = function (iteratee, events, name, callback, opts) {
   var i = 0,
     names;
   if (name && typeof name === 'object') {
@@ -129,7 +129,7 @@ var eventsApi = function(iteratee, events, name, callback, opts) {
 };
 
 // The reducing API that adds a callback to the `events` object.
-var onApi = function(events, name, callback, options) {
+var onApi = function (events, name, callback, options) {
   if (callback) {
     var handlers = events[name] || (events[name] = []);
     var context = options.context,
@@ -141,7 +141,7 @@ var onApi = function(events, name, callback, options) {
       callback: callback,
       context: context,
       ctx: context || ctx,
-      listening: listening
+      listening: listening,
     });
   }
   return events;
@@ -149,7 +149,7 @@ var onApi = function(events, name, callback, options) {
 
 // An try-catch guarded #on function, to prevent poisoning the global
 // `_listening` variable.
-var tryCatchOn = function(obj, name, callback, context) {
+var tryCatchOn = function (obj, name, callback, context) {
   try {
     obj.on(name, callback, context);
   } catch (e) {
@@ -158,7 +158,7 @@ var tryCatchOn = function(obj, name, callback, context) {
 };
 
 // The reducing API that removes a callback from the `events` object.
-var offApi = function(events, name, callback, options) {
+var offApi = function (events, name, callback, options) {
   if (!events) return;
 
   var context = options.context,
@@ -210,9 +210,9 @@ var offApi = function(events, name, callback, options) {
 
 // Reduces the event callbacks into a map of `{event: onceWrapper}`.
 // `offer` unbinds the `onceWrapper` after it has been called.
-var onceMap = function(map, name, callback, offer) {
+var onceMap = function (map, name, callback, offer) {
   if (callback) {
-    var fn = (map[name] = once(function(...args) {
+    var fn = (map[name] = once(function (...args) {
       offer(name, fn);
       callback.apply(this, args);
     }));
@@ -222,7 +222,7 @@ var onceMap = function(map, name, callback, offer) {
 };
 
 // Handles triggering the appropriate event callbacks.
-var triggerApi = function(objEvents, name, callback, args) {
+var triggerApi = function (objEvents, name, callback, args) {
   if (objEvents) {
     var events = objEvents[name];
     var allEvents = objEvents.all;
@@ -236,7 +236,7 @@ var triggerApi = function(objEvents, name, callback, args) {
 // A difficult-to-believe, but optimized internal dispatch function for
 // triggering events. Tries to keep the usual cases speedy (most internal
 // Nextbone events have 3 arguments).
-var triggerEvents = function(events, args) {
+var triggerEvents = function (events, args) {
   var ev,
     i = -1,
     l = events.length,
@@ -267,7 +267,7 @@ var eventsMethods = ['on', 'listenTo', 'off', 'stopListening', 'once', 'listenTo
 class Events {
   // Extend an object with Events methods
   static extend(obj) {
-    eventsMethods.forEach(method => {
+    eventsMethods.forEach((method) => {
       obj[method] = Events.prototype[method];
     });
     return obj;
@@ -286,7 +286,7 @@ class Events {
     this._events = eventsApi(onApi, this._events || {}, name, callback, {
       context: context,
       ctx: this,
-      listening: _listening
+      listening: _listening,
     });
 
     if (_listening) {
@@ -335,7 +335,7 @@ class Events {
     if (!this._events) return this;
     this._events = eventsApi(offApi, this._events, name, callback, {
       context: context,
-      listeners: this._listeners
+      listeners: this._listeners,
     });
 
     return this;
@@ -415,7 +415,7 @@ class Listening {
     if (this.interop) {
       this._events = eventsApi(offApi, this._events, name, callback, {
         context: void 0,
-        listeners: void 0
+        listeners: void 0,
       });
       cleanup = !this._events;
     } else {
@@ -440,7 +440,7 @@ const registerOnEvent = (ctor, eventName, listener) => {
 };
 
 // Method decorator to listen to an event from same instance
-const on = eventName => (protoOrDescriptor, methodName, propertyDescriptor) => {
+const on = (eventName) => (protoOrDescriptor, methodName, propertyDescriptor) => {
   if (typeof methodName !== 'string') {
     const { kind, key, placement, descriptor, initializer } = protoOrDescriptor;
     return {
@@ -451,7 +451,7 @@ const on = eventName => (protoOrDescriptor, methodName, propertyDescriptor) => {
       key,
       finisher(ctor) {
         registerOnEvent(ctor, eventName, descriptor.value);
-      }
+      },
     };
   }
   // legacy decorator spec
@@ -471,7 +471,7 @@ const registerObservableProperty = (ctor, name, key) => {
       this.trigger('change', this);
     },
     configurable: true,
-    enumerable: true
+    enumerable: true,
   };
   Object.defineProperty(ctor.prototype, name, desc);
 };
@@ -491,26 +491,26 @@ const observable = (protoOrDescriptor, fieldName, propertyDescriptor) => {
       key,
       finisher(ctor) {
         registerObservableProperty(ctor, name, key);
-      }
+      },
     };
   }
   registerObservableProperty(protoOrDescriptor.constructor, name, key);
 };
 
-var wrapSync = function(model, response, options) {
+var wrapSync = function (model, response, options) {
   model.isLoading = true;
   model.trigger('request', model, response, options);
   response.then(
-    function(data) {
+    function (data) {
       model.isLoading = false;
       if (options.success) options.success(data);
       model.trigger('load', model);
     },
-    function(error) {
+    function (error) {
       model.isLoading = false;
       if (options.error) options.error.call(options.context, error);
       model.trigger('load', model);
-    }
+    },
   );
   return response;
 };
@@ -753,7 +753,7 @@ class Model extends Events {
     options = extend({ parse: true }, options);
     var model = this;
     var success = options.success;
-    options.success = function(resp) {
+    options.success = function (resp) {
       var serverAttrs = options.parse ? model.parse(resp, options) : resp;
       if (!model.set(serverAttrs, options)) return false;
       if (success) success.call(options.context, model, resp, options);
@@ -794,7 +794,7 @@ class Model extends Events {
     var model = this;
     var success = options.success;
     var attributes = this.attributes;
-    options.success = function(resp) {
+    options.success = function (resp) {
       // Ensure attributes are restored during synchronous saves.
       model.attributes = attributes;
       var serverAttrs = options.parse ? model.parse(resp, options) : resp;
@@ -827,12 +827,12 @@ class Model extends Events {
     var success = options.success;
     var wait = options.wait;
 
-    var destroy = function() {
+    var destroy = function () {
       model.stopListening();
       model.trigger('destroy', model, model.collection, options);
     };
 
-    options.success = function(resp) {
+    options.success = function (resp) {
       if (wait) destroy();
       if (success) success.call(options.context, model, resp, options);
       if (!model.isNew()) model.trigger('sync', model, resp, options);
@@ -985,7 +985,7 @@ class Collection extends Events {
   // The JSON representation of a Collection is an array of the
   // models' attributes.
   toJSON(options) {
-    return this.map(function(model) {
+    return this.map(function (model) {
       return model.toJSON(options);
     });
   }
@@ -1103,7 +1103,7 @@ class Collection extends Events {
     if (set.length && replace) {
       orderChanged =
         this.length !== set.length ||
-        this.models.some(function(m, index) {
+        this.models.some(function (m, index) {
           return m !== set[index];
         });
       this.models.length = 0;
@@ -1130,7 +1130,7 @@ class Collection extends Events {
         options.changes = {
           added: toAdd,
           removed: toRemove,
-          merged: toMerge
+          merged: toMerge,
         };
         this.trigger('update', this, options);
       }
@@ -1250,7 +1250,7 @@ class Collection extends Events {
     options = extend({ parse: true }, options);
     var success = options.success;
     var collection = this;
-    options.success = function(resp) {
+    options.success = function (resp) {
       var method = options.reset ? 'reset' : 'set';
       collection[method](resp, options);
       if (success) success.call(options.context, collection, resp, options);
@@ -1271,7 +1271,7 @@ class Collection extends Events {
     if (!wait) this.add(model, options);
     var collection = this;
     var success = options.success;
-    options.success = function(m, resp, callbackOpts) {
+    options.success = function (m, resp, callbackOpts) {
       if (wait) collection.add(m, callbackOpts);
       if (success) success.call(callbackOpts.context, m, resp, callbackOpts);
     };
@@ -1289,7 +1289,7 @@ class Collection extends Events {
   clone() {
     return new this.constructor(this.models, {
       model: this.model,
-      comparator: this.comparator
+      comparator: this.comparator,
     });
   }
 
@@ -1558,7 +1558,7 @@ var setOptions = { add: true, remove: true, merge: true };
 var addOptions = { add: true, remove: false };
 
 // Splices `insert` into `array` at index `at`.
-var splice = function(array, insert, at) {
+var splice = function (array, insert, at) {
   at = Math.min(Math.max(at, 0), array.length);
   var tail = Array(array.length - at);
   var length = insert.length;
@@ -1627,26 +1627,26 @@ class CollectionIterator {
 }
 
 // Support `collection.sortBy('attr')` and `collection.findWhere({id: 1})`.
-var cb = function(iteratee, instance) {
+var cb = function (iteratee, instance) {
   if (isFunction(iteratee)) return iteratee;
   if (isObject(iteratee) && !instance._isModel(iteratee)) return modelMatcher(iteratee);
   if (isString(iteratee))
-    return function(model) {
+    return function (model) {
       return model.get(iteratee);
     };
   return iteratee;
 };
 
-var modelMatcher = function(attrs) {
+var modelMatcher = function (attrs) {
   var matcher = matches(attrs);
-  return function(model) {
+  return function (model) {
     return matcher(model.attributes);
   };
 };
 
 async function waitLoading(state) {
   if (state.isLoading) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       state.once('load', resolve);
     });
   }
@@ -1661,11 +1661,11 @@ const isClassDecorated = Symbol();
 
 const notBubbleEvents = ['blur', 'focus'];
 
-const isView = function(el) {
+const isView = function (el) {
   return el.constructor[isClassDecorated];
 };
 
-const isState = function(value) {
+const isState = function (value) {
   return value instanceof Model || value instanceof Collection;
 };
 
@@ -1678,9 +1678,9 @@ const isState = function(value) {
 // result of calling bound `listener` with the parameters given to the
 // handler.
 
-const delegate = function(el, eventName, selector, listener, context = el) {
+const delegate = function (el, eventName, selector, listener, context = el) {
   const handler = selector
-    ? function(e) {
+    ? function (e) {
         var node = e.target;
         for (; node && node !== el; node = node.parentNode) {
           if (node.matches && node.matches(selector)) {
@@ -1696,7 +1696,7 @@ const delegate = function(el, eventName, selector, listener, context = el) {
   return handler;
 };
 
-const undelegate = function(el, handler) {
+const undelegate = function (el, handler) {
   const eventName = handler.eventName;
   el.removeEventListener(eventName, handler, notBubbleEvents.indexOf(eventName) !== -1);
 };
@@ -1711,7 +1711,7 @@ const bindViewState = (el, value, name, events) => {
     return;
   }
   if (events) {
-    Object.keys(events).forEach(event => {
+    Object.keys(events).forEach((event) => {
       const callback = events[event];
       el.listenTo(value, event, (...args) => {
         const method = typeof callback === 'string' ? el[callback] : callback;
@@ -1758,7 +1758,7 @@ const registerStateProperty = (ctor, name, key, { copy, events, ...options } = {
       this.requestUpdate(name, oldValue);
     },
     configurable: true,
-    enumerable: true
+    enumerable: true,
   };
   Object.defineProperty(ctor.prototype, name, desc);
   if (ctor.createProperty) {
@@ -1766,7 +1766,7 @@ const registerStateProperty = (ctor, name, key, { copy, events, ...options } = {
   }
 };
 
-const createViewClass = ElementClass => {
+const createViewClass = (ElementClass) => {
   return class extends ElementClass {
     static get observedAttributes() {
       const { states } = this;
@@ -1817,7 +1817,7 @@ const createViewClass = ElementClass => {
   };
 };
 
-const ensureViewClass = ElementClass => {
+const ensureViewClass = (ElementClass) => {
   if (ElementClass[isClassDecorated]) return ElementClass;
   const ViewClass = createViewClass(ElementClass);
   ViewClass[isClassDecorated] = true;
@@ -1827,41 +1827,38 @@ const ensureViewClass = ElementClass => {
 };
 
 // Method decorator to register a delegated event
-const eventHandler = (eventName, selector) => (
-  protoOrDescriptor,
-  methodName,
-  propertyDescriptor
-) => {
-  if (typeof methodName !== 'string') {
-    const { kind, key, placement, descriptor, initializer } = protoOrDescriptor;
-    return {
-      kind,
-      placement,
-      descriptor,
-      initializer,
-      key,
-      finisher(ctor) {
-        ctor = ensureViewClass(ctor);
-        registerDelegatedEvent(ctor, eventName, selector, descriptor.value);
-        return ctor;
-      }
-    };
-  }
-  // legacy decorator spec
-  registerDelegatedEvent(
-    protoOrDescriptor.constructor,
-    eventName,
-    selector,
-    propertyDescriptor.value
-  );
-};
+const eventHandler =
+  (eventName, selector) => (protoOrDescriptor, methodName, propertyDescriptor) => {
+    if (typeof methodName !== 'string') {
+      const { kind, key, placement, descriptor, initializer } = protoOrDescriptor;
+      return {
+        kind,
+        placement,
+        descriptor,
+        initializer,
+        key,
+        finisher(ctor) {
+          ctor = ensureViewClass(ctor);
+          registerDelegatedEvent(ctor, eventName, selector, descriptor.value);
+          return ctor;
+        },
+      };
+    }
+    // legacy decorator spec
+    registerDelegatedEvent(
+      protoOrDescriptor.constructor,
+      eventName,
+      selector,
+      propertyDescriptor.value,
+    );
+  };
 
 // Field decorator to define an observable model/collection to a property
 const state = (optionsOrProtoOrDescriptor, fieldName, options) => {
   const isLegacy = typeof fieldName === 'string';
   if (!isLegacy && typeof optionsOrProtoOrDescriptor.kind !== 'string') {
     // passed options
-    return function(protoOrDescriptor, realFieldName) {
+    return function (protoOrDescriptor, realFieldName) {
       return state(protoOrDescriptor, realFieldName, optionsOrProtoOrDescriptor);
     };
   }
@@ -1880,27 +1877,27 @@ const state = (optionsOrProtoOrDescriptor, fieldName, options) => {
         ctor = ensureViewClass(ctor);
         registerStateProperty(ctor, name, key, options);
         return ctor;
-      }
+      },
     };
   }
   registerStateProperty(optionsOrProtoOrDescriptor.constructor, name, key, options);
 };
 
 // Custom element decorator
-const view = classOrDescriptor => {
+const view = (classOrDescriptor) => {
   if (typeof classOrDescriptor === 'object') {
     const { kind, elements } = classOrDescriptor;
     return {
       kind,
       elements,
-      finisher: ensureViewClass
+      finisher: ensureViewClass,
     };
   }
   return ensureViewClass(classOrDescriptor);
 };
 
 // ES class Events mixin / decorator
-const withEvents = classOrDescriptor => {
+const withEvents = (classOrDescriptor) => {
   if (typeof classOrDescriptor === 'object') {
     const { kind, elements } = classOrDescriptor;
     return {
@@ -1908,7 +1905,7 @@ const withEvents = classOrDescriptor => {
       elements,
       finisher(BaseClass) {
         Events.extend(BaseClass.prototype);
-      }
+      },
     };
   }
   const WithEventsClass = class extends classOrDescriptor {};
@@ -1934,11 +1931,11 @@ var methodMap = {
   update: 'PUT',
   patch: 'PATCH',
   delete: 'DELETE',
-  read: 'GET'
+  read: 'GET',
 };
 
 var sync = {
-  handler: function(method, model, options) {
+  handler: function (method, model, options) {
     var type = methodMap[method];
 
     options || (options = {});
@@ -1964,7 +1961,7 @@ var sync = {
     // Make the request, allowing the user to override any Ajax options.
     var xhr = (options.xhr = ajax.handler.call(model, extend(params, options)));
     return xhr;
-  }
+  },
 };
 
 // ajax
@@ -1972,7 +1969,7 @@ var sync = {
 
 // Default implementation based on `fetch` API
 
-var stringifyGETParams = function(url, data) {
+var stringifyGETParams = function (url, data) {
   var query = '';
   for (var key in data) {
     if (data[key] == null) continue;
@@ -1982,7 +1979,7 @@ var stringifyGETParams = function(url, data) {
   return url;
 };
 
-var tryParseJSON = function(text) {
+var tryParseJSON = function (text) {
   try {
     return JSON.parse(text);
   } catch (error) {
@@ -1990,13 +1987,13 @@ var tryParseJSON = function(text) {
   }
 };
 
-var getData = function(text, dataType) {
+var getData = function (text, dataType) {
   return dataType === 'json' ? tryParseJSON(text) : text;
 };
 
 // Override handler method to customize ajax functionality.
 var ajax = {
-  handler: function(options) {
+  handler: function (options) {
     if (options.type === 'GET' && typeof options.data === 'object') {
       options.url = stringifyGETParams(options.url, options.data);
       delete options.data;
@@ -2006,13 +2003,13 @@ var ajax = {
       method: options.type,
       headers: getDefaults(options.headers || {}, {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       }),
-      body: options.data
+      body: options.data,
     });
 
-    return fetch(options.url, options).then(function(response) {
-      return response.text().then(function(text) {
+    return fetch(options.url, options).then(function (response) {
+      return response.text().then(function (text) {
         var data = getData(text, options.dataType);
 
         if (response.ok) {
@@ -2025,7 +2022,7 @@ var ajax = {
         throw error;
       });
     });
-  }
+  },
 };
 
 // Router
@@ -2066,7 +2063,7 @@ class Router extends Events {
     }
     if (!callback) callback = this[name];
     var router = this;
-    History.instance.route(route, function(fragment) {
+    History.instance.route(route, function (fragment) {
       var args = router._extractParameters(route, fragment);
       if (router.execute(callback, args, name) !== false) {
         router.trigger.apply(router, ['route:' + name].concat(args));
@@ -2109,7 +2106,7 @@ class Router extends Events {
     route = route
       .replace(escapeRegExp, '\\$&')
       .replace(optionalParam, '(?:$1)?')
-      .replace(namedParam, function(match, optional) {
+      .replace(namedParam, function (match, optional) {
         return optional ? match : '([^/?]+)';
       })
       .replace(splatParam, '([^?]*?)');
@@ -2121,7 +2118,7 @@ class Router extends Events {
   // treated as `null` to normalize cross-browser behavior.
   _extractParameters(route, fragment) {
     var params = route.exec(fragment).slice(1);
-    return params.map(function(param, i) {
+    return params.map(function (param, i) {
       // Don't decode the search params.
       if (i === params.length - 1) return param || null;
       return param ? decodeURIComponent(param) : null;
@@ -2210,7 +2207,7 @@ class History extends Events {
   // Get the pathname and search params, without the root.
   getPath() {
     var path = this.decodeFragment(this.location.pathname + this.getSearch()).slice(
-      this.root.length - 1
+      this.root.length - 1,
     );
     return path.charAt(0) === '/' ? path.slice(1) : path;
   }
@@ -2304,7 +2301,7 @@ class History extends Events {
     // If the root doesn't match, no routes can match either.
     if (!this.matchRoot()) return false;
     fragment = this.fragment = this.getFragment(fragment);
-    return this.handlers.some(function(handler) {
+    return this.handlers.some(function (handler) {
       if (handler.route.test(fragment)) {
         handler.callback(fragment);
         return true;
@@ -2385,14 +2382,14 @@ var pathStripper = /#.*$/;
 // -------
 
 // Throw an error when a URL is needed, and none is supplied.
-var urlError = function() {
+var urlError = function () {
   throw new Error('A "url" property or function must be specified');
 };
 
 // Wrap an optional error callback with a fallback error event.
-var wrapError = function(model, options) {
+var wrapError = function (model, options) {
   var error = options.error;
-  options.error = function(resp) {
+  options.error = function (resp) {
     if (error) error.call(options.context, model, resp, options);
     model.trigger('error', model, resp, options);
   };
@@ -2424,5 +2421,5 @@ export {
   undelegate,
   isView,
   cloneObject,
-  waitLoading
+  waitLoading,
 };
