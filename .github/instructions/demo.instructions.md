@@ -1,3 +1,7 @@
+---
+applyTo: "demo/"
+---
+
 # GitHub Copilot Instructions for Nextbone Demo
 
 ## Purpose
@@ -21,17 +25,13 @@ These instructions guide Copilot to work specifically within the `demo/` app of 
 
 ## Patterns to Follow
 - Folder layout for a new example `foo`:
-  - `src/examples/foo/foo-model.ts` (and/or `foo-collection.ts` as needed)
+  - `src/examples/foo/foo.ts` (defines FooModel and/or FooCollection)
   - `src/examples/foo/foo-view.ts` (register custom element, e.g., `demo-foo-view`)
 - In `foo-view.ts`:
   - `export class DemoFooView extends view(LitElement)`
   - Use `@state model = new FooModel()` (and/or `@state collection = new FooCollection()`)
   - If listening to events, you can use `this.listenTo(obj, 'all', cb)` inside `connectedCallback()` and call `this.stopListening()` in `disconnectedCallback()`.
-  - If TS complains about `listenTo/stopListening`, add method declarations:
-    ```ts
-    declare listenTo: (object: any, events: string, callback: Function) => this;
-    declare stopListening: (object?: any, events?: string, callback?: Function) => this;
-    ```
+  
 - Wire the new example into the sidebar:
   - Import the view in `src/app.ts` (no `.ts` suffix): `import './examples/foo/foo-view'`
   - Add to `EXAMPLES` list: `{ id: 'foo', label: 'Foo', tag: 'demo-foo-view' }`

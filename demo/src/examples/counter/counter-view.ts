@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { view, state } from 'nextbone';
-import { CounterModel } from './counter-model.ts';
+import { CounterModel } from './counter.ts';
 
 @customElement('demo-counter-view')
 export class DemoCounterView extends view(LitElement) {

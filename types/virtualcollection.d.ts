@@ -2,10 +2,7 @@ export type VirtualCollectionOptions = {
     filter?: ModelFilter;
     destroyWith?: Model | Collection;
     comparator?: isFunction<Model>;
-    /**
-     * ;} [model]
-     */
-    "": new (...args: any[]) => Model | ((...args: any[]) => Model);
+    model?: new (...args: any[]) => Model | ((...args: any[]) => Model);
 };
 export type ModelFilterFunction = (model: Model) => any;
 export type ModelFilter = Record<string, any> | ModelFilterFunction;
@@ -28,10 +25,10 @@ export class VirtualCollection extends Collection {
      */
     get parent(): Collection;
     /**
-     * @param {ModelFilter} filter
+     * @param {ModelFilter} [filter]
      * @returns {VirtualCollection}
      */
-    updateFilter(filter: ModelFilter): VirtualCollection;
+    updateFilter(filter?: ModelFilter): VirtualCollection;
     _rebuildIndex(): void;
     orderViaParent(options: any): void;
     _onSort(collection: any, options: any): void;
@@ -54,21 +51,6 @@ export class VirtualCollection extends Collection {
     _onAllEvent(eventName: any, ...args: any[]): void;
 }
 export function buildFilter(options: any): any;
-export function virtualState(optionsOrProtoOrDescriptor: any, fieldName: any, options: any): ((protoOrDescriptor: any) => any | {
-    kind: any;
-    placement: any;
-    descriptor: any;
-    initializer: any;
-    key: string | symbol;
-    finisher(ctor: any): any;
-}) | {
-    kind: any;
-    placement: any;
-    descriptor: any;
-    initializer: any;
-    key: string | symbol;
-    finisher(ctor: any): any;
-};
 import type { Model } from './nextbone.js';
 import { Collection } from './nextbone.js';
 //# sourceMappingURL=virtualcollection.d.ts.map

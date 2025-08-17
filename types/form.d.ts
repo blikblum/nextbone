@@ -6,7 +6,7 @@ export class FormState {
      * @param {HTMLElement} el
      * @param {FormStateOptions} options
      */
-    constructor(el: HTMLElement, { model, updateMethod, inputs, events }?: FormStateOptions);
+    constructor(el: HTMLElement, { model, updateMethod, inputs, events, }?: FormStateOptions);
     _data: {};
     _attributes: Set<any>;
     _modelInstance: any;
@@ -17,18 +17,39 @@ export class FormState {
         selector: string;
     }[];
     updateMethod: string;
-    get modelInstance(): any;
-    acceptInput(prop: any, event: any): boolean;
-    getAttributes(): any[];
+    /**
+     * @returns {Model}
+     */
+    get modelInstance(): Model;
+    /**
+     * @param {string} prop
+     * @param {Event} event
+     * @returns {boolean}
+     */
+    acceptInput(prop: string, event: Event): boolean;
+    /**
+     * @returns {string[]}
+     */
+    getAttributes(): string[];
     __selector: string;
-    get(attr: any, { meta }?: {
-        meta: any;
+    /**
+     * @param {string} attr
+     * @param {object} options
+     * @param {boolean} [options.meta=false] - if true, will return associated metadata
+     * @returns
+     */
+    get(attr: string, { meta }?: {
+        meta?: boolean;
     }): any;
-    set(attr: any, value: any, { meta, reset, silent }?: {
-        meta: any;
-        reset: any;
-        silent: any;
-    }): void;
+    /**
+     * @param {string} attr
+     * @param {*} value
+     * @param {*} options
+     * @param {boolean} [options.meta=false] - if true, will set associated metadata
+     * @param {boolean} [options.reset=false] - if true, will reset attr error, touched and initial value
+     * @param {boolean} [options.silent=false] - if true, will not trigger update
+     */
+    set(attr: string, value: any, { meta, reset, silent }?: any): void;
     _ensureInitialData(model: any): void;
     /**
      * @param {string} attr
@@ -85,9 +106,8 @@ export class FormState {
     touched: {};
     modelInitialData: WeakMap<object, any>;
 }
-export function registerFormat(name: any, fn: any): void;
-export function registerInput(selector: any, events: any): void;
-export function form(optionsOrCtorOrDescriptor: FormStateOptions, options: any): ClassDecorator;
+export function registerFormat(name: string, fn: (value: any) => any): void;
+export function registerInput(selector: string, events: string[]): void;
 export type FormStateOptions = {
     model?: string | Model;
     updateMethod?: string;

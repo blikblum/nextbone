@@ -1,13 +1,11 @@
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { view, state, Model, Collection } from 'nextbone';
-import { PersonModel, PeopleCollection } from './events-model.ts';
+import { PersonModel, PeopleCollection } from './events.ts';
 
 @customElement('demo-events-view')
 export class DemoEventsView extends view(LitElement) {
-  // Declarations for Events mixin methods provided by view()
-  declare listenTo: (object: any, events: string, callback: Function) => this;
-  declare stopListening: (object?: any, events?: string, callback?: Function) => this;
+  
   @state
   person = new PersonModel({ id: 1, name: 'Alice' });
 

@@ -1,31 +1,33 @@
 /// <reference types="lodash-es" />
 
+import { Part } from "lit";
+
 type _Result<T> = T | (() => T);
 type _StringKey<T> = keyof T & string;
 
 interface AddOptions extends Silenceable {
-  at?: number | undefined;
-  merge?: boolean | undefined;
-  sort?: boolean | undefined;
+  at?: number;
+  merge?: boolean;
+  sort?: boolean;
 }
 
 interface CollectionSetOptions extends Parseable, Silenceable {
-  add?: boolean | undefined;
-  remove?: boolean | undefined;
-  merge?: boolean | undefined;
-  at?: number | undefined;
-  sort?: boolean | undefined;
+  add?: boolean;
+  remove?: boolean;
+  merge?: boolean;
+  at?: number;
+  sort?: boolean;
 }
 
 interface HistoryOptions extends Silenceable {
-  pushState?: boolean | undefined;
-  root?: string | undefined;
-  hashChange?: boolean | undefined;
+  pushState?: boolean;
+  root?: string;
+  hashChange?: boolean;
 }
 
 interface NavigateOptions {
-  trigger?: boolean | undefined;
-  replace?: boolean | undefined;
+  trigger?: boolean;
+  replace?: boolean;
 }
 
 interface RouterOptions {
@@ -33,19 +35,19 @@ interface RouterOptions {
 }
 
 interface Silenceable {
-  silent?: boolean | undefined;
+  silent?: boolean;
 }
 
 interface Validable {
-  validate?: boolean | undefined;
+  validate?: boolean;
 }
 
 interface Waitable {
-  wait?: boolean | undefined;
+  wait?: boolean;
 }
 
 interface Parseable {
-  parse?: boolean | undefined;
+  parse?: boolean;
 }
 
 interface PersistenceOptions extends Partial<Omit<AjaxSettings, 'success' | 'error'>> {
@@ -63,12 +65,14 @@ type CombinedModelConstructorOptions<
   M extends Model<any, any, E> = Model
 > = ModelConstructorOptions<M> & E;
 
-interface ModelSetOptions extends Silenceable, Validable {}
+interface ModelSetOptions extends Silenceable, Validable {
+  reset?: boolean;
+}
 
 interface ModelFetchOptions extends PersistenceOptions, ModelSetOptions, Parseable {}
 
 interface ModelSaveOptions extends Silenceable, Waitable, Validable, Parseable, PersistenceOptions {
-  patch?: boolean | undefined;
+  patch?: boolean;
 }
 
 interface ModelDestroyOptions extends Waitable, PersistenceOptions {}
@@ -79,7 +83,7 @@ export type CollectionComparator<TModel extends Model> =
   | { bivarianceHack(compare: TModel, to?: TModel): number }['bivarianceHack'];
 
 interface CollectionFetchOptions extends PersistenceOptions, Parseable, CollectionSetOptions {
-  reset?: boolean | undefined;
+  reset?: boolean;
 }
 
 type ObjectHash = Record<string, any>;
@@ -207,11 +211,12 @@ export class Events implements EventsMixin {
  * by listing them in the E parameter.
  */
 export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> extends Events {
-  attributes: Partial<T>;
+  attributes: T;
   changed: Partial<T>;
   cidPrefix: string;
   cid: string;
   collection: Collection<this>;
+  isLoading: boolean;
 
   private _changing: boolean;
   private _previousAttributes: Partial<T>;
@@ -244,10 +249,10 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
    * any instantiation logic is run for the Model.
    * @see https://backbonejs.org/#Model-preinitialize
    */
-  preinitialize(attributes?: T, options?: CombinedModelConstructorOptions<E, this>): void;
+  preinitialize(attributes?: Partial<T>, options?: CombinedModelConstructorOptions<E, this>): void;
 
-  constructor(attributes?: T, options?: CombinedModelConstructorOptions<E>);
-  initialize(attributes?: T, options?: CombinedModelConstructorOptions<E, this>): void;
+  constructor(attributes?: Partial<T>, options?: CombinedModelConstructorOptions<E>);
+  initialize(attributes?: Partial<T>, options?: CombinedModelConstructorOptions<E, this>): void;
 
   fetch(options?: ModelFetchOptions): Promise<any>;
 
@@ -258,7 +263,7 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
    *    return super.get("name");
    * }
    */
-  get<A extends _StringKey<T>>(attributeName: A): T[A] | undefined;
+  get<A extends _StringKey<T>>(attributeName: A): T[A];
 
   /**
    * For strongly-typed assignment of attributes, use the `set` method only privately in public setter properties.
@@ -315,6 +320,7 @@ export class Collection<TModel extends Model = Model> extends Events {
   model?: new (...args: any[]) => TModel | ((...args: any[]) => TModel);
   models: TModel[];
   length: number;
+  isLoading: boolean;
 
   /**
    * For use with collections as ES classes. If you define a preinitialize
@@ -555,11 +561,10 @@ export function eventHandler(
 ): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 
 export function view<
-  BaseClass extends {
-    new (): HTMLElement;
-    prototype: HTMLElement;
-  }
->(klass: BaseClass): BaseClass & EventsMixin;
+  TBase extends abstract new (...args: any[]) => HTMLElement
+>(klass: TBase): abstract new (
+  ...args: ConstructorParameters<TBase>
+) => InstanceType<TBase> & EventsMixin;
 
 export function on(
   event: string
@@ -576,10 +581,11 @@ export function state(options?: {
 
 // mixins
 
-type Constructor = new (...args: any[]) => {};
+type Constructor = abstract new (...args: any[]) => {};
 
-export function withEvents<T extends Constructor>(Base: T): T & EventsMixin;
-
+export function withEvents<T extends Constructor>(Base: T): abstract new (
+  ...args: ConstructorParameters<T>
+) => InstanceType<T> & EventsMixin;
 // utils
 
 export function delegate(

@@ -1,3 +1,4 @@
+export type Ctor<T> = new (...args: any[]) => T;
 export type FnRule = (this: Model, value: any, attr: string, computed: Record<string, any>) => any;
 export type ValidationRule = {
     /**
@@ -66,11 +67,11 @@ export type ValidationStaticMixin = {
  * @property {ValidationRules} validation
  */
 /**
- * @template {typeof Model} BaseClass
+ * @template {Ctor<Model<any, any, any>>} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
  * @returns {BaseClass & ValidationStaticMixin}
  */
-export function withValidation<BaseClass extends typeof Model>(ctorOrDescriptor: BaseClass): BaseClass & ValidationStaticMixin;
+export function withValidation<BaseClass extends Ctor<Model<any, any, any>>>(ctorOrDescriptor: BaseClass): BaseClass & ValidationStaticMixin;
 export namespace labelFormatters {
     function none(attrName: any): any;
     function sentenceCase(attrName: any): any;
