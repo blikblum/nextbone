@@ -44,12 +44,16 @@ export class FormState {
     /**
      * @param {string} attr
      * @param {*} value
-     * @param {*} options
+     * @param {object} options
      * @param {boolean} [options.meta=false] - if true, will set associated metadata
      * @param {boolean} [options.reset=false] - if true, will reset attr error, touched and initial value
      * @param {boolean} [options.silent=false] - if true, will not trigger update
      */
-    set(attr: string, value: any, { meta, reset, silent }?: any): void;
+    set(attr: string, value: any, { meta, reset, silent }?: {
+        meta?: boolean;
+        reset?: boolean;
+        silent?: boolean;
+    }): void;
     _ensureInitialData(model: any): void;
     /**
      * @param {string} attr

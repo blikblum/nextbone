@@ -292,7 +292,7 @@ export class FormState {
   /**
    * @param {string} attr
    * @param {*} value
-   * @param {*} options
+   * @param {object} options
    * @param {boolean} [options.meta=false] - if true, will set associated metadata
    * @param {boolean} [options.reset=false] - if true, will reset attr error, touched and initial value
    * @param {boolean} [options.silent=false] - if true, will not trigger update
