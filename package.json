@@ -76,6 +76,22 @@
     "./virtualcollection.js": {
       "types": "./types/virtualcollection.d.ts",
       "default": "./virtualcollection.js"
+    },
+    "./schema": {
+      "types": "./types/schema.d.ts",
+      "default": "./schema.js"
+    },
+    "./schema.js": {
+      "types": "./types/schema.d.ts",
+      "default": "./schema.js"
+    }
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
     }
   },
   "dependencies": {
@@ -108,7 +124,8 @@
     "turndown": "^7.1.2",
     "typescript": "^5.5.4",
     "vite": "^7.1.2",
-    "vitepress": "^1.0.0-alpha.75"
+    "vitepress": "^1.0.0-alpha.75",
+    "zod": "^4.0.0"
   },
   "scripts": {
     "demo:start": "vite serve demo",
@@ -117,10 +134,11 @@
     "test:fetch": "mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
     "test:localstorage": "web-test-runner test/localstorage/*.js --node-resolve --puppeteer",
     "test:validation": "mocha --require @babel/register --require test/validation/setup-globals.js --ui exports --recursive test/validation/",
+    "test:schema": "mocha --require @babel/register --require test/schema/setup-globals.js --ui exports --recursive test/schema/",
     "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",
     "test:class-utils": "mocha --require @babel/register test/class-utils",
-    "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
+    "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:schema && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js form.js test/core/*.js",
     "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write",
     "docs:dev": "vitepress dev docs",
@@ -145,6 +163,7 @@
     "class-utils.js",
     "dom-utils.js",
     "utils.js",
+    "schema.js",
     "LICENSE"
   ],
   "packageManager": "yarn@3.3.1"

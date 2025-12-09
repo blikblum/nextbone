@@ -6,6 +6,7 @@
     "dom-utils.js",
     "form.js",
     "localstorage.js",
+    "schema.js",
     "validation.js",
     "virtualcollection.js"
   ],

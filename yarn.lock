@@ -6576,6 +6576,12 @@ __metadata:
     typescript: ^5.5.4
     vite: ^7.1.2
     vitepress: ^1.0.0-alpha.75
+    zod: ^4.0.0
+  peerDependencies:
+    zod: ^4.0.0
+  peerDependenciesMeta:
+    zod:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -8742,6 +8748,13 @@ __metadata:
   version: 3.25.56
   resolution: "zod@npm:3.25.56"
   checksum: a208366c375744a1c8a56adb534b263113986d6f4f634d0d84415ff6856950b17ec26cb74dfc3ce70e30a0df2e507d7c94e2c62d9f3aec6c41d723f129b2489a
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.0.0":
+  version: 4.1.13
+  resolution: "zod@npm:4.1.13"
+  checksum: e5459280d46567df0adc188b0c687d425e616a206d4a73ee3bacf62d246f5546e24ef45790c7c4762d3ce7659c5e41052a29445d32d0d272410be9fe23162d03
   languageName: node
   linkType: hard
 
