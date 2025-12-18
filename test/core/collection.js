@@ -592,6 +592,9 @@ describe('Backbone.Collection', function () {
       expect(collection.at(0).get('a')).to.equal(1);
     });
     expect(collection.isLoading).to.equal(false);
+    collection.on('update', function () {
+      expect(collection.isLoading).to.equal(false);
+    });
     collection
       .fetch({
         success() {
