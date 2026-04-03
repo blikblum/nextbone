@@ -166,5 +166,5 @@
     "schema.js",
     "LICENSE"
   ],
-  "packageManager": "yarn@3.3.1"
+  "packageManager": "yarn@4.13.0"
 }
