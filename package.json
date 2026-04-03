@@ -15,10 +15,10 @@
   ],
   "author": "Luiz Américo Pereira Câmara",
   "main": "nextbone.js",
-  "types": "types/nextbone.d.ts",
+  "types": "./nextbone.d.ts",
   "exports": {
     ".": {
-      "types": "./types/nextbone.d.ts",
+      "types": "./nextbone.d.ts",
       "default": "./nextbone.js"
     },
     "./class-utils": {
