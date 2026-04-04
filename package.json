@@ -139,7 +139,7 @@
     "test:computed": "web-test-runner test/computed/*.js --node-resolve --puppeteer",
     "test:fetch": "mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
     "test:localstorage": "web-test-runner test/localstorage/*.js --node-resolve --puppeteer",
-    "test:validation": "mocha --require @babel/register --require test/validation/setup-globals.js --ui exports --recursive test/validation/",
+    "test:validation": "vitest run test/validation",
     "test:schema": "mocha --require @babel/register --require test/schema/setup-globals.js --ui exports --recursive test/schema/",
     "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",

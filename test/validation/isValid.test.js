@@ -1,0 +1,142 @@
+import { Collection, Model as NextboneModel } from 'nextbone';
+import { withValidation } from 'nextbone/validation.js';
+
+import { Validation, assert, refute, sinon } from './vitest-globals.js';
+import { defineLegacySuite } from './run-legacy-suite.js';
+
+const Backbone = { Collection, Model: NextboneModel };
+
+const suite = (() => {
+  let exportedSuite;
+  exportedSuite = {
+    isValid: {
+      'when model has not defined any validation': {
+        beforeEach: function () {
+          this.model = new Backbone.Model();
+        },
+
+        'returns true': function () {
+          assert.equals(this.model.isValid(), true);
+        },
+      },
+
+      'when model has defined validation': {
+        beforeEach: function () {
+          class Model extends withValidation(Backbone.Model) {
+            static validation = {
+              name: {
+                required: true,
+              },
+            };
+          }
+
+          this.model = new Model();
+        },
+
+        'returns true when model is valid': function () {
+          this.model.set({ name: 'name' });
+
+          assert.equals(this.model.isValid(), true);
+        },
+
+        'returns false when model is invalid': function () {
+          assert.equals(this.model.isValid(), false);
+
+          this.model.set({ name: '' });
+
+          assert.equals(this.model.isValid(), false);
+        },
+
+        'set validationError when model is invalid': function () {
+          this.model.set({ name: '' });
+
+          this.model.isValid();
+
+          assert(this.model.validationError);
+          assert(this.model.validationError.name);
+        },
+
+        'invalid is triggered when model is invalid': function (done) {
+          this.model.on('invalid', function (model, attrs) {
+            done();
+          });
+          refute(this.model.isValid());
+        },
+
+        'and passing name of attribute': {
+          beforeEach: function () {
+            class Model extends withValidation(Backbone.Model) {
+              static validation = {
+                name: {
+                  required: true,
+                },
+                age: {
+                  required: true,
+                },
+              };
+            }
+            this.model = new Model();
+          },
+
+          'returns false when attribute is invalid': function () {
+            refute(this.model.isValid('name'));
+          },
+
+          'invalid is triggered when attribute is invalid': function (done) {
+            this.model.on('invalid', function (model, attrs) {
+              done();
+            });
+            refute(this.model.isValid('name'));
+          },
+
+          'returns true when attribute is valid': function () {
+            this.model.set({ name: 'name' });
+
+            assert.equals(this.model.isValid('name'), true);
+          },
+        },
+
+        'and passing array of attributes': {
+          beforeEach: function () {
+            class Model extends withValidation(Backbone.Model) {
+              static validation = {
+                name: {
+                  required: true,
+                },
+                age: {
+                  required: true,
+                },
+                phone: {
+                  required: true,
+                },
+              };
+            }
+            this.model = new Model();
+          },
+
+          'returns false when all attributes are invalid': function () {
+            refute(this.model.isValid(['name', 'age']));
+          },
+
+          'returns false when one attribute is invalid': function () {
+            this.model.set({ name: 'name' });
+
+            refute(this.model.isValid(['name', 'age']));
+          },
+
+          'returns true when all attributes are valid': function () {
+            this.model.set({ name: 'name', age: 1 });
+
+            assert.equals(this.model.isValid(['name', 'age']), true);
+          },
+        },
+      },
+    },
+  };
+
+  return exportedSuite;
+})();
+
+for (const [suiteName, suiteDefinition] of Object.entries(suite)) {
+  defineLegacySuite(suiteName, suiteDefinition);
+}
