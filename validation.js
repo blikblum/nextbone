@@ -56,8 +56,6 @@ var keys = Object.keys;
 
 var options = {
   labelFormatter: 'sentenceCase',
-  valid: Function.prototype,
-  invalid: Function.prototype,
 };
 
 // Helper functions
@@ -541,16 +539,16 @@ function createClass(ModelClass) {
       return false;
     }
 
-    // This is called by Backbone when it needs to perform validation.
+    // This is called by Nextbone when it needs to perform validation.
     // You can call it manually without any parameters to validate the
     // entire model.
-    validate(attrs, setOptions) {
+    validate(attrs, setOptions = {}) {
       var rules = getRules(this.constructor);
       if (!rules) return;
       var model = this,
         validateAll = !attrs,
-        opt = extend({}, options, setOptions),
-        validatedAttrs = getValidatedAttrs(opt.attributes, rules),
+        { valid = options.valid, invalid = options.invalid, attributes } = setOptions,
+        validatedAttrs = getValidatedAttrs(attributes, rules),
         allAttrs = extend({}, validatedAttrs, model.attributes, attrs),
         flattened = flatten(allAttrs),
         changedAttrs = attrs ? flatten(attrs) : flattened,
@@ -558,17 +556,19 @@ function createClass(ModelClass) {
 
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
-      each(validatedAttrs, function (val, attr) {
-        var invalid = invalidAttrs && attr in invalidAttrs,
-          changed = attr in changedAttrs;
+      if (valid || invalid) {
+        each(validatedAttrs, function (val, attr) {
+          var isInvalid = invalidAttrs && attr in invalidAttrs,
+            changed = attr in changedAttrs;
 
-        if (!invalid) {
-          opt.valid(attr, model);
-        }
-        if (invalid && (changed || validateAll)) {
-          opt.invalid(attr, invalidAttrs[attr], model);
-        }
-      });
+          if (!isInvalid) {
+            valid?.(attr, model);
+          }
+          if (isInvalid && (changed || validateAll)) {
+            invalid?.(attr, invalidAttrs[attr], model);
+          }
+        });
+      }
 
       // Trigger validated events.
       // Need to defer this so the model is actually updated before
