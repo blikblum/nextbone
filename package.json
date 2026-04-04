@@ -23,11 +23,11 @@
     },
     "./class-utils": {
       "types": "./types/class-utils.d.ts",
-      "default": "./class-utils.js"
+      "default": "./dist/class-utils.js"
     },
     "./class-utils.js": {
       "types": "./types/class-utils.d.ts",
-      "default": "./class-utils.js"
+      "default": "./dist/class-utils.js"
     },
     "./computed": {
       "types": "./types/computed.d.ts",
@@ -122,13 +122,19 @@
     "sinon": "^11.1.1",
     "sinon-chai": "^3.7.0",
     "turndown": "^7.1.2",
-    "typescript": "^5.5.4",
+    "typescript": "^6.0.2",
     "vite": "^7.1.2",
     "vitepress": "^1.0.0-alpha.75",
+    "vitest": "^3.2.4",
     "zod": "^4.0.0"
   },
   "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "check-types": "tsc --noEmit",
     "demo:start": "vite serve demo",
+    "generate-types": "tsc --project tsconfig.types.json && tsc --project tsconfig.next.types.json",
+    "generate-types:next": "tsc --project tsconfig.next.types.json",
+    "prepack": "npm run build && npm run generate-types",
     "test": "web-test-runner test/core/*.js --node-resolve --puppeteer",
     "test:computed": "web-test-runner test/computed/*.js --node-resolve --puppeteer",
     "test:fetch": "mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
@@ -137,14 +143,13 @@
     "test:schema": "mocha --require @babel/register --require test/schema/setup-globals.js --ui exports --recursive test/schema/",
     "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",
-    "test:class-utils": "mocha --require @babel/register test/class-utils",
+    "test:class-utils": "vitest run src/**/*.test.ts",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:schema && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js form.js test/core/*.js",
     "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "types": "tsc --project tsconfig.types.json"
+    "docs:preview": "vitepress preview docs"
   },
   "sideEffects": false,
   "license": "MIT",
@@ -160,7 +165,7 @@
     "validation.js",
     "virtualcollection.js",
     "form.js",
-    "class-utils.js",
+    "dist/class-utils.js",
     "dom-utils.js",
     "utils.js",
     "schema.js",

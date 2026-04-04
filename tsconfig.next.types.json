@@ -1,0 +1,13 @@
+{
+  "include": ["src/class-utils.ts"],
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "NodeNext",
+    "outDir": "types",
+    "rootDir": "src",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "skipLibCheck": true
+  }
+}

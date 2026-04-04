@@ -9,7 +9,7 @@ Nextbone is a modern ES6 conversion of Backbone.js that integrates seamlessly wi
 ### Module Structure
 
 - **nextbone.js**: Main library containing Model, Collection, Events, Router, and View utilities (~2400 lines)
-- **Modular addons**: `computed.js`, `form.js`, `validation.js`, `localstorage.js`, `virtualcollection.js`, `class-utils.js`
+- **Modular addons**: `computed.js`, `form.js`, `validation.js`, `localstorage.js`, `virtualcollection.js`, and `src/class-utils.ts` (published as `nextbone/class-utils`)
 - **Types**: Auto-generated TypeScript definitions in `types/` from JSDoc comments except nextbone.d.ts
 
 ### Key Patterns
@@ -97,7 +97,9 @@ class UserModel extends withValidation(Model<UserData>) {
 
 ### Build & Type Generation
 
-- `npm run types` - Generate TypeScript definitions from JSDoc
+- `npm run build:class-utils` - Compile `src/class-utils.ts` to `dist/class-utils.js`
+- `npm run build:class-utils:types` - Generate the published declaration file for `nextbone/class-utils`
+- `npm run generate-types` - Generate TypeScript definitions for published modules
 - Uses Babel with decorators support (`@babel/plugin-proposal-decorators`)
 - ES modules only (`"type": "module"` in package.json)
 
@@ -125,7 +127,7 @@ class UserModel extends withValidation(Model<UserData>) {
 ## Integration Points
 
 - Form utilities in `form.js` handle nested object paths and model binding
-- `class-utils.js` provides async method decorators for service classes
+- `src/class-utils.ts` provides async method decorators for service classes
 - LocalStorage sync adapter in `localstorage.js`
 - Virtual collection for performance with large datasets
 

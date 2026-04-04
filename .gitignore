@@ -3,6 +3,7 @@ raw
 .DS_Store
 node_modules
 bower_components
+dist
 
 docs/.vitepress/dist
 docs/.vitepress/cache
