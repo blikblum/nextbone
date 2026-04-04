@@ -11,7 +11,7 @@ export class FormState {
     _attributes: Set<any>;
     _modelInstance: any;
     el: HTMLElement;
-    model: string | Model;
+    model: string | Model<any, string, any>;
     events: {
         event: string;
         selector: string;
@@ -31,7 +31,7 @@ export class FormState {
      * @returns {string[]}
      */
     getAttributes(): string[];
-    __selector: string;
+    __selector: string | undefined;
     /**
      * @param {string} attr
      * @param {object} options
@@ -39,7 +39,7 @@ export class FormState {
      * @returns
      */
     get(attr: string, { meta }?: {
-        meta?: boolean;
+        meta?: boolean | undefined;
     }): any;
     /**
      * @param {string} attr
@@ -50,9 +50,9 @@ export class FormState {
      * @param {boolean} [options.silent=false] - if true, will not trigger update
      */
     set(attr: string, value: any, { meta, reset, silent }?: {
-        meta?: boolean;
-        reset?: boolean;
-        silent?: boolean;
+        meta?: boolean | undefined;
+        reset?: boolean | undefined;
+        silent?: boolean | undefined;
     }): void;
     _ensureInitialData(model: any): void;
     /**
@@ -100,27 +100,26 @@ export class FormState {
      * @returns {boolean}
      */
     isValid({ attributes, update, touch }?: {
-        attributes?: string[];
-        update?: boolean;
-        touch?: boolean;
+        attributes?: string[] | undefined;
+        update?: boolean | undefined;
+        touch?: boolean | undefined;
     }): boolean;
     loadInitialData(): void;
     reset(): void;
-    errors: {};
-    touched: {};
-    modelInitialData: WeakMap<object, any>;
+    errors: {} | undefined;
+    touched: {} | undefined;
+    modelInitialData: WeakMap<object, any> | undefined;
 }
 export function registerFormat(name: string, fn: (value: any) => any): void;
 export function registerInput(selector: string, events: string[]): void;
 export type FormStateOptions = {
-    model?: string | Model;
-    updateMethod?: string;
-    inputs?: Record<string, string[]>;
-    events?: Array<{
+    model?: string | Model<any, string, any> | undefined;
+    updateMethod?: string | undefined;
+    inputs?: Record<string, string[]> | undefined;
+    events?: {
         event: string;
         selector: string;
-    }>;
+    }[] | undefined;
 };
 import type { Model } from './nextbone.js';
-import type { Model as Model_1 } from './nextbone.js';
 //# sourceMappingURL=form.d.ts.map

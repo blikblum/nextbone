@@ -61,13 +61,15 @@ interface PersistenceOptions extends Partial<Omit<AjaxSettings, 'success' | 'err
   error?: ((modelOrCollection: any, response: any, options: any) => void) | undefined;
 }
 
-interface ModelConstructorOptions<TModel extends Model = Model> extends ModelSetOptions, Parseable {
+interface ModelConstructorOptions<TModel extends Model<any, any, any> = Model<any, any, any>>
+  extends ModelSetOptions,
+    Parseable {
   collection?: Collection<TModel> | undefined;
 }
 
 type CombinedModelConstructorOptions<
   E,
-  M extends Model<any, any, E> = Model,
+  M extends Model<any, any, E> = Model<any, any, E>,
 > = ModelConstructorOptions<M> & E;
 
 interface ModelSetOptions extends Silenceable, Validable {
@@ -82,7 +84,7 @@ interface ModelSaveOptions extends Silenceable, Waitable, Validable, Parseable, 
 
 interface ModelDestroyOptions extends Waitable, PersistenceOptions {}
 
-export type CollectionComparator<TModel extends Model> =
+export type CollectionComparator<TModel extends Model<any, any, any>> =
   | string
   | { bivarianceHack(element: TModel): number | string }['bivarianceHack']
   | { bivarianceHack(compare: TModel, to?: TModel): number }['bivarianceHack'];
@@ -215,7 +217,11 @@ export class Events implements EventsMixin {
  * E - Extensions to the model constructor options. You can accept additional constructor options
  * by listing them in the E parameter.
  */
-export class Model<T extends ObjectHash = any, IdType = string, E = any> extends Events {
+export class Model<
+  T extends ObjectHash = any,
+  IdType extends string | number = string,
+  E = any,
+> extends Events {
   attributes: T;
   changed: Partial<T>;
   cidPrefix: string;
@@ -307,7 +313,7 @@ export class Model<T extends ObjectHash = any, IdType = string, E = any> extends
   save(attributes?: Partial<T> | null, options?: ModelSaveOptions): Promise<any>;
   unset(attribute: _StringKey<T>, options?: Silenceable): this;
   validate(attributes?: Partial<T> | null, options?: any): any;
-  private _validate(attributes?: Partial<T> | null, options: any): boolean;
+  private _validate(attributes?: Partial<T> | null, options?: any): boolean;
 
   // utility mixins
 
@@ -325,7 +331,7 @@ export class Model<T extends ObjectHash = any, IdType = string, E = any> extends
   matches(attrs: any): boolean;
 }
 
-export class Collection<TModel extends Model = Model> extends Events {
+export class Collection<TModel extends Model<any, any, any> = Model<any, any, any>> extends Events {
   model?: new (...args: any[]) => TModel | ((...args: any[]) => TModel);
   models: TModel[];
   length: number;

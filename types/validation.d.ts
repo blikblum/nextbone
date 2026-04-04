@@ -1,62 +1,62 @@
 export type Ctor<T> = new (...args: any[]) => T;
-export type FnRule = (this: Model, value: any, attr: string, computed: Record<string, any>) => any;
+export type FnRule = (this: Model<any, string, any>, value: any, attr: string, computed: Record<string, any>) => any;
 export type ValidationRule = {
     /**
      * - If the attribute is required or not
      */
-    required?: boolean | FnRule;
+    required?: boolean | FnRule | undefined;
     /**
      * - If the attribute has to be accepted
      */
-    acceptance?: boolean | FnRule;
+    acceptance?: boolean | FnRule | undefined;
     /**
      * - The minimum value for the attribute
      */
-    min?: number | FnRule;
+    min?: number | FnRule | undefined;
     /**
      * - The maximum value for the attribute
      */
-    max?: number | FnRule;
+    max?: number | FnRule | undefined;
     /**
      * - The range for the attribute]
      */
-    range?: number[] | FnRule;
+    range?: number[] | FnRule | undefined;
     /**
      * - The length for the attribute
      */
-    length?: number | FnRule;
+    length?: number | FnRule | undefined;
     /**
      * - The minimum length for the attribute
      */
-    minLength?: number | FnRule;
+    minLength?: number | FnRule | undefined;
     /**
      * - The maximum length for the attribute
      */
-    maxLength?: number | FnRule;
+    maxLength?: number | FnRule | undefined;
     /**
      * - The range for the length of the attribute
      */
-    rangeLength?: number[] | FnRule;
+    rangeLength?: number[] | FnRule | undefined;
     /**
      * - The allowed values for the attribute
      */
-    oneOf?: string[] | FnRule;
+    oneOf?: string[] | FnRule | undefined;
     /**
      * - The name of the attribute to compare with
      */
-    equalTo?: string | FnRule;
+    equalTo?: string | FnRule | undefined;
     /**
      * - The pattern to match the attribute against
      */
-    pattern?: RegExp | string | FnRule;
+    pattern?: string | RegExp | FnRule | undefined;
     /**
      * - The error message to display if the validation fails
      */
-    msg?: string;
+    msg?: string | undefined;
     /**
      * - A custom function used for validation
      */
-    fn?: FnRule;
+    fn?: FnRule | undefined;
 };
 export type ValidationRules = Record<string, ValidationRule>;
 export type ValidationStaticMixin = {
@@ -111,8 +111,6 @@ export namespace patterns {
 }
 export namespace options {
     let labelFormatter: string;
-    let valid: Function;
-    let invalid: Function;
 }
 import type { Model } from './nextbone.js';
 //# sourceMappingURL=validation.d.ts.map

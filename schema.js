@@ -454,8 +454,21 @@ function createClass(ModelClass) {
 
 // decorator
 /**
+ * @typedef {object} SchemaInstanceMixin
+ * @property {(attr: string|AttributesMap, value?: any) => string|ValidationErrorMap|undefined} preValidate
+ * @property {(opts?: string|PathList|ValidationOptions) => boolean} isValid
+ * @property {(attrs?: AttributesMap|null, options?: ValidationOptions) => ValidationErrorMap|undefined} validate
+ */
+
+/**
  * @typedef SchemaStaticMixin
  * @property {ZodSchema} schema
+ */
+
+/**
+ * @template {Ctor<Model<any, any, any>>} BaseClass
+ * @typedef {(new (...args: ConstructorParameters<BaseClass>) => InstanceType<BaseClass> & SchemaInstanceMixin) &
+ *   SchemaStaticMixin} SchemaMixinClass
  */
 
 /**
@@ -484,7 +497,7 @@ function createClass(ModelClass) {
  *
  * @template {Ctor<Model<any, any, any>>} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
- * @returns {BaseClass & SchemaStaticMixin}
+ * @returns {SchemaMixinClass<BaseClass>}
  */
 const withSchema = (ctorOrDescriptor) => {
   if (typeof ctorOrDescriptor === 'function') {
