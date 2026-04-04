@@ -126,4 +126,4 @@ document.body.innerHTML = '<tasks-view></tasks-view>'
 
 ### Related projects
 
-Copyright © 2019-2024 Luiz Américo Pereira Câmara
+Copyright © 2019-2026 Luiz Américo Pereira Câmara
