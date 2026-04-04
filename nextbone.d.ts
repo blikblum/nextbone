@@ -1,7 +1,14 @@
-/// <reference types="lodash-es" />
-
 type _Result<T> = T | (() => T);
 type _StringKey<T> = keyof T & string;
+type _List<T> = ArrayLike<T>;
+type _ListIterator<T, TResult> = (value: T, index: number, list: _List<T>) => TResult;
+type _MemoIterator<T, TResult> = (
+  memo: TResult,
+  value: T,
+  index: number,
+  list: _List<T>,
+) => TResult;
+type _Dictionary<T> = Record<string, T>;
 
 interface AddOptions extends Silenceable {
   at?: number;
@@ -128,7 +135,7 @@ interface EventMap {
  *     // ... (other methods)
  * }
  *
- * Object.assign(YourClass.prototype, Events);  // can also use _.extend
+ * Object.assign(YourClass.prototype, Events);
  *
  * If you are just writing a class type declaration that doesn't already
  * extend some other base class, you can use the EventsMixin instead;
@@ -298,7 +305,7 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
   validate(attributes?: Partial<T> | null, options?: any): any;
   private _validate(attributes?: Partial<T> | null, options: any): boolean;
 
-  // mixins from underscore
+  // utility mixins
 
   keys(): string[];
   values(): any[];
@@ -393,71 +400,63 @@ export class Collection<TModel extends Model = Model> extends Events {
    */
   slice(min?: number, max?: number): TModel[];
 
-  // mixins from underscore
+  // utility mixins
 
-  all(iterator?: _.ListIterator<TModel, boolean>, context?: any): boolean;
-  any(iterator?: _.ListIterator<TModel, boolean>, context?: any): boolean;
-  collect<TResult>(iterator: _.ListIterator<TModel, TResult>, context?: any): TResult[];
+  all(iterator?: _ListIterator<TModel, boolean>, context?: any): boolean;
+  any(iterator?: _ListIterator<TModel, boolean>, context?: any): boolean;
+  collect<TResult>(iterator: _ListIterator<TModel, TResult>, context?: any): TResult[];
   contains(value: TModel): boolean;
-  countBy(iterator?: _.ListIterator<TModel, any>): _.Dictionary<number>;
-  countBy(iterator: string): _.Dictionary<number>;
-  detect(iterator: _.ListIterator<TModel, boolean>, context?: any): TModel;
+  countBy(iterator?: _ListIterator<TModel, any>): _Dictionary<number>;
+  countBy(iterator: string): _Dictionary<number>;
+  detect(iterator: _ListIterator<TModel, boolean>, context?: any): TModel;
   difference(others: TModel[]): TModel[];
   drop(n?: number): TModel[];
-  each(iterator: _.ListIterator<TModel, void>, context?: any): TModel[];
-  every(iterator: _.ListIterator<TModel, boolean>, context?: any): boolean;
-  filter(iterator: _.ListIterator<TModel, boolean>, context?: any): TModel[];
-  find(iterator: _.ListIterator<TModel, boolean>, context?: any): TModel;
-  findIndex(predicate: _.ListIterator<TModel, boolean>, context?: any): number;
-  findLastIndex(predicate: _.ListIterator<TModel, boolean>, context?: any): number;
+  each(iterator: _ListIterator<TModel, void>, context?: any): TModel[];
+  every(iterator: _ListIterator<TModel, boolean>, context?: any): boolean;
+  filter(iterator: _ListIterator<TModel, boolean>, context?: any): TModel[];
+  find(iterator: _ListIterator<TModel, boolean>, context?: any): TModel;
+  findIndex(predicate: _ListIterator<TModel, boolean>, context?: any): number;
+  findLastIndex(predicate: _ListIterator<TModel, boolean>, context?: any): number;
   first(): TModel;
   first(n: number): TModel[];
-  foldl<TResult>(iterator: _.MemoIterator<TModel, TResult>, memo?: TResult, context?: any): TResult;
-  foldr<TResult>(iterator: _.MemoIterator<TModel, TResult>, memo?: TResult, context?: any): TResult;
-  forEach(iterator: _.ListIterator<TModel, void>, context?: any): TModel[];
-  groupBy(iterator: _.ListIterator<TModel, any> | string, context?: any): _.Dictionary<TModel[]>;
+  foldl<TResult>(iterator: _MemoIterator<TModel, TResult>, memo?: TResult, context?: any): TResult;
+  foldr<TResult>(iterator: _MemoIterator<TModel, TResult>, memo?: TResult, context?: any): TResult;
+  forEach(iterator: _ListIterator<TModel, void>, context?: any): TModel[];
+  groupBy(iterator: _ListIterator<TModel, any> | string, context?: any): _Dictionary<TModel[]>;
   head(): TModel;
   head(n: number): TModel[];
   include(value: TModel): boolean;
   includes(value: TModel): boolean;
-  indexBy(iterator: _.ListIterator<TModel, any>, context?: any): _.Dictionary<TModel>;
-  indexBy(iterator: string, context?: any): _.Dictionary<TModel>;
+  indexBy(iterator: _ListIterator<TModel, any>, context?: any): _Dictionary<TModel>;
+  indexBy(iterator: string, context?: any): _Dictionary<TModel>;
   indexOf(value: TModel, isSorted?: boolean): number;
   initial(): TModel;
   initial(n: number): TModel[];
-  inject<TResult>(
-    iterator: _.MemoIterator<TModel, TResult>,
-    memo?: TResult,
-    context?: any,
-  ): TResult;
+  inject<TResult>(iterator: _MemoIterator<TModel, TResult>, memo?: TResult, context?: any): TResult;
   invoke(methodName: string, ...args: any[]): any;
   isEmpty(): boolean;
   last(): TModel;
   last(n: number): TModel[];
   lastIndexOf(value: TModel, from?: number): number;
-  map<TResult>(iterator: _.ListIterator<TModel, TResult>, context?: any): TResult[];
-  max(iterator?: _.ListIterator<TModel, any>, context?: any): TModel;
-  min(iterator?: _.ListIterator<TModel, any>, context?: any): TModel;
-  partition(iterator: _.ListIterator<TModel, boolean>): TModel[][];
-  reduce<TResult>(
-    iterator: _.MemoIterator<TModel, TResult>,
-    memo?: TResult,
-    context?: any,
-  ): TResult;
+  map<TResult>(iterator: _ListIterator<TModel, TResult>, context?: any): TResult[];
+  max(iterator?: _ListIterator<TModel, any>, context?: any): TModel;
+  min(iterator?: _ListIterator<TModel, any>, context?: any): TModel;
+  partition(iterator: _ListIterator<TModel, boolean>): TModel[][];
+  reduce<TResult>(iterator: _MemoIterator<TModel, TResult>, memo?: TResult, context?: any): TResult;
   reduceRight<TResult>(
-    iterator: _.MemoIterator<TModel, TResult>,
+    iterator: _MemoIterator<TModel, TResult>,
     memo?: TResult,
     context?: any,
   ): TResult;
-  reject(iterator: _.ListIterator<TModel, boolean>, context?: any): TModel[];
+  reject(iterator: _ListIterator<TModel, boolean>, context?: any): TModel[];
   rest(n?: number): TModel[];
   sample(): TModel;
   sample(n: number): TModel[];
-  select(iterator: _.ListIterator<TModel, boolean>, context?: any): TModel[];
+  select(iterator: _ListIterator<TModel, boolean>, context?: any): TModel[];
   shuffle(): TModel[];
   size(): number;
-  some(iterator?: _.ListIterator<TModel, boolean>, context?: any): boolean;
-  sortBy(iterator?: _.ListIterator<TModel, any>, context?: any): TModel[];
+  some(iterator?: _ListIterator<TModel, boolean>, context?: any): boolean;
+  sortBy(iterator?: _ListIterator<TModel, any>, context?: any): TModel[];
   sortBy(iterator: string, context?: any): TModel[];
   tail(n?: number): TModel[];
   take(): TModel;

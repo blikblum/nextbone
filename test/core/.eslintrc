@@ -8,6 +8,8 @@
   ],
   "rules": {
     "no-unused-expressions": 0,
+    "dot-notation": 0,
+    "no-throw-literal": 0,
     "chai-friendly/no-unused-expressions": 2
   }
 }
