@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions for Nextbone
+# Instructions for Nextbone
 
 ## Project Overview
 
@@ -11,6 +11,7 @@ Nextbone is a modern ES6 conversion of Backbone.js that integrates seamlessly wi
 - **nextbone.js**: Main library containing Model, Collection, Events, Router, and View utilities (~2400 lines)
 - **Modular addons**: `computed.js`, `form.js`, `validation.js`, `localstorage.js`, `virtualcollection.js`, and `src/class-utils.ts` (published as `nextbone/class-utils`)
 - **Types**: Auto-generated TypeScript definitions in `types/` from JSDoc comments except nextbone.d.ts
+- Addons are being rewritten in TypeScript with the new source files in `src/`. Already done for `class-utils`
 
 ### Key Patterns
 
@@ -94,19 +95,20 @@ class UserModel extends withValidation(Model<UserData>) {
 - **Module tests**: `npm run test:computed`, `npm run test:validation`, etc.
 - **All tests**: `npm run test:all`
 - Validation tests use Mocha with CommonJS exports pattern (`test/validation/`)
+- Modules written in TypeScript use Vitest for testing
 
 ### Build & Type Generation
 
-- `npm run build:class-utils` - Compile `src/class-utils.ts` to `dist/class-utils.js`
-- `npm run build:class-utils:types` - Generate the published declaration file for `nextbone/class-utils`
-- `npm run generate-types` - Generate TypeScript definitions for published modules
+- Use Yarn for package management
+- `yarn build` - Compile `src/class-utils.ts` to `dist/class-utils.js`
+- `yarn generate-types` - Generate TypeScript definitions for published modules
 - Uses Babel with decorators support (`@babel/plugin-proposal-decorators`)
 - ES modules only (`"type": "module"` in package.json)
 
 ### Code Standards
 
 - Modern ES6+ classes instead of Backbone's extend pattern
-- JSDoc comments for TypeScript generation
+- JSDoc comments for TypeScript types generation
 - Lodash-ES for utilities (tree-shakeable)
 - Web Components standards compliance
 
@@ -114,12 +116,14 @@ class UserModel extends withValidation(Model<UserData>) {
 
 - **lodash-es**: Core utilities (tree-shakeable)
 - **Babel**: Decorator and class property transforms
+- **Vitest**: Testing for TypeScript modules
 - **Web Test Runner**: Modern testing without Node.js overhead
 - **LitElement**: Primary Web Component target (optional)
 
 ## File Conventions
 
 - Tests mirror source structure: `test/core/model.js` tests Model from `nextbone.js`
+- Typescript module tests use files colocated with `.test.ts` extension
 - Validation tests use `.cjs` extension and CommonJS exports
 - TypeScript definitions auto-generated, don't edit manually
 - Demo uses Vite + TypeScript for development
