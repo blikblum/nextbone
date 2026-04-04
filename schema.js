@@ -1,4 +1,4 @@
-import { isString, isArray, isObject, isEmpty, extend, pick, each, keys } from 'lodash-es';
+import { isString, isArray, isObject, isEmpty, each, keys } from 'lodash-es';
 
 /**
  * @import { Model } from './nextbone.js'
@@ -49,13 +49,17 @@ import { isString, isArray, isObject, isEmpty, extend, pick, each, keys } from '
 //       'owner.address.zip': 1234
 //     };
 
+var isPlainObject = function (value) {
+  return !!value && typeof value === 'object' && value.constructor === Object;
+};
+
 var flatten = function (obj, into, prefix) {
   into = into || {};
   prefix = prefix || '';
 
   each(obj, function (val, key) {
     if (obj.hasOwnProperty(key)) {
-      if (!!val && typeof val === 'object' && val.constructor === Object) {
+      if (isPlainObject(val)) {
         flatten(val, into, prefix + key + '.');
       }
 
@@ -67,23 +71,154 @@ var flatten = function (obj, into, prefix) {
   return into;
 };
 
-// Determines if two objects have at least one key in common
-var hasCommonKeys = function (obj1, obj2) {
-  for (let key in obj1) {
-    if (key in obj2) return true;
+var unwrapSchema = function (schema) {
+  var currentSchema = schema;
+
+  while (currentSchema && typeof currentSchema.unwrap === 'function') {
+    currentSchema = currentSchema.unwrap();
   }
+
+  return currentSchema;
+};
+
+var getSchemaShape = function (schema) {
+  return unwrapSchema(schema)?.shape;
+};
+
+var getSchemaLeafPaths = function (schema, prefix, into) {
+  prefix = prefix || '';
+  into = into || [];
+
+  var shape = getSchemaShape(schema);
+  if (!shape) {
+    prefix && into.push(prefix);
+    return into;
+  }
+
+  each(shape, function (fieldSchema, key) {
+    var path = prefix ? prefix + '.' + key : key;
+    getSchemaLeafPaths(fieldSchema, path, into);
+  });
+
+  return into;
+};
+
+var matchesPath = function (path, candidate) {
+  return path === candidate || path.startsWith(candidate + '.') || candidate.startsWith(path + '.');
+};
+
+var hasMatchingPath = function (paths, path) {
+  for (var index = 0; index < paths.length; index++) {
+    if (matchesPath(path, paths[index])) {
+      return true;
+    }
+  }
+
   return false;
+};
+
+var hasCommonPaths = function (paths1, paths2) {
+  for (var index = 0; index < paths1.length; index++) {
+    if (hasMatchingPath(paths2, paths1[index])) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+var getAffectedSchemaPaths = function (schema, paths) {
+  var leafPaths = getSchemaLeafPaths(schema);
+
+  return leafPaths.filter(function (leafPath) {
+    return hasMatchingPath(paths, leafPath);
+  });
+};
+
+var setPathValue = function (obj, path, value) {
+  var parts = path.split('.');
+  var current = obj;
+
+  for (var index = 0; index < parts.length - 1; index++) {
+    var part = parts[index];
+    if (!isPlainObject(current[part])) {
+      current[part] = {};
+    }
+    current = current[part];
+  }
+
+  current[parts[parts.length - 1]] = value;
+  return obj;
+};
+
+var ensurePath = function (obj, path) {
+  var parts = path.split('.');
+  var current = obj;
+
+  for (var index = 0; index < parts.length - 1; index++) {
+    var part = parts[index];
+    if (!isPlainObject(current[part])) {
+      current[part] = {};
+    }
+    current = current[part];
+  }
+
+  var leafKey = parts[parts.length - 1];
+  if (!Object.prototype.hasOwnProperty.call(current, leafKey)) {
+    current[leafKey] = void 0;
+  }
+
+  return obj;
+};
+
+var mergeNestedAttrs = function (target, source) {
+  if (!isPlainObject(source)) {
+    return target;
+  }
+
+  each(source, function (value, key) {
+    if (isPlainObject(value)) {
+      var base = isPlainObject(target[key]) ? target[key] : {};
+      target[key] = mergeNestedAttrs(base, value);
+      return;
+    }
+
+    target[key] = value;
+  });
+
+  return target;
+};
+
+var buildValidationAttrs = function (currentAttrs, attrs, paths) {
+  var allAttrs = mergeNestedAttrs({}, currentAttrs || {});
+
+  each(paths, function (path) {
+    ensurePath(allAttrs, path);
+  });
+
+  mergeNestedAttrs(allAttrs, attrs);
+
+  return allAttrs;
+};
+
+var toValidatedAttrs = function (paths) {
+  return paths.reduce(function (memo, key) {
+    memo[key] = void 0;
+    return memo;
+  }, {});
 };
 
 // Returns an object with undefined properties for all
 // attributes that have defined schema validation.
 var getValidatedAttrs = function (attrs, schema) {
-  const schemaKeys = Object.keys(schema.shape || {});
-  attrs = attrs || schemaKeys;
-  return attrs.reduce(function (memo, key) {
-    memo[key] = void 0;
-    return memo;
-  }, {});
+  var schemaKeys = Object.keys(getSchemaShape(schema) || {});
+  var paths = attrs ? getAffectedSchemaPaths(schema, attrs) : schemaKeys;
+
+  return toValidatedAttrs(paths);
+};
+
+var getChangedValidatedAttrs = function (attrs, schema) {
+  return toValidatedAttrs(getAffectedSchemaPaths(schema, Object.keys(flatten(attrs || {}))));
 };
 
 // Formats Zod error messages into a flat object keyed by attribute name
@@ -103,50 +238,32 @@ var formatZodErrors = function (zodError) {
   return isEmpty(errors) ? null : errors;
 };
 
+var collectRequestedErrors = function (errors, paths) {
+  if (!errors) return null;
+
+  var errorPaths = keys(errors);
+  var invalidAttrs = paths.reduce(function (memo, path) {
+    var matchingPath = errorPaths.find(function (errorPath) {
+      return matchesPath(path, errorPath);
+    });
+
+    if (matchingPath) {
+      memo[path] = errors[matchingPath];
+    }
+
+    return memo;
+  }, {});
+
+  return isEmpty(invalidAttrs) ? null : invalidAttrs;
+};
+
 // Validates attributes using the Zod schema
-var validateWithSchema = function (model, attrs, schema) {
+var validateWithSchema = function (attrs, schema) {
   const result = schema.safeParse(attrs);
   if (result.success) {
     return null;
   }
   return formatZodErrors(result.error);
-};
-
-// Validates a specific attribute using the Zod schema
-var validateAttr = function (model, attr, value, allAttrs, schema) {
-  // Create an object with just the attribute to validate
-  const shape = schema.shape || {};
-
-  // Check if the attribute is in the schema
-  if (!shape[attr]) {
-    return '';
-  }
-
-  // Validate just this attribute
-  const result = shape[attr].safeParse(value);
-  if (result.success) {
-    return '';
-  }
-
-  // Return the first error message
-  return result.error.issues[0]?.message || 'Invalid value';
-};
-
-// Loops through the model's attributes and validates the specified attrs.
-// Returns an object containing names of invalid attributes and error messages.
-var validateModel = function (model, allAttrs, validatedAttrs, schema) {
-  var error,
-    invalidAttrs = null;
-
-  for (var attr in validatedAttrs) {
-    error = validateAttr(model, attr, validatedAttrs[attr], allAttrs, schema);
-    if (error) {
-      invalidAttrs || (invalidAttrs = {});
-      invalidAttrs[attr] = error;
-    }
-  }
-
-  return invalidAttrs;
 };
 
 const getSchema = (ctor) => {
@@ -173,27 +290,29 @@ function createClass(ModelClass) {
       var schema = getSchema(this.constructor);
       if (!schema) return;
 
-      var self = this,
-        result = {},
-        error,
-        allAttrs = extend({}, this.attributes);
-
       if (isObject(attr)) {
-        // If multiple attributes are passed at once we would like for the validation functions to
-        // have access to the fresh values sent for all attributes, in the same way they do in the
-        // regular validation
-        extend(allAttrs, attr);
+        var validatedAttrs = getChangedValidatedAttrs(attr, schema);
+        var validatedPaths = keys(validatedAttrs);
+        if (!validatedPaths.length) {
+          return undefined;
+        }
 
-        each(attr, function (attrValue, attrKey) {
-          error = validateAttr(self, attrKey, attrValue, allAttrs, schema);
-          if (error) {
-            result[attrKey] = error;
-          }
-        });
-
-        return isEmpty(result) ? undefined : result;
+        var allAttrs = buildValidationAttrs(this.attributes, attr, validatedPaths);
+        var errors = validateWithSchema(allAttrs, schema);
+        return collectRequestedErrors(errors, validatedPaths) || undefined;
       }
-      return validateAttr(self, attr, value, allAttrs, schema);
+
+      var requestedPaths = getAffectedSchemaPaths(schema, [attr]);
+      if (!requestedPaths.length) {
+        return '';
+      }
+
+      var validationAttrs = buildValidationAttrs(this.attributes, null, requestedPaths);
+      setPathValue(validationAttrs, attr, value);
+
+      return (
+        collectRequestedErrors(validateWithSchema(validationAttrs, schema), [attr])?.[attr] || ''
+      );
     }
 
     /**
@@ -232,23 +351,22 @@ function createClass(ModelClass) {
 
       var model = this,
         validateAll = !attrs,
-        validatedAttrs = getValidatedAttrs(options.attributes, schema),
-        allAttrs = extend({}, validatedAttrs, model.attributes, attrs),
-        flattened = flatten(allAttrs),
-        changedAttrs = attrs ? flatten(attrs) : flattened,
-        invalidAttrs = validateModel(
-          model,
-          allAttrs,
-          pick(flattened, keys(validatedAttrs)),
-          schema,
-        );
+        validatedAttrs = options.attributes
+          ? getValidatedAttrs(options.attributes, schema)
+          : attrs
+            ? getChangedValidatedAttrs(attrs, schema)
+            : getValidatedAttrs(undefined, schema),
+        validatedPaths = keys(validatedAttrs),
+        allAttrs = buildValidationAttrs(model.attributes, attrs, validatedPaths),
+        changedPaths = keys(attrs ? flatten(attrs) : flatten(allAttrs)),
+        invalidAttrs = collectRequestedErrors(validateWithSchema(allAttrs, schema), validatedPaths);
 
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
       if (options.valid || options.invalid) {
         each(validatedAttrs, function (val, attr) {
           var invalid = invalidAttrs && attr in invalidAttrs,
-            changed = attr in changedAttrs;
+            changed = hasMatchingPath(changedPaths, attr);
 
           if (!invalid) {
             options.valid?.(attr, model);
@@ -263,7 +381,7 @@ function createClass(ModelClass) {
       model.trigger('validated', model, invalidAttrs, options);
 
       // Return any error messages to Nextbone.
-      if (invalidAttrs && hasCommonKeys(invalidAttrs, changedAttrs)) {
+      if (invalidAttrs && hasCommonPaths(keys(invalidAttrs), changedPaths)) {
         return invalidAttrs;
       }
     }

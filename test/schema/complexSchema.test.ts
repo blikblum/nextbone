@@ -1,4 +1,4 @@
-import { beforeEach, describe, it } from 'vitest';
+import { beforeEach, describe, it, vi } from 'vitest';
 
 import { assert } from 'chai';
 
@@ -80,6 +80,121 @@ describe('Complex Schema Validation', () => {
 
       assert.isDefined(model.validationError);
       assert.isFalse(model.isValid());
+    });
+
+    it('returns flat nested validation errors', () => {
+      model.set(
+        {
+          person: {
+            name: '',
+            address: {
+              street: '',
+              city: '',
+            },
+          },
+        },
+        { validate: true },
+      );
+
+      assert.deepEqual(model.validationError, {
+        'person.name': 'Name is required',
+        'person.address.street': 'Street is required',
+        'person.address.city': 'City is required',
+      });
+    });
+
+    it('calls the invalid callback for nested paths', () => {
+      const invalid = vi.fn();
+
+      model.set(
+        {
+          person: {
+            name: '',
+            address: {
+              street: '',
+              city: '',
+            },
+          },
+        },
+        { validate: true, invalid } as any,
+      );
+
+      assert.deepEqual(
+        invalid.mock.calls.map(([path, message]) => [path, message]),
+        [
+          ['person.name', 'Name is required'],
+          ['person.address.street', 'Street is required'],
+          ['person.address.city', 'City is required'],
+        ],
+      );
+    });
+
+    it('calls the valid callback for nested paths', () => {
+      const valid = vi.fn();
+
+      model.set(
+        {
+          person: {
+            name: 'John',
+            address: {
+              street: '123 Main St',
+              city: 'New York',
+            },
+          },
+        },
+        { validate: true, valid } as any,
+      );
+
+      assert.deepEqual(
+        valid.mock.calls.map(([path]) => path),
+        ['person.name', 'person.address.street', 'person.address.city'],
+      );
+    });
+
+    it('supports nested paths in isValid', () => {
+      model.set({
+        person: {
+          name: 'John',
+          address: {
+            street: '',
+            city: 'New York',
+          },
+        },
+      });
+
+      assert.isTrue(model.isValid('person.name'));
+      assert.isFalse(model.isValid('person.address.street'));
+    });
+
+    it('supports nested paths in preValidate without mutating the model', () => {
+      model.set({
+        person: {
+          name: 'John',
+          address: {
+            street: '123 Main St',
+            city: 'New York',
+          },
+        },
+      });
+
+      assert.strictEqual(model.preValidate('person.address.street', ''), 'Street is required');
+      assert.strictEqual(model.get('person')?.address?.street, '123 Main St');
+    });
+
+    it('filters validation to nested paths through options.attributes', () => {
+      model.set({
+        person: {
+          name: '',
+          address: {
+            street: '',
+            city: '',
+          },
+        },
+      });
+
+      assert.deepEqual(model.validate(undefined, { attributes: ['person.address.street'] }), {
+        'person.address.street': 'Street is required',
+      });
     });
   });
 
