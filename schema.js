@@ -1,4 +1,4 @@
-import { isString, isArray, isObject, isEmpty, each, keys } from 'lodash-es';
+import { isString, isArray, isObject, isPlainObject, isEmpty, each, keys } from 'lodash-es';
 
 /**
  * @import { Model } from './nextbone.js'
@@ -14,10 +14,49 @@ import { isString, isArray, isObject, isEmpty, each, keys } from 'lodash-es';
  * @typedef {z.ZodObject<any>} ZodSchema
  */
 
+/**
+ * @typedef {Record<string, any>} AttributesMap
+ */
+
+/**
+ * @typedef {string[]} PathList
+ */
+
+/**
+ * @typedef {Record<string, z.ZodTypeAny>} SchemaShape
+ */
+
+/**
+ * @typedef {Record<string, string>} ValidationErrorMap
+ */
+
+/**
+ * @callback ValidCallback
+ * @param {string} attr
+ * @param {Model} model
+ * @returns {void}
+ */
+
+/**
+ * @callback InvalidCallback
+ * @param {string} attr
+ * @param {string} message
+ * @param {Model} model
+ * @returns {void}
+ */
+
+/**
+ * @typedef {object} ValidationOptions
+ * @property {boolean} [validate]
+ * @property {PathList} [attributes]
+ * @property {ValidCallback} [valid]
+ * @property {InvalidCallback} [invalid]
+ */
+
 // Helper functions
 // ----------------
 
-// Flattens an object
+// Flattens an object into dot-separated paths
 // eg:
 //
 //     var o = {
@@ -32,45 +71,41 @@ import { isString, isArray, isObject, isEmpty, each, keys } from 'lodash-es';
 //
 // becomes:
 //
-//     var o = {
-//       'owner': {
-//         name: 'Backbone',
-//         address: {
-//           street: 'Street',
-//           zip: 1234
-//         }
-//       },
-//       'owner.name': 'Backbone',
-//       'owner.address': {
-//         street: 'Street',
-//         zip: 1234
-//       },
-//       'owner.address.street': 'Street',
-//       'owner.address.zip': 1234
-//     };
+//     var paths = [
+//       'owner.name',
+//       'owner.address.street',
+//       'owner.address.zip',
+//       'owner.address',
+//       'owner'
+//     ];
 
-var isPlainObject = function (value) {
-  return !!value && typeof value === 'object' && value.constructor === Object;
-};
-
-var flatten = function (obj, into, prefix) {
-  into = into || {};
+/**
+ * @param {AttributesMap} obj
+ * @param {PathList} [into]
+ * @param {string} [prefix]
+ * @returns {PathList}
+ */
+var flattenObjectPaths = function (obj, into, prefix) {
+  into = into || [];
   prefix = prefix || '';
 
   each(obj, function (val, key) {
     if (obj.hasOwnProperty(key)) {
       if (isPlainObject(val)) {
-        flatten(val, into, prefix + key + '.');
+        flattenObjectPaths(val, into, prefix + key + '.');
       }
 
-      // Register the current level object as well
-      into[prefix + key] = val;
+      into.push(prefix + key);
     }
   });
 
   return into;
 };
 
+/**
+ * @param {z.ZodTypeAny} schema
+ * @returns {z.ZodTypeAny}
+ */
 var unwrapSchema = function (schema) {
   var currentSchema = schema;
 
@@ -81,10 +116,20 @@ var unwrapSchema = function (schema) {
   return currentSchema;
 };
 
+/**
+ * @param {z.ZodTypeAny} schema
+ * @returns {SchemaShape|undefined}
+ */
 var getSchemaShape = function (schema) {
   return unwrapSchema(schema)?.shape;
 };
 
+/**
+ * @param {z.ZodTypeAny} schema
+ * @param {string} [prefix]
+ * @param {PathList} [into]
+ * @returns {PathList}
+ */
 var getSchemaLeafPaths = function (schema, prefix, into) {
   prefix = prefix || '';
   into = into || [];
@@ -103,10 +148,20 @@ var getSchemaLeafPaths = function (schema, prefix, into) {
   return into;
 };
 
+/**
+ * @param {string} path
+ * @param {string} candidate
+ * @returns {boolean}
+ */
 var matchesPath = function (path, candidate) {
   return path === candidate || path.startsWith(candidate + '.') || candidate.startsWith(path + '.');
 };
 
+/**
+ * @param {PathList} paths
+ * @param {string} path
+ * @returns {boolean}
+ */
 var hasMatchingPath = function (paths, path) {
   for (var index = 0; index < paths.length; index++) {
     if (matchesPath(path, paths[index])) {
@@ -117,6 +172,11 @@ var hasMatchingPath = function (paths, path) {
   return false;
 };
 
+/**
+ * @param {PathList} paths1
+ * @param {PathList} paths2
+ * @returns {boolean}
+ */
 var hasCommonPaths = function (paths1, paths2) {
   for (var index = 0; index < paths1.length; index++) {
     if (hasMatchingPath(paths2, paths1[index])) {
@@ -127,6 +187,11 @@ var hasCommonPaths = function (paths1, paths2) {
   return false;
 };
 
+/**
+ * @param {z.ZodTypeAny} schema
+ * @param {PathList} paths
+ * @returns {PathList}
+ */
 var getAffectedSchemaPaths = function (schema, paths) {
   var leafPaths = getSchemaLeafPaths(schema);
 
@@ -135,6 +200,12 @@ var getAffectedSchemaPaths = function (schema, paths) {
   });
 };
 
+/**
+ * @param {AttributesMap} obj
+ * @param {string} path
+ * @param {*} value
+ * @returns {AttributesMap}
+ */
 var setPathValue = function (obj, path, value) {
   var parts = path.split('.');
   var current = obj;
@@ -151,26 +222,11 @@ var setPathValue = function (obj, path, value) {
   return obj;
 };
 
-var ensurePath = function (obj, path) {
-  var parts = path.split('.');
-  var current = obj;
-
-  for (var index = 0; index < parts.length - 1; index++) {
-    var part = parts[index];
-    if (!isPlainObject(current[part])) {
-      current[part] = {};
-    }
-    current = current[part];
-  }
-
-  var leafKey = parts[parts.length - 1];
-  if (!Object.prototype.hasOwnProperty.call(current, leafKey)) {
-    current[leafKey] = void 0;
-  }
-
-  return obj;
-};
-
+/**
+ * @param {AttributesMap} target
+ * @param {AttributesMap|undefined|null} source
+ * @returns {AttributesMap}
+ */
 var mergeNestedAttrs = function (target, source) {
   if (!isPlainObject(source)) {
     return target;
@@ -189,38 +245,33 @@ var mergeNestedAttrs = function (target, source) {
   return target;
 };
 
-var buildValidationAttrs = function (currentAttrs, attrs, paths) {
-  var allAttrs = mergeNestedAttrs({}, currentAttrs || {});
-
-  each(paths, function (path) {
-    ensurePath(allAttrs, path);
-  });
+/**
+ * @param {AttributesMap} currentAttrs
+ * @param {AttributesMap|undefined} attrs
+ * @returns {AttributesMap}
+ */
+var buildValidationAttrs = function (currentAttrs, attrs) {
+  var allAttrs = mergeNestedAttrs({}, currentAttrs);
 
   mergeNestedAttrs(allAttrs, attrs);
 
   return allAttrs;
 };
 
-var toValidatedAttrs = function (paths) {
-  return paths.reduce(function (memo, key) {
-    memo[key] = void 0;
-    return memo;
-  }, {});
+// Returns the attributes that have defined schema validation.
+/**
+ * @param {PathList|undefined} attrs
+ * @param {ZodSchema} schema
+ * @returns {PathList}
+ */
+var getValidatedPaths = function (attrs, schema) {
+  return attrs ? getAffectedSchemaPaths(schema, attrs) : keys(getSchemaShape(schema) || {});
 };
 
-// Returns an object with undefined properties for all
-// attributes that have defined schema validation.
-var getValidatedAttrs = function (attrs, schema) {
-  var schemaKeys = Object.keys(getSchemaShape(schema) || {});
-  var paths = attrs ? getAffectedSchemaPaths(schema, attrs) : schemaKeys;
-
-  return toValidatedAttrs(paths);
-};
-
-var getChangedValidatedAttrs = function (attrs, schema) {
-  return toValidatedAttrs(getAffectedSchemaPaths(schema, Object.keys(flatten(attrs || {}))));
-};
-
+/**
+ * @param {z.ZodError|undefined|null} zodError
+ * @returns {ValidationErrorMap|null}
+ */
 // Formats Zod error messages into a flat object keyed by attribute name
 var formatZodErrors = function (zodError) {
   if (!zodError || !zodError.issues) return null;
@@ -238,6 +289,11 @@ var formatZodErrors = function (zodError) {
   return isEmpty(errors) ? null : errors;
 };
 
+/**
+ * @param {ValidationErrorMap|null} errors
+ * @param {PathList} paths
+ * @returns {ValidationErrorMap|null}
+ */
 var collectRequestedErrors = function (errors, paths) {
   if (!errors) return null;
 
@@ -258,6 +314,11 @@ var collectRequestedErrors = function (errors, paths) {
 };
 
 // Validates attributes using the Zod schema
+/**
+ * @param {AttributesMap} attrs
+ * @param {ZodSchema} schema
+ * @returns {ValidationErrorMap|null}
+ */
 var validateWithSchema = function (attrs, schema) {
   const result = schema.safeParse(attrs);
   if (result.success) {
@@ -266,6 +327,10 @@ var validateWithSchema = function (attrs, schema) {
   return formatZodErrors(result.error);
 };
 
+/**
+ * @param {{ __schemaInstance?: ZodSchema, schema?: ZodSchema }} ctor
+ * @returns {ZodSchema|undefined}
+ */
 const getSchema = (ctor) => {
   if (ctor.hasOwnProperty('__schemaInstance')) {
     return ctor.__schemaInstance;
@@ -276,38 +341,39 @@ const getSchema = (ctor) => {
 /**
  * @template {typeof Model} ModelClass
  * @param {ModelClass} ModelClass
- * @returns
+ * @returns {ModelClass}
  */
 function createClass(ModelClass) {
   return class extends ModelClass {
     /**
      * @description Check whether or not a value, or a hash of values passes validation without updating the model
-     * @param {string|Object} attr - Attribute name or object with attributes
+     * @param {string|AttributesMap} attr - Attribute name or object with attributes
      * @param {*} [value] - Value to validate (if attr is a string)
-     * @returns {string|Object|undefined} - Error message(s) if invalid, undefined if valid
+     * @returns {string|ValidationErrorMap|undefined} - Error message(s) if invalid, undefined if valid
      */
     preValidate(attr, value) {
       var schema = getSchema(this.constructor);
       if (!schema) return;
 
       if (isObject(attr)) {
-        var validatedAttrs = getChangedValidatedAttrs(attr, schema);
-        var validatedPaths = keys(validatedAttrs);
+        var validatedPaths = getAffectedSchemaPaths(schema, flattenObjectPaths(attr));
         if (!validatedPaths.length) {
           return undefined;
         }
 
-        var allAttrs = buildValidationAttrs(this.attributes, attr, validatedPaths);
+        var allAttrs = buildValidationAttrs(this.attributes, attr);
         var errors = validateWithSchema(allAttrs, schema);
         return collectRequestedErrors(errors, validatedPaths) || undefined;
       }
 
+      // todo: verify if checking for affected paths is necessary here.
+      // commenting do not break tests, but may be a lack of coverage for this code path.
       var requestedPaths = getAffectedSchemaPaths(schema, [attr]);
       if (!requestedPaths.length) {
         return '';
       }
 
-      var validationAttrs = buildValidationAttrs(this.attributes, null, requestedPaths);
+      var validationAttrs = buildValidationAttrs(this.attributes);
       setPathValue(validationAttrs, attr, value);
 
       return (
@@ -318,7 +384,7 @@ function createClass(ModelClass) {
     /**
      * Check to see if an attribute, an array of attributes or the
      * entire model is valid.
-     * @param {string|string[]|Object} [opts] - Attribute name, array of names, or options
+     * @param {string|PathList|ValidationOptions} [opts] - Attribute name, array of names, or options
      * @returns {boolean}
      */
     isValid(opts) {
@@ -338,40 +404,38 @@ function createClass(ModelClass) {
     }
 
     /**
-     * This is called by Backbone when it needs to perform validation.
+     * This is called by Nextbone when it needs to perform validation.
      * You can call it manually without any parameters to validate the
      * entire model.
-     * @param {Object|null} [attrs] - Attributes to validate
-     * @param {Object} [options] - Options
-     * @returns {Object|undefined} - Validation errors if invalid, undefined if valid
+     * @param {AttributesMap|null} [attrs] - Attributes to validate
+     * @param {ValidationOptions} [options] - Options
+     * @returns {ValidationErrorMap|undefined} - Validation errors if invalid, undefined if valid
      */
     validate(attrs, options = {}) {
       var schema = getSchema(this.constructor);
       if (!schema) return;
 
       var model = this,
-        validateAll = !attrs,
-        validatedAttrs = options.attributes
-          ? getValidatedAttrs(options.attributes, schema)
+        validatedPaths = options.attributes
+          ? getValidatedPaths(options.attributes, schema)
           : attrs
-            ? getChangedValidatedAttrs(attrs, schema)
-            : getValidatedAttrs(undefined, schema),
-        validatedPaths = keys(validatedAttrs),
-        allAttrs = buildValidationAttrs(model.attributes, attrs, validatedPaths),
-        changedPaths = keys(attrs ? flatten(attrs) : flatten(allAttrs)),
+            ? getAffectedSchemaPaths(schema, flattenObjectPaths(attrs))
+            : getValidatedPaths(undefined, schema),
+        allAttrs = buildValidationAttrs(model.attributes, attrs),
+        changedPaths = attrs ? flattenObjectPaths(attrs) : flattenObjectPaths(allAttrs),
         invalidAttrs = collectRequestedErrors(validateWithSchema(allAttrs, schema), validatedPaths);
 
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
       if (options.valid || options.invalid) {
-        each(validatedAttrs, function (val, attr) {
+        each(validatedPaths, function (attr) {
           var invalid = invalidAttrs && attr in invalidAttrs,
             changed = hasMatchingPath(changedPaths, attr);
 
           if (!invalid) {
             options.valid?.(attr, model);
           }
-          if (invalid && (changed || validateAll)) {
+          if (invalid && (changed || !attrs)) {
             options.invalid?.(attr, invalidAttrs[attr], model);
           }
         });
@@ -381,7 +445,7 @@ function createClass(ModelClass) {
       model.trigger('validated', model, invalidAttrs, options);
 
       // Return any error messages to Nextbone.
-      if (invalidAttrs && hasCommonPaths(keys(invalidAttrs), changedPaths)) {
+      if (invalidAttrs && hasCommonPaths(keys(invalidAttrs), validatedPaths)) {
         return invalidAttrs;
       }
     }
