@@ -14,14 +14,6 @@ import { isString, isArray, isObject, isEmpty, extend, pick, each, keys } from '
  * @typedef {z.ZodObject<any>} ZodSchema
  */
 
-// Default options
-// ---------------
-
-var defaultOptions = {
-  valid: Function.prototype,
-  invalid: Function.prototype,
-};
-
 // Helper functions
 // ----------------
 
@@ -231,39 +223,44 @@ function createClass(ModelClass) {
      * You can call it manually without any parameters to validate the
      * entire model.
      * @param {Object|null} [attrs] - Attributes to validate
-     * @param {Object} [setOptions] - Options
+     * @param {Object} [options] - Options
      * @returns {Object|undefined} - Validation errors if invalid, undefined if valid
      */
-    validate(attrs, setOptions) {
+    validate(attrs, options = {}) {
       var schema = getSchema(this.constructor);
       if (!schema) return;
 
       var model = this,
         validateAll = !attrs,
-        opt = extend({}, defaultOptions, setOptions),
-        schemaKeys = Object.keys(schema.shape || {}),
-        validatedAttrs = getValidatedAttrs(opt.attributes, schema),
+        validatedAttrs = getValidatedAttrs(options.attributes, schema),
         allAttrs = extend({}, validatedAttrs, model.attributes, attrs),
         flattened = flatten(allAttrs),
         changedAttrs = attrs ? flatten(attrs) : flattened,
-        invalidAttrs = validateModel(model, allAttrs, pick(flattened, keys(validatedAttrs)), schema);
+        invalidAttrs = validateModel(
+          model,
+          allAttrs,
+          pick(flattened, keys(validatedAttrs)),
+          schema,
+        );
 
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
-      each(validatedAttrs, function (val, attr) {
-        var invalid = invalidAttrs && attr in invalidAttrs,
-          changed = attr in changedAttrs;
+      if (options.valid || options.invalid) {
+        each(validatedAttrs, function (val, attr) {
+          var invalid = invalidAttrs && attr in invalidAttrs,
+            changed = attr in changedAttrs;
 
-        if (!invalid) {
-          opt.valid(attr, model);
-        }
-        if (invalid && (changed || validateAll)) {
-          opt.invalid(attr, invalidAttrs[attr], model);
-        }
-      });
+          if (!invalid) {
+            options.valid?.(attr, model);
+          }
+          if (invalid && (changed || validateAll)) {
+            options.invalid?.(attr, invalidAttrs[attr], model);
+          }
+        });
+      }
 
       // Trigger validated events.
-      model.trigger('validated', model, invalidAttrs, setOptions);
+      model.trigger('validated', model, invalidAttrs, options);
 
       // Return any error messages to Nextbone.
       if (invalidAttrs && hasCommonKeys(invalidAttrs, changedAttrs)) {
@@ -321,4 +318,4 @@ const withSchema = (ctorOrDescriptor) => {
   };
 };
 
-export { withSchema, defaultOptions };
+export { withSchema };
