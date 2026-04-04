@@ -1,6 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
-import { asyncMethod, defineAsyncMethods } from './class-utils.js';
+import {
+  asyncMethod,
+  createMicrotaskBatcher,
+  createWatchedProxy,
+  defineAsyncMethods,
+} from './class-utils.js';
 
 const expectCalledOn = (fn: ReturnType<typeof vi.fn>, context: unknown) => {
   expect(fn.mock.contexts[0]).toBe(context);
@@ -196,5 +201,96 @@ describe('defineAsyncMethods', () => {
     await expect(myService.foo()).rejects.toBe(error);
     expect(errorSpy).toHaveBeenCalledWith(error);
     expectCalledOn(errorSpy, myService);
+  });
+});
+
+describe('createWatchedProxy', () => {
+  it('preserves the target type', () => {
+    const proxy = createWatchedProxy({ count: 0, label: 'x' }, () => {});
+
+    expectTypeOf(proxy).toEqualTypeOf<{ count: number; label: string }>();
+  });
+
+  it('calls onChange when a property value changes', () => {
+    const onChange = vi.fn();
+    const proxy = createWatchedProxy({ count: 0 }, onChange);
+
+    proxy.count = 1;
+
+    expect(proxy.count).toBe(1);
+    expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it('does not call onChange when setting the same value', () => {
+    const onChange = vi.fn();
+    const proxy = createWatchedProxy({ count: 1 }, onChange);
+
+    proxy.count = 1;
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('calls onChange when deleting an existing property', () => {
+    const onChange = vi.fn();
+    const proxy = createWatchedProxy({ count: 1 } as { count?: number }, onChange);
+
+    delete proxy.count;
+
+    expect('count' in proxy).toBe(false);
+    expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it('does not call onChange when deleting a missing property', () => {
+    const onChange = vi.fn();
+    const proxy = createWatchedProxy({ count: 1 }, onChange);
+
+    delete (proxy as { missing?: number }).missing;
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('createMicrotaskBatcher', () => {
+  it('preserves the batched result type', () => {
+    const batch = createMicrotaskBatcher(async () => ({ value: 1 }));
+
+    expectTypeOf(batch).returns.toEqualTypeOf<Promise<{ value: number }>>();
+  });
+
+  it('returns the same pending promise and runs the task once per microtask', async () => {
+    const task = vi.fn(async () => 'result');
+    const batch = createMicrotaskBatcher(task);
+
+    const first = batch();
+    const second = batch();
+
+    expect(first).toBe(second);
+
+    await expect(first).resolves.toBe('result');
+    expect(task).toHaveBeenCalledOnce();
+  });
+
+  it('schedules a new task after the previous batch resolves', async () => {
+    const task = vi.fn(async () => task.mock.calls.length);
+    const batch = createMicrotaskBatcher(task);
+
+    await expect(batch()).resolves.toBe(1);
+    await expect(batch()).resolves.toBe(2);
+
+    expect(task).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears the pending promise after a rejection', async () => {
+    const error = new Error('boom');
+    const task = vi
+      .fn<() => Promise<string>>()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValueOnce('ok');
+    const batch = createMicrotaskBatcher(task);
+
+    await expect(batch()).rejects.toBe(error);
+    await expect(batch()).resolves.toBe('ok');
+
+    expect(task).toHaveBeenCalledTimes(2);
   });
 });

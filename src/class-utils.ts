@@ -29,7 +29,9 @@ const getStartPromise = <This extends AsyncMethodHost>(
   return result ?? resolved;
 };
 
-const createAsyncMethod = <This extends AsyncMethodHost>(descriptor: AsyncMethodDescriptor<This>) => {
+const createAsyncMethod = <This extends AsyncMethodHost>(
+  descriptor: AsyncMethodDescriptor<This>,
+) => {
   const method = descriptor.value as (this: This, ...args: any[]) => any;
 
   descriptor.value = function asyncMethodWrapper(this: This, ...args: any[]) {
@@ -66,21 +68,63 @@ export function asyncMethod<This extends AsyncMethodHost>(
   createAsyncMethod(propertyDescriptor as AsyncMethodDescriptor<This>);
 }
 
-export const defineAsyncMethods = <
-  T extends abstract new (...args: any[]) => AsyncMethodHost,
->(
+export const defineAsyncMethods = <T extends abstract new (...args: any[]) => AsyncMethodHost>(
   klass: T,
   methodNames: Array<Extract<keyof InstanceType<T>, string>>,
 ) => {
   const proto = klass.prototype;
 
   methodNames.forEach((methodName) => {
-    const descriptor = Object.getOwnPropertyDescriptor(
-      proto,
-      methodName,
-    ) as AsyncMethodDescriptor<InstanceType<T>>;
+    const descriptor = Object.getOwnPropertyDescriptor(proto, methodName) as AsyncMethodDescriptor<
+      InstanceType<T>
+    >;
 
     asyncMethod(proto, methodName, descriptor);
     Object.defineProperty(proto, methodName, descriptor);
   });
+};
+
+export const createWatchedProxy = <T extends object>(target: T, onChange: () => unknown): T => {
+  return new Proxy(target, {
+    set(obj, prop, value, receiver) {
+      const prev = Reflect.get(obj, prop, receiver);
+      if (Object.is(prev, value)) return true;
+
+      const ok = Reflect.set(obj, prop, value, receiver);
+      if (ok) onChange();
+      return ok;
+    },
+
+    deleteProperty(obj, prop) {
+      if (!(prop in obj)) return true;
+
+      const ok = Reflect.deleteProperty(obj, prop);
+      if (ok) onChange();
+      return ok;
+    },
+  });
+};
+
+export const createMicrotaskBatcher = <Result>(
+  task: () => Result | PromiseLike<Result>,
+): (() => Promise<Awaited<Result>>) => {
+  let pending: Promise<Awaited<Result>> | null = null;
+
+  return () => {
+    if (pending) return pending;
+
+    pending = new Promise<Awaited<Result>>((resolve, reject) => {
+      queueMicrotask(async () => {
+        try {
+          resolve(await task());
+        } catch (error) {
+          reject(error);
+        } finally {
+          pending = null;
+        }
+      });
+    });
+
+    return pending;
+  };
 };
