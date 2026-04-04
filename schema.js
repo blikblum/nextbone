@@ -36,7 +36,11 @@ var getPathParts = function (path) {
 };
 
 var isIndexPathPart = function (part) {
-  return /^\d+$/.test(part);
+  for (var i = 0; i < part.length; i++) {
+    var c = part.charCodeAt(i);
+    if (c < 48 || c > 57) return false;
+  }
+  return part.length > 0;
 };
 
 var areRelatedPaths = function (path1, path2) {
@@ -213,19 +217,21 @@ var getMatchingError = function (errors, path) {
     return errors[path];
   }
 
+  // Single pass: prefer child errors (more specific) over parent errors
+  var childMatch = '';
+  var parentMatch = '';
+  var pathDot = path + '.';
+
   for (var errorPath in errors) {
-    if (areRelatedPaths(path, errorPath) && errorPath.startsWith(path + '.')) {
-      return errors[errorPath];
+    if (!childMatch && errorPath.startsWith(pathDot)) {
+      childMatch = errors[errorPath];
+    } else if (!parentMatch && path.startsWith(errorPath + '.')) {
+      parentMatch = errors[errorPath];
     }
+    if (childMatch) break;
   }
 
-  for (var parentErrorPath in errors) {
-    if (areRelatedPaths(path, parentErrorPath)) {
-      return errors[parentErrorPath];
-    }
-  }
-
-  return '';
+  return childMatch || parentMatch || '';
 };
 
 var hasMatchingPaths = function (errors, paths) {
@@ -257,6 +263,25 @@ var formatZodErrors = function (zodError) {
   });
 
   return isEmpty(errors) ? null : errors;
+};
+
+// Returns true if a schema is a simple ZodObject with no object-level checks/refinements.
+// When true, individual top-level fields can be validated in isolation.
+var isSimpleObjectSchema = function (schema) {
+  var def = schema && schema._def;
+  return !!def && !!def.shape && (!def.checks || def.checks.length === 0);
+};
+
+// Fast-path: validates a single top-level attribute against its field schema.
+// Only safe when the schema has no object-level checks (refinements, superRefine, etc).
+var validateAttrFast = function (attr, value, schema) {
+  var shape = schema.shape;
+  if (!shape || !shape[attr]) return '';
+
+  var result = shape[attr].safeParse(value);
+  if (result.success) return '';
+
+  return result.error.issues[0]?.message || 'Invalid value';
 };
 
 // Validates attributes using the Zod schema
@@ -295,7 +320,33 @@ function createClass(ModelClass) {
       var allAttrs;
 
       if (isObject(attr)) {
+        // Fast path: all keys are top-level and schema has no cross-field checks
         var attrPaths = Object.keys(attr);
+        var canFastPath = isSimpleObjectSchema(schema);
+
+        if (canFastPath) {
+          var allTopLevel = true;
+          for (var i = 0; i < attrPaths.length; i++) {
+            if (attrPaths[i].includes('.')) {
+              allTopLevel = false;
+              break;
+            }
+          }
+
+          if (allTopLevel) {
+            var result = {};
+            var hasError = false;
+            each(attr, function (attrValue, attrKey) {
+              var error = validateAttrFast(attrKey, attrValue, schema);
+              if (error) {
+                result[attrKey] = error;
+                hasError = true;
+              }
+            });
+            return hasError ? result : undefined;
+          }
+        }
+
         allAttrs = cloneValue(extend({}, getDefaultAttrs(attrPaths, schema), this.attributes));
 
         each(attr, function (attrValue, attrKey) {
@@ -313,6 +364,11 @@ function createClass(ModelClass) {
 
       if (!isSchemaPath(schema, attr)) {
         return '';
+      }
+
+      // Fast path: top-level attribute on schema without cross-field checks
+      if (!attr.includes('.') && isSimpleObjectSchema(schema)) {
+        return validateAttrFast(attr, value, schema);
       }
 
       allAttrs = cloneValue(extend({}, getDefaultAttrs([attr], schema), this.attributes));
@@ -375,13 +431,13 @@ function createClass(ModelClass) {
       // After validation is performed, loop through all validated and changed attributes
       // and call the valid and invalid callbacks so the view is updated.
       each(requestedPaths, function (attr) {
-        var invalid = !!getMatchingError(invalidAttrs, attr);
+        var errorMsg = getMatchingError(invalidAttrs, attr);
 
-        if (!invalid) {
+        if (!errorMsg) {
           opt.valid(attr, model);
         }
-        if (invalid && (requestedPaths.length || validateAll)) {
-          opt.invalid(attr, getMatchingError(invalidAttrs, attr), model);
+        if (errorMsg && (requestedPaths.length || validateAll)) {
+          opt.invalid(attr, errorMsg, model);
         }
       });
 
