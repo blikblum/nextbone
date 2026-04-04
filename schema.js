@@ -162,6 +162,7 @@ var setPathValue = function (obj, path, value) {
 
   for (var i = 0; i < parts.length - 1; i++) {
     var part = parts[i];
+    if (part === '__proto__' || part === 'constructor' || part === 'prototype') return obj;
     var nextPart = parts[i + 1];
 
     if (!isObject(target[part])) {
@@ -171,7 +172,9 @@ var setPathValue = function (obj, path, value) {
     target = target[part];
   }
 
-  target[parts[parts.length - 1]] = value;
+  var lastPart = parts[parts.length - 1];
+  if (lastPart === '__proto__' || lastPart === 'constructor' || lastPart === 'prototype') return obj;
+  target[lastPart] = value;
   return obj;
 };
 
@@ -213,11 +216,19 @@ var pickMatchingErrors = function (errors, paths) {
 var getMatchingError = function (errors, path) {
   if (!errors) return '';
 
+  // Direct match
   if (hasOwn.call(errors, path)) {
     return errors[path];
   }
 
-  // Single pass: prefer child errors (more specific) over parent errors
+  // Root-level errors match everything
+  if (hasOwn.call(errors, '_root')) {
+    return errors['_root'];
+  }
+
+  // Single pass: prefer child errors (more specific) over parent errors.
+  // Child match = error at a deeper path (e.g., path is 'person', error is 'person.name').
+  // Parent match = error at a shallower path (e.g., path is 'person.name', error is 'person').
   var childMatch = '';
   var parentMatch = '';
   var pathDot = path + '.';
@@ -225,10 +236,11 @@ var getMatchingError = function (errors, path) {
   for (var errorPath in errors) {
     if (!childMatch && errorPath.startsWith(pathDot)) {
       childMatch = errors[errorPath];
-    } else if (!parentMatch && path.startsWith(errorPath + '.')) {
+      break;
+    }
+    if (!parentMatch && path.startsWith(errorPath + '.')) {
       parentMatch = errors[errorPath];
     }
-    if (childMatch) break;
   }
 
   return childMatch || parentMatch || '';
