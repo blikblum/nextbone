@@ -215,7 +215,7 @@ export class Events implements EventsMixin {
  * E - Extensions to the model constructor options. You can accept additional constructor options
  * by listing them in the E parameter.
  */
-export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> extends Events {
+export class Model<T extends ObjectHash = any, IdType = string, E = any> extends Events {
   attributes: T;
   changed: Partial<T>;
   cidPrefix: string;
@@ -237,7 +237,7 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
    * That works only if you set it in the constructor or the initialize method.
    */
   defaults(): Partial<T>;
-  id: string | number;
+  id: IdType;
   idAttribute: string;
   validationError: any;
 
@@ -277,9 +277,13 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
    *    super.set("name", value);
    * }
    */
-  set<A extends _StringKey<T>>(attributeName: A, value?: T[A], options?: S): this;
-  set(attributeName: Partial<T>, options?: S): this;
-  set<A extends _StringKey<T>>(attributeName: A | Partial<T>, value?: T[A] | S, options?: S): this;
+  set<A extends _StringKey<T>>(attributeName: A, value?: T[A], options?: ModelSetOptions): this;
+  set(attributeName: Partial<T>, options?: ModelSetOptions): this;
+  set<A extends _StringKey<T>>(
+    attributeName: A | Partial<T>,
+    value?: T[A] | ModelSetOptions,
+    options?: ModelSetOptions,
+  ): this;
 
   /**
    * Return an object containing all the attributes that have changed, or
