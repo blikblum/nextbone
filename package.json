@@ -160,6 +160,7 @@
   "files": [
     "types",
     "nextbone.js",
+    "nextbone.d.ts",
     "computed.js",
     "localstorage.js",
     "validation.js",
