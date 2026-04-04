@@ -1,8 +1,10 @@
 import { Model } from '../../nextbone';
 import { FormState, registerFormat, registerInput } from '../../form';
+import { withSchema } from '../../schema';
 import { withValidation } from '../../validation';
 import { fixture, defineCE } from '@open-wc/testing-helpers';
 import { LitElement, html } from 'lit';
+import { z } from 'zod';
 
 import { spy, assert } from 'sinon';
 
@@ -164,6 +166,45 @@ class TestFormState extends LitElement {
 }
 
 const formStateTag = defineCE(TestFormState);
+
+class ValidationFormModel extends withValidation(Model) {
+  static validation = {
+    textProp: function (value) {
+      if (value === 'danger') return 'error';
+    },
+    'nested.textProp': function (value) {
+      if (value === 'danger') return 'error';
+    },
+    numberProp: function (value) {
+      if (typeof value === 'number' && value > 100) return 'tooBig';
+    },
+    strangeProp: function (value) {
+      if (value === 'danger') return 'error';
+    },
+  };
+}
+
+class SchemaFormModel extends withSchema(Model) {
+  static schema = z.object({
+    textProp: z
+      .string()
+      .refine((value) => value !== 'danger', { message: 'error' })
+      .optional(),
+    nested: z
+      .object({
+        textProp: z
+          .string()
+          .refine((value) => value !== 'danger', { message: 'error' })
+          .optional(),
+      })
+      .optional(),
+    numberProp: z.number().max(100, 'tooBig').nullable().optional(),
+    strangeProp: z
+      .string()
+      .refine((value) => value !== 'danger', { message: 'error' })
+      .optional(),
+  });
+}
 
 describe('form', function () {
   let myModel;
@@ -345,397 +386,388 @@ describe('form', function () {
       assert.notCalled(inputSpy);
     });
 
-    describe('form state', () => {
-      class ValidatedModel extends withValidation(Model) {
-        static validation = {
-          textProp: function (value) {
-            if (value === 'danger') return 'error';
-          },
-          'nested.textProp': function (value) {
-            if (value === 'danger') return 'error';
-          },
-          numberProp: function (value) {
-            if (typeof value === 'number' && value > 100) return 'tooBig';
-          },
-          strangeProp: function (value) {
-            if (value === 'danger') return 'error';
-          },
-        };
-      }
-      beforeEach(() => {
-        myModel = new ValidatedModel();
-        el.model = myModel;
-      });
-
-      it('should create a "form" property holding form state', async function () {
-        expect(el.form).to.be.instanceOf(Object);
-        expect(el.form.errors).to.be.instanceOf(Object);
-        expect(el.form.touched).to.be.instanceOf(Object);
-      });
-
-      it('should set error on form state when validation fails with an object', async function () {
-        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-        inputEl.value = 'danger';
-        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-      });
-
-      it('should set error on form state when validation fails with an string', async function () {
-        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-        inputEl.value = 'danger';
-        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-      });
-
-      it('should remove error on form state when validation succeeds', async function () {
-        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-        inputEl.value = 'danger';
-        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-        expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-
-        inputEl.value = 'safe';
-        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-        expect(el.form.errors).to.deep.equal({});
-      });
-
-      it('should mark as touched after the first time exits from input', function () {
-        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-        const numberInputEl = el.renderRoot.querySelector('input[type="number"]');
-        inputEl.focus();
-        inputEl.value = 'danger';
-        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-        expect(el.form.touched.textProp).to.equal(undefined);
-
-        numberInputEl.focus();
-        expect(el.form.touched.textProp).to.be['true'];
-      });
-
-      it('should call requestUpdate when marked as touched', function () {
-        const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-        inputEl.focus();
-        inputEl.value = 'danger';
-        inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-
-        spy(el, 'requestUpdate');
-        inputEl.blur();
-        assert.calledOnce(el.requestUpdate);
-        el.requestUpdate.restore();
-      });
-
-      describe('get', () => {
-        it('should return value from the model', () => {
-          myModel.set({ x: 'y' });
-          expect(el.form.get('x')).to.equal('y');
+    function describeFormStateSuite(label, createModel) {
+      describe(label, () => {
+        beforeEach(() => {
+          myModel = createModel();
+          el.model = myModel;
         });
 
-        it('should return falsy value from the model', () => {
-          myModel.set({ x: 0 });
-          expect(el.form.get('x')).to.equal(0);
-        });
-      });
-
-      describe('set', () => {
-        it('should set value to the model', () => {
-          myModel.set({ x: 'y' });
-          el.form.set('x', 'b');
-          expect(myModel.get('x')).to.equal('b');
+        it('should create a "form" property holding form state', async function () {
+          expect(el.form).to.be.instanceOf(Object);
+          expect(el.form.errors).to.be.instanceOf(Object);
+          expect(el.form.touched).to.be.instanceOf(Object);
         });
 
-        it('should set nested value', () => {
-          myModel.set({ inner: { x: 'y' }, x: 'y' }, { reset: true });
-          el.form.set('inner.x', 'b');
-          expect(myModel.attributes).to.deep.equal({ inner: { x: 'b' }, x: 'y' });
-          expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
-          expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
-
-          // same value
-          myModel.set({ inner: { x: 'y' }, x: 'y' }, { reset: true });
-          el.form.set('inner.x', 'y');
-          expect(myModel.attributes).to.deep.equal({ inner: { x: 'y' }, x: 'y' });
-          expect(myModel.get('inner')).to.deep.equal({ x: 'y' });
-          expect(myModel.changed).to.deep.equal({});
-
-          // overwrite non object in path
-          myModel.set({ inner: [{ x: 'y' }] }, { reset: true });
-          el.form.set('inner.x', 'b');
-          expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
-          expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
-
-          // create path
-          myModel.set({ x: 'y' }, { reset: true });
-          el.form.set('inner.x', 'b');
-          expect(myModel.attributes).to.deep.equal({ inner: { x: 'b' }, x: 'y' });
-          expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
-          expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
-
-          // deep path
-          myModel.set({ x: 'y' }, { reset: true });
-          el.form.set('inner.x.y.z', 'b');
-          expect(myModel.attributes).to.deep.equal({ inner: { x: { y: { z: 'b' } } }, x: 'y' });
-          expect(myModel.get('inner')).to.deep.equal({ x: { y: { z: 'b' } } });
-          expect(myModel.changed).to.deep.equal({ inner: { x: { y: { z: 'b' } } } });
-        });
-
-        it('should call updateMethod by default', () => {
-          const updateMethodSpy = spy(el, 'requestUpdate');
-          el.form.set('x', 'b');
-          assert.calledOnce(updateMethodSpy);
-        });
-
-        it('should not call updateMethod when silent = true', () => {
-          const updateMethodSpy = spy(el, 'requestUpdate');
-          el.form.set('x', 'b', { silent: true });
-          assert.notCalled(updateMethodSpy);
-        });
-
-        it('should reset form state when called with reset: true', async function () {
+        it('should set error on form state when validation fails with an object', async function () {
           const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-          const nestedInputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+          inputEl.value = 'danger';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+        });
+
+        it('should set error on form state when validation fails with an string', async function () {
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.value = 'danger';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+        });
+
+        it('should remove error on form state when validation succeeds', async function () {
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+          inputEl.value = 'danger';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+
+          inputEl.value = 'safe';
+          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.errors).to.deep.equal({});
+        });
+
+        it('should mark as touched after the first time exits from input', function () {
+          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
           const numberInputEl = el.renderRoot.querySelector('input[type="number"]');
           inputEl.focus();
           inputEl.value = 'danger';
           inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          nestedInputEl.focus();
-          nestedInputEl.value = 'danger';
-          nestedInputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          expect(el.form.touched.textProp).to.equal(undefined);
+
           numberInputEl.focus();
-          numberInputEl.value = '1000';
-          numberInputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          // force touched
-          inputEl.focus();
-          expect(el.form.errors).to.deep.equal({
-            textProp: 'error',
-            'nested.textProp': 'error',
-            numberProp: 'tooBig',
-          });
-          expect(el.form.touched).to.deep.equal({
-            textProp: true,
-            'nested.textProp': true,
-            numberProp: true,
-          });
-          expect(el.form.getDirtyAttributes()).to.deep.equal([
-            'textProp',
-            'nested.textProp',
-            'numberProp',
-          ]);
-
-          el.form.set('textProp', 'new', { reset: true });
-          el.form.set('nested.textProp', 'new', { reset: true });
-          expect(el.form.errors).to.deep.equal({ numberProp: 'tooBig' });
-          expect(el.form.touched).to.deep.equal({ numberProp: true });
-          expect(el.form.getDirtyAttributes()).to.deep.equal(['numberProp']);
-        });
-      });
-
-      describe('setData', () => {
-        it('should store form metadata', () => {
-          el.form.setData('x', 'b');
-          expect(el.form.getData('x')).to.equal('b');
+          expect(el.form.touched.textProp).to.be['true'];
         });
 
-        it('should call updateMethod', () => {
-          const updateMethodSpy = spy(el, 'requestUpdate');
-          el.form.setData('x', 'b');
-          assert.calledOnce(updateMethodSpy);
-        });
-      });
-
-      describe('isValid', () => {
-        it('should return validity state', async function () {
-          myModel.set({ textProp: 'danger' });
-          expect(el.form.isValid()).to.be['false'];
-
-          myModel.set({ textProp: 'safe' });
-          expect(el.form.isValid()).to.be['true'];
-        });
-
-        it('should update errors on form state', async function () {
-          myModel.set({ textProp: 'danger' });
-          el.form.isValid();
-          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-
-          myModel.set({ textProp: 'safe' });
-          el.form.isValid();
-          expect(el.form.errors).to.deep.equal({});
-        });
-
-        it('should set errors only from attributes passed in options', async function () {
-          myModel.set({ textProp: 'danger', strangeProp: 'danger' });
-          el.form.isValid({ attributes: ['strangeProp'] });
-          expect(el.form.errors).to.deep.equal({ strangeProp: 'error' });
-        });
-
-        it('should set errors only from attributes present in markup when no option is specified', async function () {
-          myModel.set({ textProp: 'danger', strangeProp: 'danger' });
-          el.form.isValid();
-          expect(el.form.errors).to.deep.equal({ textProp: 'error' });
-        });
-
-        it('should call "requestUpdate" when update option is true', function () {
-          spy(el, 'requestUpdate');
-          el.form.isValid({ update: true });
-          assert.calledOnce(el.requestUpdate);
-        });
-
-        it('should not call "requestUpdate" when update option is ommited', function () {
-          spy(el, 'requestUpdate');
-          el.form.isValid();
-          assert.notCalled(el.requestUpdate);
-        });
-
-        it('should mark invalid attributes as touched when touch option is true', function () {
-          myModel.set({ textProp: 'danger' });
-          el.form.isValid({ touch: true });
-          expect(el.form.touched).to.deep.equal({ textProp: true });
-        });
-      });
-
-      describe('isDirty', () => {
-        it('should return false when no form interaction is done', async function () {
-          myModel.set({ textProp: 'danger' });
-          expect(el.form.isDirty()).to.be['false'];
-        });
-
-        it('should return false when value changed and then reverted back', async function () {
-          myModel.set({ textProp: 'danger' });
-          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-          inputEl.value = 'hello';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-
-          inputEl.value = 'danger';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          expect(el.form.isDirty()).to.be['false'];
-        });
-
-        it('should return true when value changed after first form interation', async function () {
-          myModel.set({ textProp: 'danger' });
-          const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-          inputEl.value = 'hello';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          expect(el.form.isDirty()).to.be['true'];
-        });
-
-        it('should return true when no form interaction is done but after loading initial data', async function () {
-          el.form.loadInitialData();
-          myModel.set({ textProp: 'danger' });
-          expect(el.form.isDirty()).to.be['true'];
-        });
-
-        it('should return true when setValue is called', async function () {
-          el.form.setValue('testProp', 'Hello');
-          expect(el.form.isDirty()).to.be['true'];
-        });
-      });
-
-      describe('reset', () => {
-        it('should reset form state', () => {
+        it('should call requestUpdate when marked as touched', function () {
           const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
           inputEl.focus();
           inputEl.value = 'danger';
           inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+          spy(el, 'requestUpdate');
           inputEl.blur();
-          expect(el.form.errors).to.not.be.empty;
-          expect(el.form.touched).to.not.be.empty;
-          expect(el.form.isDirty()).to.be['true'];
+          assert.calledOnce(el.requestUpdate);
+          el.requestUpdate.restore();
+        });
 
-          el.form.reset();
-          expect(el.form.errors).to.be.empty;
-          expect(el.form.touched).to.be.empty;
-          expect(el.form.isDirty()).to.be['false'];
+        describe('get', () => {
+          it('should return value from the model', () => {
+            myModel.set({ x: 'y' });
+            expect(el.form.get('x')).to.equal('y');
+          });
+
+          it('should return falsy value from the model', () => {
+            myModel.set({ x: 0 });
+            expect(el.form.get('x')).to.equal(0);
+          });
+        });
+
+        describe('set', () => {
+          it('should set value to the model', () => {
+            myModel.set({ x: 'y' });
+            el.form.set('x', 'b');
+            expect(myModel.get('x')).to.equal('b');
+          });
+
+          it('should set nested value', () => {
+            myModel.set({ inner: { x: 'y' }, x: 'y' }, { reset: true });
+            el.form.set('inner.x', 'b');
+            expect(myModel.attributes).to.deep.equal({ inner: { x: 'b' }, x: 'y' });
+            expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
+            expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
+
+            // same value
+            myModel.set({ inner: { x: 'y' }, x: 'y' }, { reset: true });
+            el.form.set('inner.x', 'y');
+            expect(myModel.attributes).to.deep.equal({ inner: { x: 'y' }, x: 'y' });
+            expect(myModel.get('inner')).to.deep.equal({ x: 'y' });
+            expect(myModel.changed).to.deep.equal({});
+
+            // overwrite non object in path
+            myModel.set({ inner: [{ x: 'y' }] }, { reset: true });
+            el.form.set('inner.x', 'b');
+            expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
+            expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
+
+            // create path
+            myModel.set({ x: 'y' }, { reset: true });
+            el.form.set('inner.x', 'b');
+            expect(myModel.attributes).to.deep.equal({ inner: { x: 'b' }, x: 'y' });
+            expect(myModel.get('inner')).to.deep.equal({ x: 'b' });
+            expect(myModel.changed).to.deep.equal({ inner: { x: 'b' } });
+
+            // deep path
+            myModel.set({ x: 'y' }, { reset: true });
+            el.form.set('inner.x.y.z', 'b');
+            expect(myModel.attributes).to.deep.equal({ inner: { x: { y: { z: 'b' } } }, x: 'y' });
+            expect(myModel.get('inner')).to.deep.equal({ x: { y: { z: 'b' } } });
+            expect(myModel.changed).to.deep.equal({ inner: { x: { y: { z: 'b' } } } });
+          });
+
+          it('should call updateMethod by default', () => {
+            const updateMethodSpy = spy(el, 'requestUpdate');
+            el.form.set('x', 'b');
+            assert.calledOnce(updateMethodSpy);
+          });
+
+          it('should not call updateMethod when silent = true', () => {
+            const updateMethodSpy = spy(el, 'requestUpdate');
+            el.form.set('x', 'b', { silent: true });
+            assert.notCalled(updateMethodSpy);
+          });
+
+          it('should reset form state when called with reset: true', async function () {
+            const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+            const nestedInputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+            const numberInputEl = el.renderRoot.querySelector('input[type="number"]');
+            inputEl.focus();
+            inputEl.value = 'danger';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            nestedInputEl.focus();
+            nestedInputEl.value = 'danger';
+            nestedInputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            numberInputEl.focus();
+            numberInputEl.value = '1000';
+            numberInputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            // force touched
+            inputEl.focus();
+            expect(el.form.errors).to.deep.equal({
+              textProp: 'error',
+              'nested.textProp': 'error',
+              numberProp: 'tooBig',
+            });
+            expect(el.form.touched).to.deep.equal({
+              textProp: true,
+              'nested.textProp': true,
+              numberProp: true,
+            });
+            expect(el.form.getDirtyAttributes()).to.deep.equal([
+              'textProp',
+              'nested.textProp',
+              'numberProp',
+            ]);
+
+            el.form.set('textProp', 'new', { reset: true });
+            el.form.set('nested.textProp', 'new', { reset: true });
+            expect(el.form.errors).to.deep.equal({ numberProp: 'tooBig' });
+            expect(el.form.touched).to.deep.equal({ numberProp: true });
+            expect(el.form.getDirtyAttributes()).to.deep.equal(['numberProp']);
+          });
+        });
+
+        describe('setData', () => {
+          it('should store form metadata', () => {
+            el.form.setData('x', 'b');
+            expect(el.form.getData('x')).to.equal('b');
+          });
+
+          it('should call updateMethod', () => {
+            const updateMethodSpy = spy(el, 'requestUpdate');
+            el.form.setData('x', 'b');
+            assert.calledOnce(updateMethodSpy);
+          });
+        });
+
+        describe('isValid', () => {
+          it('should return validity state', async function () {
+            myModel.set({ textProp: 'danger' });
+            expect(el.form.isValid()).to.be['false'];
+
+            myModel.set({ textProp: 'safe' });
+            expect(el.form.isValid()).to.be['true'];
+          });
+
+          it('should update errors on form state', async function () {
+            myModel.set({ textProp: 'danger' });
+            el.form.isValid();
+            expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+
+            myModel.set({ textProp: 'safe' });
+            el.form.isValid();
+            expect(el.form.errors).to.deep.equal({});
+          });
+
+          it('should set errors only from attributes passed in options', async function () {
+            myModel.set({ textProp: 'danger', strangeProp: 'danger' });
+            el.form.isValid({ attributes: ['strangeProp'] });
+            expect(el.form.errors).to.deep.equal({ strangeProp: 'error' });
+          });
+
+          it('should set errors only from attributes present in markup when no option is specified', async function () {
+            myModel.set({ textProp: 'danger', strangeProp: 'danger' });
+            el.form.isValid();
+            expect(el.form.errors).to.deep.equal({ textProp: 'error' });
+          });
+
+          it('should call "requestUpdate" when update option is true', function () {
+            spy(el, 'requestUpdate');
+            el.form.isValid({ update: true });
+            assert.calledOnce(el.requestUpdate);
+          });
+
+          it('should not call "requestUpdate" when update option is ommited', function () {
+            spy(el, 'requestUpdate');
+            el.form.isValid();
+            assert.notCalled(el.requestUpdate);
+          });
+
+          it('should mark invalid attributes as touched when touch option is true', function () {
+            myModel.set({ textProp: 'danger' });
+            el.form.isValid({ touch: true });
+            expect(el.form.touched).to.deep.equal({ textProp: true });
+          });
+        });
+
+        describe('isDirty', () => {
+          it('should return false when no form interaction is done', async function () {
+            myModel.set({ textProp: 'danger' });
+            expect(el.form.isDirty()).to.be['false'];
+          });
+
+          it('should return false when value changed and then reverted back', async function () {
+            myModel.set({ textProp: 'danger' });
+            const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+            inputEl.value = 'hello';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+            inputEl.value = 'danger';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            expect(el.form.isDirty()).to.be['false'];
+          });
+
+          it('should return true when value changed after first form interation', async function () {
+            myModel.set({ textProp: 'danger' });
+            const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+            inputEl.value = 'hello';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            expect(el.form.isDirty()).to.be['true'];
+          });
+
+          it('should return true when no form interaction is done but after loading initial data', async function () {
+            el.form.loadInitialData();
+            myModel.set({ textProp: 'danger' });
+            expect(el.form.isDirty()).to.be['true'];
+          });
+
+          it('should return true when setValue is called', async function () {
+            el.form.setValue('testProp', 'Hello');
+            expect(el.form.isDirty()).to.be['true'];
+          });
+        });
+
+        describe('reset', () => {
+          it('should reset form state', () => {
+            const inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+            inputEl.focus();
+            inputEl.value = 'danger';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            inputEl.blur();
+            expect(el.form.errors).to.not.be.empty;
+            expect(el.form.touched).to.not.be.empty;
+            expect(el.form.isDirty()).to.be['true'];
+
+            el.form.reset();
+            expect(el.form.errors).to.be.empty;
+            expect(el.form.touched).to.be.empty;
+            expect(el.form.isDirty()).to.be['false'];
+          });
+        });
+
+        describe('getAttributes', () => {
+          it('should return an array with the name of the inputs excluding no bind', () => {
+            expect(el.form.getAttributes()).to.deep.equal([
+              'textProp',
+              'nested.textProp',
+              'numberProp',
+              'bracketProp',
+              'radioProp',
+              'checkProp',
+              'checkGroup',
+              'selectProp',
+              'customInputBind',
+              'registeredInput',
+              'lazyInput',
+            ]);
+          });
+
+          it('should omit inputs with no name', async () => {
+            el = await fixture(`<${testNoNameTag}></${testNoNameTag}>`);
+            expect(el.form.getAttributes()).to.deep.equal(['textProp']);
+          });
+
+          it('should return name of properties set through setValue', async () => {
+            el.form.setValue('dynProp', 'x');
+            expect(el.form.getAttributes()).to.deep.equal([
+              'dynProp',
+              'textProp',
+              'nested.textProp',
+              'numberProp',
+              'bracketProp',
+              'radioProp',
+              'checkProp',
+              'checkGroup',
+              'selectProp',
+              'customInputBind',
+              'registeredInput',
+              'lazyInput',
+            ]);
+          });
+        });
+
+        describe('getDirtyAttributes', () => {
+          it('should return empty array by default', async () => {
+            expect(el.form.getDirtyAttributes()).to.deep.equal([]);
+          });
+
+          it('should return an array with the name of the inputs with dirty value', () => {
+            let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+            inputEl.value = 'zzz';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+            inputEl.value = 'zzz';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            expect(el.form.getDirtyAttributes()).to.deep.equal(['textProp', 'nested.textProp']);
+          });
+
+          it('should not return attributes changed but with equal values to pristine data', () => {
+            el.model.set({ textProp: 'x', nested: { textProp: 'y' } });
+            let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
+            inputEl.value = 'zzz';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            inputEl.value = 'x';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+
+            inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
+            inputEl.value = 'zzz';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            inputEl.value = 'y';
+            inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
+            expect(el.form.getDirtyAttributes()).to.deep.equal([]);
+          });
+
+          it('should return name of properties set through set', async () => {
+            el.form.set('dynProp', 'x');
+            expect(el.form.getDirtyAttributes()).to.deep.equal(['dynProp']);
+          });
+
+          it('should return attribute name when setting a deep nested property', async () => {
+            el.model.set({ x: { y: { z: 'a' } } });
+            el.form.set('x.y.z', 'b');
+            expect(el.form.getDirtyAttributes()).to.deep.equal(['x.y.z']);
+          });
+
+          it('should not return attributes different reference but deep equal', () => {
+            el.model.set({ textProp: 'x', complex: { textProp: 'y' } });
+            el.form.set('complex', { textProp: 'x' });
+            expect(el.form.getDirtyAttributes()).to.deep.equal(['complex']);
+            el.form.set('complex', { textProp: 'y' });
+            expect(el.form.getDirtyAttributes()).to.deep.equal([]);
+          });
         });
       });
+    }
 
-      describe('getAttributes', () => {
-        it('should return an array with the name of the inputs excluding no bind', () => {
-          expect(el.form.getAttributes()).to.deep.equal([
-            'textProp',
-            'nested.textProp',
-            'numberProp',
-            'bracketProp',
-            'radioProp',
-            'checkProp',
-            'checkGroup',
-            'selectProp',
-            'customInputBind',
-            'registeredInput',
-            'lazyInput',
-          ]);
-        });
-
-        it('should omit inputs with no name', async () => {
-          el = await fixture(`<${testNoNameTag}></${testNoNameTag}>`);
-          expect(el.form.getAttributes()).to.deep.equal(['textProp']);
-        });
-
-        it('should return name of properties set through setValue', async () => {
-          el.form.setValue('dynProp', 'x');
-          expect(el.form.getAttributes()).to.deep.equal([
-            'dynProp',
-            'textProp',
-            'nested.textProp',
-            'numberProp',
-            'bracketProp',
-            'radioProp',
-            'checkProp',
-            'checkGroup',
-            'selectProp',
-            'customInputBind',
-            'registeredInput',
-            'lazyInput',
-          ]);
-        });
-      });
-
-      describe('getDirtyAttributes', () => {
-        it('should return empty array by default', async () => {
-          expect(el.form.getDirtyAttributes()).to.deep.equal([]);
-        });
-
-        it('should return an array with the name of the inputs with dirty value', () => {
-          let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-          inputEl.value = 'zzz';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
-          inputEl.value = 'zzz';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          expect(el.form.getDirtyAttributes()).to.deep.equal(['textProp', 'nested.textProp']);
-        });
-
-        it('should not return attributes changed but with equal values to pristine data', () => {
-          el.model.set({ textProp: 'x', nested: { textProp: 'y' } });
-          let inputEl = el.renderRoot.querySelector('input[name="textProp"]');
-          inputEl.value = 'zzz';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          inputEl.value = 'x';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-
-          inputEl = el.renderRoot.querySelector('input[name="nested.textProp"]');
-          inputEl.value = 'zzz';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          inputEl.value = 'y';
-          inputEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
-          expect(el.form.getDirtyAttributes()).to.deep.equal([]);
-        });
-
-        it('should return name of properties set through set', async () => {
-          el.form.set('dynProp', 'x');
-          expect(el.form.getDirtyAttributes()).to.deep.equal(['dynProp']);
-        });
-
-        it('should return attribute name when setting a deep nested property', async () => {
-          el.model.set({ x: { y: { z: 'a' } } });
-          el.form.set('x.y.z', 'b');
-          expect(el.form.getDirtyAttributes()).to.deep.equal(['x.y.z']);
-        });
-
-        it('should not return attributes different reference but deep equal', () => {
-          el.model.set({ textProp: 'x', complex: { textProp: 'y' } });
-          el.form.set('complex', { textProp: 'x' });
-          expect(el.form.getDirtyAttributes()).to.deep.equal(['complex']);
-          el.form.set('complex', { textProp: 'y' });
-          expect(el.form.getDirtyAttributes()).to.deep.equal([]);
-        });
-      });
+    describe('form state', () => {
+      describeFormStateSuite('with validation mixin', () => new ValidationFormModel());
+      describeFormStateSuite('with schema mixin', () => new SchemaFormModel());
     });
 
     describe('with nested path', () => {
