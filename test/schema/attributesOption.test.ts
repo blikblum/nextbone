@@ -2,33 +2,26 @@ import { beforeEach, describe, it } from 'vitest';
 
 import { assert } from 'chai';
 import { Model } from 'nextbone';
-import { withValidation } from 'nextbone/validation.js';
+import { withSchema } from 'nextbone/schema.js';
+import { z } from 'zod';
 
 type TestAttributes = {
   age?: number;
+  email?: string;
   name?: string;
   password?: string;
-  email?: string;
 };
 
-class TestModel extends withValidation(Model<TestAttributes>) {
-  static validation = {
-    age: {
-      required: true,
-    },
-    name: {
-      required: true,
-    },
-    password: {
-      required: true,
-    },
-    email: {
-      pattern: 'email',
-    },
-  };
-}
+const schema = z.object({
+  age: z.number({ message: 'Age is required' }),
+  name: z.string().min(1, 'Name is required'),
+  password: z.string().min(1, 'Password is required'),
+  email: z.email('Invalid email'),
+});
 
-const validateAllAttributes = null as unknown as Partial<TestAttributes>;
+class TestModel extends withSchema(Model<TestAttributes>) {
+  static schema = schema;
+}
 
 describe('Setting options.attributes', () => {
   let model: TestModel;
@@ -39,7 +32,7 @@ describe('Setting options.attributes', () => {
 
   describe('through Model.validate options', () => {
     it('only the attributes in array should be validated', () => {
-      const errors = model.validate(validateAllAttributes, {
+      const errors = model.validate(undefined, {
         attributes: ['name', 'age'],
       }) as Partial<Record<keyof TestAttributes, string>>;
 
@@ -59,7 +52,7 @@ describe('Setting options.attributes', () => {
       });
 
       it('validation will pass', () => {
-        const errors = model.validate(validateAllAttributes, {
+        const errors = model.validate(undefined, {
           attributes: ['name', 'age'],
         });
 

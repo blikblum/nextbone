@@ -130,7 +130,7 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsc --project tsconfig.check-types.json",
     "demo:start": "vite serve demo",
     "generate-types": "tsc --project tsconfig.types.json && tsc --project tsconfig.next.types.json",
     "generate-types:next": "tsc --project tsconfig.next.types.json",
@@ -140,7 +140,7 @@
     "test:fetch": "mocha --require @babel/register test/fetch/setup.js test/fetch/*.js",
     "test:localstorage": "web-test-runner test/localstorage/*.js --node-resolve --puppeteer",
     "test:validation": "vitest run test/validation",
-    "test:schema": "mocha --require @babel/register --require test/schema/setup-globals.js --ui exports --recursive test/schema/",
+    "test:schema": "vitest run test/schema",
     "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",
     "test:class-utils": "vitest run src",

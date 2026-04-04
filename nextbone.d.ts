@@ -295,8 +295,8 @@ export class Model<T extends ObjectHash = any, S = ModelSetOptions, E = any> ext
   previousAttributes(): Partial<T>;
   save(attributes?: Partial<T> | null, options?: ModelSaveOptions): Promise<any>;
   unset(attribute: _StringKey<T>, options?: Silenceable): this;
-  validate(attributes: Partial<T>, options?: any): any;
-  private _validate(attributes: Partial<T>, options: any): boolean;
+  validate(attributes?: Partial<T> | null, options?: any): any;
+  private _validate(attributes?: Partial<T> | null, options: any): boolean;
 
   // mixins from underscore
 
