@@ -123,9 +123,9 @@
     "sinon-chai": "^3.7.0",
     "turndown": "^7.1.2",
     "typescript": "^6.0.2",
-    "vite": "^7.1.2",
-    "vitepress": "^1.0.0-alpha.75",
-    "vitest": "^3.2.4",
+    "vite": "^8.0.3",
+    "vitepress": "^2.0.0-alpha.17",
+    "vitest": "^4.1.2",
     "zod": "^4.0.0"
   },
   "scripts": {
@@ -143,7 +143,7 @@
     "test:schema": "mocha --require @babel/register --require test/schema/setup-globals.js --ui exports --recursive test/schema/",
     "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",
-    "test:class-utils": "vitest run src/**/*.test.ts",
+    "test:class-utils": "vitest run src",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:schema && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
     "lint": "eslint nextbone.js computed.js localstorage.js virtualcollection.js form.js test/core/*.js",
     "format": "prettier nextbone.js computed.js localstorage.js virtualcollection.js form.js test/**/*.js --write",

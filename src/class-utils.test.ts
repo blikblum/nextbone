@@ -11,6 +11,10 @@ const expectCalledOn = (fn: ReturnType<typeof vi.fn>, context: unknown) => {
   expect(fn.mock.contexts[0]).toBe(context);
 };
 
+const invokeMock = (fn: ReturnType<typeof vi.fn>, context: unknown, ...args: any[]) => {
+  return (fn as unknown as (this: unknown, ...args: any[]) => unknown).apply(context, args);
+};
+
 type AsyncService = {
   start(): void;
   foo(...args: any[]): Promise<unknown>;
@@ -33,22 +37,22 @@ describe('asyncMethod', () => {
 
     class MyService {
       start() {
-        startSpy.call(this);
+        invokeMock(startSpy, this);
       }
 
       @asyncMethod
       foo(...args: any[]) {
-        fooStub.apply(this, args);
+        invokeMock(fooStub, this, ...args);
       }
 
       @asyncMethod
       bar(...args: any[]) {
-        barSpy.apply(this, args);
+        invokeMock(barSpy, this, ...args);
         return 'x';
       }
 
       onError(error: unknown) {
-        errorSpy.call(this, error);
+        invokeMock(errorSpy, this, error);
       }
     }
 
@@ -101,7 +105,7 @@ describe('asyncMethod', () => {
       enumerable: false,
       writable: true,
       value(this: { start(): void; onError(error: unknown): void }, value: string) {
-        barSpy(value);
+        invokeMock(barSpy, this, value);
         return value;
       },
     };
@@ -112,10 +116,10 @@ describe('asyncMethod', () => {
 
     const service = {
       start() {
-        startSpy();
+        invokeMock(startSpy, this);
       },
       onError(error: unknown) {
-        errorSpy(error);
+        invokeMock(errorSpy, this, error);
       },
     };
 
@@ -142,20 +146,20 @@ describe('defineAsyncMethods', () => {
 
     class MyService {
       start() {
-        startSpy.call(this);
+        invokeMock(startSpy, this);
       }
 
       foo(...args: any[]) {
-        fooStub.apply(this, args);
+        invokeMock(fooStub, this, ...args);
       }
 
       bar(...args: any[]) {
-        barSpy.apply(this, args);
+        invokeMock(barSpy, this, ...args);
         return 'x';
       }
 
       onError(error: unknown) {
-        errorSpy.call(this, error);
+        invokeMock(errorSpy, this, error);
       }
     }
 

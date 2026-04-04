@@ -96,6 +96,7 @@ class UserModel extends withValidation(Model<UserData>) {
 - **All tests**: `npm run test:all`
 - Validation tests use Mocha with CommonJS exports pattern (`test/validation/`)
 - Modules written in TypeScript use Vitest for testing
+- After every typescript code change, run `yarn check-types`
 
 ### Build & Type Generation
 
