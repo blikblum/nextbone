@@ -1,7 +1,7 @@
 import { Collection, Model as NextboneModel } from 'nextbone';
 import { withValidation } from 'nextbone/validation.js';
 
-import { Validation, assert, refute, sinon } from './vitest-globals.js';
+import { Validation, assert } from './vitest-globals.js';
 import { defineLegacySuite } from './run-legacy-suite.js';
 
 const Backbone = { Collection, Model: NextboneModel };
@@ -17,9 +17,11 @@ const suite = (() => {
               someAttribute: {
                 required: true,
               },
+              // eslint-disable-next-line camelcase
               some_attribute: {
                 required: true,
               },
+              // eslint-disable-next-line camelcase
               some_other_attribute: {
                 required: true,
               },

@@ -1,7 +1,7 @@
 import { Collection, Model as NextboneModel } from 'nextbone';
 import { withValidation } from 'nextbone/validation.js';
 
-import { Validation, assert, refute, sinon } from './vitest-globals.js';
+import { assert, sinon } from './vitest-globals.js';
 import { defineLegacySuite } from './run-legacy-suite.js';
 
 const Backbone = { Collection, Model: NextboneModel };

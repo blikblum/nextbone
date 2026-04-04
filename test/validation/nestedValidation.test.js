@@ -1,10 +1,10 @@
-import { Collection, Model as NextboneModel } from 'nextbone';
+import { Collection as NextboneCollection, Model as NextboneModel } from 'nextbone';
 import { withValidation } from 'nextbone/validation.js';
 
-import { Validation, assert, refute, sinon } from './vitest-globals.js';
+import { assert, refute, sinon } from './vitest-globals.js';
 import { defineLegacySuite } from './run-legacy-suite.js';
 
-const Backbone = { Collection, Model: NextboneModel };
+const Backbone = { Model: NextboneModel };
 
 const suite = (() => {
   let exportedSuite;
@@ -15,7 +15,7 @@ const suite = (() => {
           this.valid = sinon.spy();
           this.invalid = sinon.spy();
 
-          class Model extends withValidation(Backbone.Model) {
+          class Model extends withValidation(NextboneModel) {
             static validation = {
               'address.street': {
                 required: true,
@@ -197,7 +197,7 @@ const suite = (() => {
           this.valid = sinon.spy();
           this.invalid = sinon.spy();
 
-          class Model extends withValidation(Backbone.Model) {
+          class Model extends withValidation(NextboneModel) {
             static validation = {
               'foo.bar.baz': {
                 required: true,
@@ -302,7 +302,7 @@ const suite = (() => {
           this.valid = sinon.spy();
           this.invalid = sinon.spy();
 
-          class Model extends withValidation(Backbone.Model) {
+          class Model extends withValidation(NextboneModel) {
             static validation = {
               'foo.bar': {
                 fn: 'validateBazAndQux',
@@ -437,7 +437,7 @@ const suite = (() => {
               return this.validationError === null;
             }
           }
-          class Collection extends Backbone.Collection {}
+          class Collection extends NextboneCollection {}
 
           this.model = new Model();
           this.model.set({

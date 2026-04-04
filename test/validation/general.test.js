@@ -1,17 +1,17 @@
-import { Collection, Model as NextboneModel } from 'nextbone';
+import { Model as NextboneModel } from 'nextbone';
 import { withValidation } from 'nextbone/validation.js';
 
-import { Validation, assert, refute, sinon } from './vitest-globals.js';
+import { assert, refute, sinon } from './vitest-globals.js';
 import { defineLegacySuite } from './run-legacy-suite.js';
 
-const Backbone = { Collection, Model: NextboneModel };
+const Backbone = { Model: NextboneModel };
 
 const suite = (() => {
   let exportedSuite;
   exportedSuite = {
-    'Backbone.Validation': {
+    Validation: {
       beforeEach: function () {
-        class Model extends withValidation(Backbone.Model) {
+        class Model extends withValidation(NextboneModel) {
           static validation = {
             age: function (val) {
               if (!val) {
