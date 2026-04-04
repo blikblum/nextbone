@@ -34,7 +34,7 @@ describe('Events', () => {
       await new Promise<void>((resolve) => {
         model.on('validated', (validatedModel, invalidAttrs) => {
           assert.strictEqual(validatedModel, model);
-          assert.strictEqual(invalidAttrs, null);
+          assert.isUndefined(invalidAttrs);
           resolve();
         });
 

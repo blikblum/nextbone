@@ -1,4 +1,4 @@
-import { isString, isArray, isObject, isPlainObject, isEmpty, each, keys } from 'lodash-es';
+import { isString, isArray, isObject, isPlainObject, each, keys } from 'lodash-es';
 
 /**
  * @import { Model } from './nextbone.js'
@@ -269,12 +269,12 @@ var getValidatedPaths = function (attrs, schema) {
 };
 
 /**
- * @param {z.ZodError|undefined|null} zodError
- * @returns {ValidationErrorMap|null}
+ * @param {z.ZodError} zodError
+ * @returns {ValidationErrorMap|undefined}
  */
 // Formats Zod error messages into a flat object keyed by attribute name
 var formatZodErrors = function (zodError) {
-  if (!zodError || !zodError.issues) return null;
+  if (zodError.issues.length === 0) return;
 
   var errors = {};
   zodError.issues.forEach(function (issue) {
@@ -286,43 +286,43 @@ var formatZodErrors = function (zodError) {
     }
   });
 
-  return isEmpty(errors) ? null : errors;
+  return errors;
 };
 
 /**
- * @param {ValidationErrorMap|null} errors
+ * @param {ValidationErrorMap|undefined} errors
  * @param {PathList} paths
- * @returns {ValidationErrorMap|null}
+ * @returns {ValidationErrorMap|undefined}
  */
 var collectRequestedErrors = function (errors, paths) {
-  if (!errors) return null;
+  if (!errors) return;
 
   var errorPaths = keys(errors);
-  var invalidAttrs = paths.reduce(function (memo, path) {
+  var invalidAttrs;
+  paths.forEach(function (path) {
     var matchingPath = errorPaths.find(function (errorPath) {
       return matchesPath(path, errorPath);
     });
 
     if (matchingPath) {
-      memo[path] = errors[matchingPath];
+      invalidAttrs = invalidAttrs || {};
+      invalidAttrs[path] = errors[matchingPath];
     }
+  });
 
-    return memo;
-  }, {});
-
-  return isEmpty(invalidAttrs) ? null : invalidAttrs;
+  return invalidAttrs;
 };
 
 // Validates attributes using the Zod schema
 /**
  * @param {AttributesMap} attrs
  * @param {ZodSchema} schema
- * @returns {ValidationErrorMap|null}
+ * @returns {ValidationErrorMap|undefined}
  */
 var validateWithSchema = function (attrs, schema) {
   const result = schema.safeParse(attrs);
   if (result.success) {
-    return null;
+    return;
   }
   return formatZodErrors(result.error);
 };
@@ -358,12 +358,12 @@ function createClass(ModelClass) {
       if (isObject(attr)) {
         var validatedPaths = getAffectedSchemaPaths(schema, flattenObjectPaths(attr));
         if (!validatedPaths.length) {
-          return undefined;
+          return;
         }
 
         var allAttrs = buildValidationAttrs(this.attributes, attr);
         var errors = validateWithSchema(allAttrs, schema);
-        return collectRequestedErrors(errors, validatedPaths) || undefined;
+        return collectRequestedErrors(errors, validatedPaths);
       }
 
       // todo: verify if checking for affected paths is necessary here.
