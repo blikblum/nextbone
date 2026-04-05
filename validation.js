@@ -49,6 +49,14 @@ import {
  * @typedef {Record<string, ValidationRule>} ValidationRules
  */
 
+/**
+ * @typedef {Record<string, any>} AttributesMap
+ */
+
+/**
+ * @typedef {Record<string, string>} ValidationErrorMap
+ */
+
 var keys = Object.keys;
 
 // Default options
@@ -293,6 +301,9 @@ var labelFormatters = {
 // Patterns
 // --------
 
+/**
+ * @type {Record<string, RegExp>}
+ */
 var patterns = {
   // Matches any digit(s) (i.e. 0-9)
   digits: /^\d+$/,
@@ -313,6 +324,9 @@ var patterns = {
 
 // Error message for the build in validators.
 // {x} gets swapped out with arguments from the validator.
+/**
+ * @type {Record<string, string>}
+ */
 var messages = {
   required: '{0} is required',
   acceptance: '{0} must be accepted',
@@ -340,6 +354,10 @@ var isNumeric = function (value) {
   return isNumber(value) || (isString(value) && value.match(patterns.number));
 };
 
+/**
+ * @typedef {(value: any, attr: string, ruleValue: string | number | boolean | RegExp | Array<any> | Function, model: typeof Model, computed: Record<string, any>) => string|false|undefined} ValidatorFunction
+ * @type {Record<string, ValidatorFunction>}
+ */
 var validators = {
   // Function validator
   // Lets you implement a custom function used for validation
@@ -587,14 +605,28 @@ function createClass(ModelClass) {
 // decorator
 // todo add type for functions
 /**
+ * @typedef {object} ValidationInstanceMixin
+ * @property {(attr: string|AttributesMap, value?: any) => string|false|ValidationErrorMap|undefined} preValidate
+ * @property {(opts?: any) => boolean} isValid
+ * @property {(attrs?: AttributesMap|null, setOptions?: any) => ValidationErrorMap|undefined} validate
+ */
+
+/**
  * @typedef ValidationStaticMixin
  * @property {ValidationRules} validation
  */
 
 /**
  * @template {Ctor<Model<any, any, any>>} BaseClass
+ * @typedef {(new (...args: ConstructorParameters<BaseClass>) =>
+ *   InstanceType<BaseClass> & ValidationInstanceMixin) &
+ *   ValidationStaticMixin} ValidationMixinClass
+ */
+
+/**
+ * @template {Ctor<Model<any, any, any>>} BaseClass
  * @param {BaseClass} ctorOrDescriptor - Base model class
- * @returns {BaseClass & ValidationStaticMixin}
+ * @returns {ValidationMixinClass<BaseClass>}
  */
 const withValidation = (ctorOrDescriptor) => {
   if (typeof ctorOrDescriptor === 'function') {

@@ -59,56 +59,58 @@ export type ValidationRule = {
     fn?: FnRule | undefined;
 };
 export type ValidationRules = Record<string, ValidationRule>;
+export type AttributesMap = Record<string, any>;
+export type ValidationErrorMap = Record<string, string>;
+export type ValidatorFunction = (value: any, attr: string, ruleValue: string | number | boolean | RegExp | Array<any> | Function, model: typeof Model, computed: Record<string, any>) => string | false | undefined;
+export type ValidationInstanceMixin = {
+    preValidate: (attr: string | AttributesMap, value?: any) => string | false | ValidationErrorMap | undefined;
+    isValid: (opts?: any) => boolean;
+    validate: (attrs?: AttributesMap | null, setOptions?: any) => ValidationErrorMap | undefined;
+};
 export type ValidationStaticMixin = {
     validation: ValidationRules;
 };
+export type ValidationMixinClass<BaseClass extends Ctor<Model<any, any, any>>> = (new (...args: ConstructorParameters<BaseClass>) => InstanceType<BaseClass> & ValidationInstanceMixin) & ValidationStaticMixin;
+/**
+ * @typedef {object} ValidationInstanceMixin
+ * @property {(attr: string|AttributesMap, value?: any) => string|false|ValidationErrorMap|undefined} preValidate
+ * @property {(opts?: any) => boolean} isValid
+ * @property {(attrs?: AttributesMap|null, setOptions?: any) => ValidationErrorMap|undefined} validate
+ */
 /**
  * @typedef ValidationStaticMixin
  * @property {ValidationRules} validation
  */
 /**
  * @template {Ctor<Model<any, any, any>>} BaseClass
- * @param {BaseClass} ctorOrDescriptor - Base model class
- * @returns {BaseClass & ValidationStaticMixin}
+ * @typedef {(new (...args: ConstructorParameters<BaseClass>) =>
+ *   InstanceType<BaseClass> & ValidationInstanceMixin) &
+ *   ValidationStaticMixin} ValidationMixinClass
  */
-export function withValidation<BaseClass extends Ctor<Model<any, any, any>>>(ctorOrDescriptor: BaseClass): BaseClass & ValidationStaticMixin;
+/**
+ * @template {Ctor<Model<any, any, any>>} BaseClass
+ * @param {BaseClass} ctorOrDescriptor - Base model class
+ * @returns {ValidationMixinClass<BaseClass>}
+ */
+export function withValidation<BaseClass extends Ctor<Model<any, any, any>>>(ctorOrDescriptor: BaseClass): ValidationMixinClass<BaseClass>;
 export namespace labelFormatters {
     function none(attrName: any): any;
     function sentenceCase(attrName: any): any;
     function label(attrName: any, model: any): any;
 }
-export namespace messages {
-    let required: string;
-    let acceptance: string;
-    let min: string;
-    let max: string;
-    let range: string;
-    let length: string;
-    let minLength: string;
-    let maxLength: string;
-    let rangeLength: string;
-    let oneOf: string;
-    let equalTo: string;
-    let digits: string;
-    let number: string;
-    let email: string;
-    let url: string;
-    let inlinePattern: string;
-}
-export namespace validators {
-    function format(text: any, ...args: any[]): any;
-    function formatLabel(attrName: any, model: any): any;
-}
-export namespace patterns {
-    let digits_1: RegExp;
-    export { digits_1 as digits };
-    let number_1: RegExp;
-    export { number_1 as number };
-    let email_1: RegExp;
-    export { email_1 as email };
-    let url_1: RegExp;
-    export { url_1 as url };
-}
+/**
+ * @type {Record<string, string>}
+ */
+export var messages: Record<string, string>;
+/**
+ * @typedef {(value: any, attr: string, ruleValue: string | number | boolean | RegExp | Array<any> | Function, model: typeof Model, computed: Record<string, any>) => string|false|undefined} ValidatorFunction
+ * @type {Record<string, ValidatorFunction>}
+ */
+export var validators: Record<string, ValidatorFunction>;
+/**
+ * @type {Record<string, RegExp>}
+ */
+export var patterns: Record<string, RegExp>;
 export namespace options {
     let labelFormatter: string;
 }
