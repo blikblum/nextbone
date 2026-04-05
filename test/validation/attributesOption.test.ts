@@ -37,6 +37,12 @@ describe('Setting options.attributes', () => {
     model = new TestModel();
   });
 
+  it('exposes preValidate on the typed mixin instance', () => {
+    const error = model.preValidate('name', '');
+
+    assert.strictEqual(error, 'Name is required');
+  });
+
   describe('through Model.validate options', () => {
     it('only the attributes in array should be validated', () => {
       const errors = model.validate(validateAllAttributes, {
