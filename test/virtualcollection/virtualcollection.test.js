@@ -12,7 +12,7 @@ afterEach(() => {
 
 describe('VirtualCollection', function () {
   describe('#constructor', function () {
-    it('should bind 10 listeners to its collection', function () {
+    it('should bind listeners to its collection', function () {
       var collection = new Collection([{ foo: 'bar' }, { foo: 'baz' }]);
       var vc = new VirtualCollection(collection);
       assert.deepEqual(keys(collection._events), [
@@ -116,6 +116,61 @@ describe('VirtualCollection', function () {
       otherCollection.add({ id: 4, foo: 'bar' });
 
       assert.equal(vc.models.length, 2);
+    });
+  });
+
+  describe('#params', function () {
+    it('should call updateFilter in next microtask when changing one of its properties', async () => {
+      const collection = new VirtualCollection();
+      const updateFilterSpy = sinon.spy(collection, 'updateFilter');
+
+      collection.params.test = 'x';
+
+      assert.equal(updateFilterSpy.called, false);
+
+      await Promise.resolve();
+
+      assert.equal(updateFilterSpy.called, true);
+    });
+
+    it('should call updateFilter once in next microtask when changing many times', async () => {
+      const collection = new VirtualCollection();
+      const updateFilterSpy = sinon.spy(collection, 'updateFilter');
+
+      collection.params.test = 'x';
+      collection.params = { test: 'y' };
+      collection.params.otherTest = 'z';
+
+      assert.equal(updateFilterSpy.called, false);
+
+      await Promise.resolve();
+
+      assert.equal(updateFilterSpy.called, true);
+      assert.equal(updateFilterSpy.callCount, 1);
+    });
+
+    it('should be passed to the filter function', async function () {
+      var collection = new Collection([
+        { id: 1, foo: 'bar', type: 'a' },
+        { id: 2, foo: 'baz', type: 'a' },
+        { id: 3, foo: 'bar', type: 'b' },
+      ]);
+
+      var vc = new VirtualCollection(collection, {
+        filter: function (model, params) {
+          let accepts = model.get('type') === 'a';
+          accepts = accepts && (!params.foo || model.get('foo') === params.foo);
+          return accepts;
+        },
+      });
+
+      assert.equal(vc.models.length, 2);
+
+      vc.params.foo = 'bar';
+
+      await Promise.resolve();
+
+      assert.equal(vc.models.length, 1);
     });
   });
 
@@ -559,12 +614,14 @@ describe('VirtualCollection', function () {
   });
 
   describe('#filter', function () {
-    it('should receive the model and index as arguments', function () {
+    it('should receive the model, params, and index as arguments', function () {
       var i = 0,
         collection = new Collection([{ id: 1 }, { id: 2 }]);
 
       var vc = new VirtualCollection(collection, {
-        filter: function (model, index) {
+        params: { test: 'x' },
+        filter: function (model, params, index) {
+          assert.equal(params.test, 'x');
           assert.equal(model.id, i + 1);
           assert.equal(index, i);
           i++;

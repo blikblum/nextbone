@@ -1,34 +1,45 @@
-export type VirtualCollectionOptions = {
-    filter?: ModelFilter | undefined;
+export type VirtualCollectionOptions<Params extends Record<string, any> = Record<string, any>> = {
+    filter?: ModelFilter<Params> | undefined;
     destroyWith?: Model<any, string, any> | Collection<Model<any, any, any>> | undefined;
     comparator?: CollectionComparator<Model<any, string, any>> | undefined;
     model?: (new (...args: any[]) => Model | ((...args: any[]) => Model)) | undefined;
+    params?: Params | undefined;
 };
-export type ModelFilterFunction = (model: Model) => any;
-export type ModelFilter = Record<string, any> | ModelFilterFunction;
+export type ModelFilterFunction<Params extends Record<string, any> = Record<string, any>> = (model: Model, params: Params, index: number) => any;
+export type ModelFilter<Params extends Record<string, any> = Record<string, any>> = Record<string, any> | ModelFilterFunction<Params>;
 /**
  * @class VirtualCollection
  * @description A virtual collection is a collection that is a filtered view of another collection.
+ * @template {Model} [TModel=Model]
+ * @template {Record<string, any>} [Params=Record<string, any>]
+ * @extends {Collection<TModel>}
  */
-export class VirtualCollection extends Collection<Model<any, any, any>> {
+export class VirtualCollection<TModel extends Model = Model<any, string, any>, Params extends Record<string, any> = Record<string, any>> extends Collection<TModel> {
     /**
      * @param {Collection | null} [parent]
-     * @param {VirtualCollectionOptions} [options]
+     * @param {VirtualCollectionOptions<Params>} [options]
      */
-    constructor(parent?: Collection | null, options?: VirtualCollectionOptions);
+    constructor(parent?: Collection | null, options?: VirtualCollectionOptions<Params>);
     /** @type {Collection} */
     _parent: Collection;
+    _queueFilterUpdate: () => any;
+    /** @type {Params} */
+    _params: Params;
     accepts: any;
     set parent(value: Collection);
     /**
      * @type {Collection}
      */
     get parent(): Collection;
+    /** @param {Params} value */
+    set params(params: Params);
+    /** @returns {Params} */
+    get params(): Params;
     /**
-     * @param {ModelFilter} [filter]
+     * @param {ModelFilter<Params>} [filter]
      * @returns {VirtualCollection}
      */
-    updateFilter(filter?: ModelFilter): VirtualCollection;
+    updateFilter(filter?: ModelFilter<Params>): VirtualCollection;
     _rebuildIndex(): void;
     orderViaParent(options: any): void;
     _onSort(collection: any, options: any): void;

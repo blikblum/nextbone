@@ -1,21 +1,26 @@
+import { createMicrotaskBatcher, createWatchedProxy } from './dist/class-utils.js';
 import { Collection } from './nextbone.js';
 import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 /**
  * @import { Model, CollectionComparator } from './nextbone.js'
  *
+ * @template {Record<string, any>} [Params=Record<string, any>]
  * @typedef VirtualCollectionOptions
  * @property {ModelFilter} [filter]
  * @property {Model | Collection} [destroyWith]
  * @property {CollectionComparator<Model>} [comparator]
  * @property {new (...args: any[]) => Model | ((...args: any[]) => Model)} [model]
+ * @property {Params} [params]
  *
  *
  * @callback ModelFilterFunction
  * @param {Model} model
+ * @param {Params} params
+ * @param {number} index
  * @return boolean
  *
- * @typedef {Record<string, any> | ModelFilterFunction} ModelFilter
+ * @typedef {Record<string, any> | ModelFilterFunction<Params>} ModelFilter
  */
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
@@ -43,6 +48,9 @@ var buildFilter = function (options) {
 /**
  * @class VirtualCollection
  * @description A virtual collection is a collection that is a filtered view of another collection.
+ * @template {Model} [TModel=Model]
+ * @template {Record<string, any>} [Params=Record<string, any>]
+ * @extends {Collection<TModel>}
  */
 class VirtualCollection extends Collection {
   /** @type {Collection} */
@@ -50,11 +58,18 @@ class VirtualCollection extends Collection {
 
   /**
    * @param {Collection | null} [parent]
-   * @param {VirtualCollectionOptions} [options]
+   * @param {VirtualCollectionOptions<Params>} [options]
    */
   constructor(parent, options = {}) {
     super(null, options);
-    const { destroyWith, filter } = options;
+    const { destroyWith, filter, params = {} } = options;
+
+    this._queueFilterUpdate = createMicrotaskBatcher(() => {
+      this.updateFilter();
+    });
+
+    /** @type {Params} */
+    this._params = createWatchedProxy({ ...params }, this._queueFilterUpdate);
 
     if (destroyWith) this.listenTo(destroyWith, 'destroy', this.stopListening);
     this._clearChangesCache();
@@ -89,8 +104,23 @@ class VirtualCollection extends Collection {
     }
   }
 
+  /** @returns {Params} */
+  get params() {
+    return this._params;
+  }
+
+  /** @param {Params} value */
+  set params(params) {
+    if (!params || typeof params !== 'object') {
+      throw new Error('VirtualCollection: params should be an object');
+    }
+
+    this._params = createWatchedProxy({ ...params }, this._queueFilterUpdate);
+    this._queueFilterUpdate();
+  }
+
   /**
-   * @param {ModelFilter} [filter]
+   * @param {ModelFilter<Params>} [filter]
    * @returns {VirtualCollection}
    */
   updateFilter(filter) {
@@ -104,10 +134,11 @@ class VirtualCollection extends Collection {
   }
 
   _rebuildIndex() {
+    var params = { ...this._params };
     this.models.forEach((model) => model.off('all', this._onAllEvent, this));
     this._reset();
-    this._parent.each((model, i) => {
-      if (this.accepts(model, i)) {
+    this._parent?.each((model, i) => {
+      if (this.accepts(model, params, i)) {
         this.listenTo(model, 'all', this._onAllEvent);
         this.models.push(model);
         this._byId[model.cid] = model;
