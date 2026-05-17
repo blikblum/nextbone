@@ -1207,14 +1207,14 @@ class Collection extends Events {
 
   // Return models with matching attributes. Useful for simple cases of
   // `filter`.
-  where(attrs, firstItem) {
-    return this[firstItem ? 'find' : 'filter'](attrs);
+  where(attrs) {
+    return this.filter(attrs);
   }
 
   // Return the first model with matching attributes. Useful for simple cases
   // of `find`.
   findWhere(attrs) {
-    return this.where(attrs, true);
+    return this.find(attrs);
   }
 
   // Force the collection to re-sort itself. You don't need to call this under
