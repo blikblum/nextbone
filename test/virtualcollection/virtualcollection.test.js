@@ -541,14 +541,16 @@ describe('VirtualCollection', function () {
   });
 
   describe('add & remove', function () {
-    it('should proxy up to the parent', function () {
-      var collection = new Collection([]);
+    it('should not mutate the parent', function () {
+      var collection = new Collection([{ id: 1 }]);
       var vc = new VirtualCollection(collection, {});
       vc.add({ id: 2 });
+      assert.equal(vc.length, 2);
       assert.equal(collection.length, 1);
-      var model = vc.remove(collection.at(0));
-      assert(model.id === 2);
-      assert.equal(collection.length, 0);
+      var model = vc.remove(vc.at(0));
+      assert(model.id === 1);
+      assert.equal(vc.length, 1);
+      assert.equal(collection.length, 1);
     });
   });
 
@@ -630,25 +632,6 @@ describe('VirtualCollection', function () {
     });
   });
 
-  describe('url', function () {
-    it('should _.result to a string when parent collection url property is a string', function () {
-      var collection = new Collection([]);
-      collection.url = '/fake-endpoint';
-
-      var vc = new VirtualCollection(collection, {});
-      assert.equal(true, isString(result(vc, 'url')));
-    });
-    it('should _.result to a string when parent collection url property is a function', function () {
-      var collection = new Collection([]);
-      collection.url = function () {
-        return '/fake-endpoint';
-      };
-
-      var vc = new VirtualCollection(collection, {});
-      assert.equal(true, isString(result(vc, 'url')));
-    });
-  });
-
   describe('buildFilter', function () {
     it('should build a single-attribute filter that matches a model', function () {
       var filter = buildFilter({ foo: 'bar' });
@@ -680,6 +663,7 @@ describe('VirtualCollection', function () {
       assert.equal(true, filter(new Model({ foo: 'bar', ginger: undefined })));
     });
   });
+
   describe('events', function () {
     it('should trigger a `reset` event when the parent collection is reset', function () {
       var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
@@ -876,6 +860,7 @@ describe('VirtualCollection', function () {
       collection.at(0).set({ testProperty: true });
       assert(called);
     });
+
     it('should trigger a `filter` event when updateFilter() is called', function () {
       var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         filter = sinon.stub(),
@@ -889,6 +874,32 @@ describe('VirtualCollection', function () {
       assert(filter.called);
       assert(vc.length === 1);
     });
+
+    it('should allow to mutate the virtual collection in a `filter` event', function () {
+      const collection = new Collection([
+        { id: 'a', type: 'a', name: 'Item A' },
+        { id: 'b', type: 'b', name: 'Item B' },
+      ]);
+
+      const vc = new VirtualCollection(collection, {
+        filter: { type: 'a' },
+      });
+
+      vc.on('filter', () => {
+        vc.add({ id: 'all', name: 'All items' });
+      });
+
+      vc.on('reset', () => {
+        assert.equal(vc.length, 2);
+      });
+
+      vc.updateFilter({ type: 'b' });
+
+      assert.equal(vc.length, 2);
+      assert.equal(collection.length, 2);
+      assert.exists(vc.get('all'));
+    });
+
     it('should trigger a `reset` event when updateFilter() is called', function () {
       var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         reset = sinon.stub(),
@@ -971,6 +982,7 @@ describe('VirtualCollection', function () {
       assert(!sort.called);
     });
   });
+
   describe('accepts & get', function () {
     it('should not call accepts() when iterating over the virtual collection', function () {
       var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
@@ -1021,6 +1033,7 @@ describe('VirtualCollection', function () {
       assert(!collection.get.called);
     });
   });
+
   describe('sorting', function () {
     it('should ignore parent collection sort event if it has a comparator', function () {
       var collection = new Collection([{ type: 'a' }, { type: 'b' }]);

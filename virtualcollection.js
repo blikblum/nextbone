@@ -299,36 +299,9 @@ class VirtualCollection extends Collection {
   }
 }
 
-// methods that alter data should proxy to the parent collection
-
-[
-  'add',
-  'remove',
-  'set',
-  'reset',
-  'push',
-  'pop',
-  'unshift',
-  'shift',
-  'slice',
-  'sync',
-  'fetch',
-  'url',
-].forEach(function (methodName) {
-  VirtualCollection.prototype[methodName] = function () {
-    var method = this._parent[methodName];
-    if (isFunction(method)) {
-      return method.apply(this._parent, arguments);
-    }
-    return method;
-  };
-});
-
 /**
-
-Equivalent to sortedIndex, but for comparators with two arguments
-
-**/
+ * Equivalent to sortedIndex, but for comparators with two arguments
+ **/
 function sortedIndexTwo(array, obj, iterator, context) {
   var low = 0,
     high = array.length;
