@@ -234,7 +234,6 @@ class VirtualCollection extends Collection {
   }
 
   _onFilter(collection, options) {
-    this._rebuildIndex();
     this.trigger('filter', this, options);
   }
 

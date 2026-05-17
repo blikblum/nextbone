@@ -1,6 +1,6 @@
 import { afterEach, describe, it } from 'vitest';
 import sinon from 'sinon';
-import { keys, isString, result } from 'lodash-es';
+import { keys } from 'lodash-es';
 import { Model, Collection, Events, ajax } from '../../nextbone.js';
 import { VirtualCollection, buildFilter } from '../../virtualcollection.js';
 
@@ -11,6 +11,101 @@ afterEach(() => {
 });
 
 describe('VirtualCollection', function () {
+  it('should update the virtual collection when a `reset` event is triggered by the parent collection', function () {
+    var collection = new Collection([{ type: 'a' }, { type: 'a' }, { type: 'b' }]),
+      vc = new VirtualCollection(collection, {
+        filter: { type: 'b' },
+      });
+    collection.reset([
+      new Model({ type: 'b' }),
+      new Model({ type: 'b' }),
+      new Model({ type: 'b' }),
+    ]);
+
+    assert.equal(vc.length, collection.length);
+  });
+
+  it('should allow to use a VirtualCollection as parent collection', function () {
+    const collection = new Collection([
+      { type: 'a', value: 2 },
+      { type: 'a', value: 1 },
+      { type: 'b', value: 2 },
+    ]);
+    const vc1 = new VirtualCollection(collection, {
+      filter: { type: 'a' },
+    });
+    const vc2 = new VirtualCollection(vc1, {
+      filter: { value: 2 },
+    });
+
+    assert.equal(vc2.length, 1);
+    assert.equal(vc2.at(0).get('type'), 'a');
+
+    vc1.updateFilter({ type: 'b' });
+
+    assert.equal(vc1.length, 1);
+    assert.equal(vc2.length, 1);
+    assert.equal(vc2.at(0).get('type'), 'b');
+  });
+
+  it('should trigger `filter` and `reset` events when the parent virtual collection is filtered', function () {
+    const collection = new Collection([
+      { type: 'a', value: 2 },
+      { type: 'a', value: 1 },
+      { type: 'b', value: 2 },
+    ]);
+
+    const vc1 = new VirtualCollection(collection, {
+      filter: { type: 'a' },
+    });
+
+    const vc2 = new VirtualCollection(vc1, {
+      filter: { value: 2 },
+    });
+
+    let filterEventTriggered = false;
+    let resetEventTriggered = false;
+    vc2.on('filter', function () {
+      filterEventTriggered = true;
+    });
+
+    vc2.on('reset', function () {
+      resetEventTriggered = true;
+    });
+
+    vc1.updateFilter({ type: 'b' });
+    assert(filterEventTriggered);
+    assert(resetEventTriggered);
+  });
+
+  it('should rebuild the index once when the parent virtual collection filter changes', function () {
+    const collection = new Collection([
+      { type: 'a', value: 2 },
+      { type: 'a', value: 1 },
+      { type: 'b', value: 2 },
+    ]);
+
+    const vc1 = new VirtualCollection(collection, {
+      filter: { type: 'a' },
+    });
+
+    const vc2 = new VirtualCollection(vc1, {
+      filter: { value: 2 },
+    });
+
+    assert.equal(vc2.length, 1);
+    assert.equal(vc2.at(0).get('type'), 'a');
+
+    sinon.spy(vc2, '_rebuildIndex');
+
+    vc1.updateFilter({ type: 'b' });
+
+    assert.equal(vc2._rebuildIndex.callCount, 1);
+
+    assert.equal(vc1.length, 1);
+    assert.equal(vc2.length, 1);
+  });
+
   describe('#constructor', function () {
     it('should bind listeners to its collection', function () {
       var collection = new Collection([{ foo: 'bar' }, { foo: 'baz' }]);
@@ -402,19 +497,6 @@ describe('VirtualCollection', function () {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1]);
     });
 
-    it('should update the virtual collection when a `reset` event is triggered by the parent collection', function () {
-      var collection = new Collection([{ type: 'a' }, { type: 'a' }, { type: 'b' }]),
-        vc = new VirtualCollection(collection, {
-          filter: { type: 'b' },
-        });
-      collection.reset([
-        new Model({ type: 'b' }),
-        new Model({ type: 'b' }),
-        new Model({ type: 'b' }),
-      ]);
-
-      assert.equal(vc.length, collection.length);
-    });
     it('should respect the order of the parent collection if no comparator is specified', function () {
       var collection = new (class extends Collection {
         comparator = 'name';
