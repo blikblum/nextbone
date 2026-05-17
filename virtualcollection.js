@@ -25,9 +25,11 @@ import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 var explicitlyHandledEvents = ['add', 'remove', 'change', 'reset', 'sort'];
 
-var clone = function (obj) {
-  return obj ? Object.assign({}, obj) : {};
-};
+function onModelAllEvent(eventName) {
+  if (explicitlyHandledEvents.indexOf(eventName) === -1) {
+    this.trigger.apply(this, arguments);
+  }
+}
 
 var buildFilter = function (options) {
   if (!options) {
@@ -135,11 +137,11 @@ class VirtualCollection extends Collection {
 
   _rebuildIndex() {
     var params = { ...this._params };
-    this.models.forEach((model) => model.off('all', this._onAllEvent, this));
+    this.models.forEach((model) => this.stopListening(model, 'all'));
     this._reset();
     this._parent?.each((model, i) => {
       if (this.accepts(model, params, i)) {
-        this.listenTo(model, 'all', this._onAllEvent);
+        this.listenTo(model, 'all', onModelAllEvent);
         this.models.push(model);
         this._byId[model.cid] = model;
         if (model.id) this._byId[model.id] = model;
@@ -192,7 +194,7 @@ class VirtualCollection extends Collection {
     if (this.get(model) || !this.accepts(model, options.index)) return;
     this._changeCache.added.push(model);
     this._indexAdd(model);
-    this.listenTo(model, 'all', this._onAllEvent);
+    this.listenTo(model, 'all', onModelAllEvent);
     this.trigger('add', model, this, options);
     if (this.comparator !== undefined) {
       this.trigger('sort', this, options);
@@ -202,11 +204,9 @@ class VirtualCollection extends Collection {
   _onRemove(model, collection, options) {
     if (!this.get(model)) return;
     this._changeCache.removed.push(model);
-    var i = this._indexRemove(model),
-      optionsClone = clone(options);
-    optionsClone.index = i;
-    model.off('all', this._onAllEvent, this);
-    this.trigger('remove', model, this, optionsClone);
+    var index = this._indexRemove(model);
+    this.stopListening(model, 'all');
+    this.trigger('remove', model, this, { ...options, index });
   }
 
   _onChange(model, options) {
@@ -223,10 +223,8 @@ class VirtualCollection extends Collection {
         this._onAdd(model, this._parent, options);
       }
     } else if (alreadyHere) {
-      var i = this._indexRemove(model),
-        optionsClone = clone(options);
-      optionsClone.index = i;
-      this.trigger('remove', model, this, optionsClone);
+      var index = this._indexRemove(model);
+      this.trigger('remove', model, this, { ...options, index });
     }
   }
 
@@ -278,7 +276,7 @@ class VirtualCollection extends Collection {
   }
 
   _indexRemove(model) {
-    model.off('all', this._onAllEvent, this);
+    this.stopListening(model, 'all');
     var i = this.indexOf(model);
     if (i === -1) return i;
     this.models.splice(i, 1);
@@ -286,12 +284,6 @@ class VirtualCollection extends Collection {
     if (model.id) delete this._byId[model.id];
     this.length -= 1;
     return i;
-  }
-
-  _onAllEvent(eventName) {
-    if (explicitlyHandledEvents.indexOf(eventName) === -1) {
-      this.trigger.apply(this, arguments);
-    }
   }
 
   clone() {
