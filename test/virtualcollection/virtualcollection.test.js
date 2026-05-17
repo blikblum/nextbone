@@ -1,17 +1,21 @@
-import 'chai/chai.js';
+import { afterEach, describe, it } from 'vitest';
 import sinon from 'sinon';
-import * as _ from 'lodash-es';
-import * as Backbone from '../../nextbone';
-import { VirtualCollection, buildFilter } from '../../virtualcollection';
+import { keys, isString, result } from 'lodash-es';
+import { Model, Collection, Events, ajax } from '../../nextbone.js';
+import { VirtualCollection, buildFilter } from '../../virtualcollection.js';
 
 import { assert } from 'chai';
+
+afterEach(() => {
+  sinon.restore();
+});
 
 describe('VirtualCollection', function () {
   describe('#constructor', function () {
     it('should bind 10 listeners to its collection', function () {
-      var collection = new Backbone.Collection([{ foo: 'bar' }, { foo: 'baz' }]);
+      var collection = new Collection([{ foo: 'bar' }, { foo: 'baz' }]);
       var vc = new VirtualCollection(collection);
-      assert.deepEqual(_.keys(collection._events), [
+      assert.deepEqual(keys(collection._events), [
         'add',
         'remove',
         'change',
@@ -27,7 +31,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should build an index on instantiation', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
         { id: 1, foo: 'bar' },
         { id: 2, foo: 'baz' },
         { id: 3, foo: 'bar' },
@@ -40,8 +44,8 @@ describe('VirtualCollection', function () {
 
     it('should accept a destroyWith option and bind destroy event (Marionette)', function () {
       var vc, collection, eventEmitter;
-      collection = new Backbone.Collection([{ id: 1, foo: 'bar' }]);
-      eventEmitter = new Backbone.Events();
+      collection = new Collection([{ id: 1, foo: 'bar' }]);
+      eventEmitter = new Events();
       sinon.spy(VirtualCollection.prototype, 'stopListening');
       vc = new VirtualCollection(collection, { destroyWith: eventEmitter });
 
@@ -51,12 +55,12 @@ describe('VirtualCollection', function () {
     });
     it('should set the model from the collection', function () {
       var vc, MyModel, MyCollection, myModel, myCollection;
-      MyModel = class extends Backbone.Model {
+      MyModel = class extends Model {
         foo() {
           return 'foo';
         }
       };
-      MyCollection = class extends Backbone.Collection {
+      MyCollection = class extends Collection {
         static model = MyModel;
       };
       myCollection = new MyCollection([{ id: 1, foo: 'bar' }]);
@@ -68,7 +72,7 @@ describe('VirtualCollection', function () {
 
   describe('#parent', function () {
     it('should allow to define the parent collection after instatiation', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
         { id: 1, foo: 'bar' },
         { id: 2, foo: 'baz' },
         { id: 3, foo: 'bar' },
@@ -85,13 +89,13 @@ describe('VirtualCollection', function () {
     });
 
     it('should allow to swap the parent collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
         { id: 1, foo: 'bar' },
         { id: 2, foo: 'baz' },
         { id: 3, foo: 'bar' },
       ]);
 
-      var otherCollection = new Backbone.Collection([
+      var otherCollection = new Collection([
         { id: 1, foo: 'bar' },
         { id: 2, foo: 'baz' },
         { id: 3, foo: 'baz' },
@@ -122,7 +126,7 @@ describe('VirtualCollection', function () {
           return model.get('foo') === 'bar';
         }
       }
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
         { id: 1, foo: 'bar' },
         { id: 2, foo: 'baz' },
         { id: 3, foo: 'bar' },
@@ -137,9 +141,9 @@ describe('VirtualCollection', function () {
     it('should inherit the model type of the parent collection', function () {
       var vc, collection, Library;
 
-      class TestModel extends Backbone.Model {}
+      class TestModel extends Model {}
 
-      Library = class extends Backbone.Collection {
+      Library = class extends Collection {
         static model = TestModel;
       };
 
@@ -152,8 +156,8 @@ describe('VirtualCollection', function () {
   describe('#each', function () {
     it('should iterate over the virtual collection in order', function () {
       var vc,
-        result = [],
-        collection = new Backbone.Collection([
+        models = [],
+        collection = new Collection([
           { id: 1, foo: 'bar' },
           { id: 2, foo: 'baz' },
           { id: 3, foo: 'bar' },
@@ -162,16 +166,16 @@ describe('VirtualCollection', function () {
         filter: { foo: 'bar' },
       });
       vc.each(function (model) {
-        result.push(model);
+        models.push(model);
       });
-      assert.deepEqual(result, vc.models);
+      assert.deepEqual(models, vc.models);
     });
   });
 
   describe('#indexOf', function () {
     it('should return the index of a model as ordered in the virtual collection', function () {
       var vc,
-        collection = new Backbone.Collection([
+        collection = new Collection([
           { id: 1, foo: 'bar' },
           { id: 2, foo: 'baz' },
           { id: 3, foo: 'bar' },
@@ -186,7 +190,7 @@ describe('VirtualCollection', function () {
   describe('#where', function () {
     it('finds all the models matching the given attributes', function () {
       var vc,
-        collection = new Backbone.Collection([
+        collection = new Collection([
           { id: 1, foo: 'bar' },
           { id: 2, foo: 'baz' },
           { id: 3, foo: 'bar' },
@@ -199,7 +203,7 @@ describe('VirtualCollection', function () {
   describe('#findWhere', function () {
     it('finds the first model matching the given attributes', function () {
       var vc,
-        collection = new Backbone.Collection([
+        collection = new Collection([
           { id: 10, foo: 'bar' },
           { id: 20, foo: 'baz' },
           { id: 30, foo: 'bar' },
@@ -212,7 +216,7 @@ describe('VirtualCollection', function () {
   describe('#pluck', function () {
     it('returns an array of ids', function () {
       var vc,
-        collection = new Backbone.Collection([
+        collection = new Collection([
           { id: 10, foo: 'bar' },
           { id: 20, foo: 'baz' },
           { id: 30, foo: 'bar' },
@@ -223,7 +227,7 @@ describe('VirtualCollection', function () {
 
     it('returns an array of attribute values', function () {
       var vc,
-        collection = new Backbone.Collection([
+        collection = new Collection([
           { id: 10, foo: 'bar' },
           { id: 20, foo: 'baz' },
           { id: 30, foo: 'bar' },
@@ -236,7 +240,7 @@ describe('VirtualCollection', function () {
   describe('#_addIndex', function () {
     it('should use comparators to correctly order the model in the virtual collection', function () {
       var vc,
-        collection = new Backbone.Collection(
+        collection = new Collection(
           [
             { id: 1, ok: true, foo: 'ccc' },
             { id: 2, ok: false, foo: 'bbb' },
@@ -257,7 +261,7 @@ describe('VirtualCollection', function () {
 
   describe('#comparator', function () {
     it('should sort the virtual collection upon instantiation', function () {
-      var collection = new Backbone.Collection(
+      var collection = new Collection(
           [
             { id: 1, name: 'ccc' },
             { id: 2, name: 'aaa' },
@@ -273,7 +277,7 @@ describe('VirtualCollection', function () {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1]);
     });
     it('should not order the virtual collection when the comparator is falsey', function () {
-      var collection = new Backbone.Collection(
+      var collection = new Collection(
           [
             { id: 1, name: 'ccc' },
             { id: 2, name: 'aaa' },
@@ -290,7 +294,7 @@ describe('VirtualCollection', function () {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1, 4]);
     });
     it('should accept a comparator()', function () {
-      var collection = new Backbone.Collection(
+      var collection = new Collection(
           [
             { id: 1, name: 'ccc' },
             { id: 2, name: 'aaa' },
@@ -308,7 +312,7 @@ describe('VirtualCollection', function () {
       assert.deepEqual(vc.pluck('id'), [2, 3, 1]);
     });
     it('should accept a comparator() that compares two models', function () {
-      var collection = new Backbone.Collection(
+      var collection = new Collection(
           [
             { id: 1, name: 'ccc' },
             { id: 2, name: 'aaa' },
@@ -327,7 +331,7 @@ describe('VirtualCollection', function () {
       assert.deepEqual(vc.pluck('id'), [1, 3, 2]);
     });
     it('should keep the virtual collection sorted when adding items', function () {
-      var collection = new Backbone.Collection(
+      var collection = new Collection(
           [
             { id: 1, name: 'ccc' },
             { id: 3, name: 'bbb' },
@@ -344,20 +348,20 @@ describe('VirtualCollection', function () {
     });
 
     it('should update the virtual collection when a `reset` event is triggered by the parent collection', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'b' },
         });
       collection.reset([
-        new Backbone.Model({ type: 'b' }),
-        new Backbone.Model({ type: 'b' }),
-        new Backbone.Model({ type: 'b' }),
+        new Model({ type: 'b' }),
+        new Model({ type: 'b' }),
+        new Model({ type: 'b' }),
       ]);
 
       assert.equal(vc.length, collection.length);
     });
     it('should respect the order of the parent collection if no comparator is specified', function () {
-      var collection = new (class extends Backbone.Collection {
+      var collection = new (class extends Collection {
         comparator = 'name';
       })();
       collection.reset([{ name: 'b' }, { name: 'z' }, { name: 'a' }]);
@@ -383,7 +387,7 @@ describe('VirtualCollection', function () {
   });
   describe('#clone', function () {
     it('should return an instance of the parent collection with the filtered models', function () {
-      var ACollection = class extends Backbone.Collection {
+      var ACollection = class extends Collection {
         foo = 'bar';
       };
       var ac = new ACollection([{ type: 1 }, { type: 2 }, { type: 1 }, { type: 2 }]);
@@ -396,7 +400,7 @@ describe('VirtualCollection', function () {
   });
   describe('#map', function () {
     it('should map the models in the virtual collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
           { type: 'a', name: 'hodor' },
           { type: 'a', name: 'khalesi' },
           { type: 'b' },
@@ -416,7 +420,7 @@ describe('VirtualCollection', function () {
 
   describe('#each', function () {
     it('should iterate over the models in the virtual collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
           { type: 'a', name: 'hodor' },
           { type: 'a', name: 'khalesi' },
           { type: 'b' },
@@ -436,7 +440,7 @@ describe('VirtualCollection', function () {
 
   describe('#get', function () {
     it('should return the model if it belongs in the virtual collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
           { type: 'a', id: 1 },
           { type: 'b', id: 2 },
         ]),
@@ -451,7 +455,7 @@ describe('VirtualCollection', function () {
 
   describe('#at', function () {
     it('should return the model at the specified index of the virtual collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
           { type: 'a', id: 1 },
           { type: 'b', id: 2 },
         ]),
@@ -465,7 +469,7 @@ describe('VirtualCollection', function () {
 
   describe('#toJSON', function () {
     it('should return a JSON representation of the models in the virtual collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
           { age: 23, name: 'John' },
           { age: 44, name: 'Papa' },
           { age: 44, name: 'Terry' },
@@ -483,7 +487,7 @@ describe('VirtualCollection', function () {
 
   describe('add & remove', function () {
     it('should proxy up to the parent', function () {
-      var collection = new Backbone.Collection([]);
+      var collection = new Collection([]);
       var vc = new VirtualCollection(collection, {});
       vc.add({ id: 2 });
       assert.equal(collection.length, 1);
@@ -495,7 +499,7 @@ describe('VirtualCollection', function () {
 
   describe('proxy parent events', function () {
     it('should proxy the sync event', function () {
-      var collection = new Backbone.Collection([]),
+      var collection = new Collection([]),
         eventSpy = sinon.spy();
 
       var vc = new VirtualCollection(collection, {});
@@ -507,7 +511,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should proxy the request event', function () {
-      var collection = new Backbone.Collection([]),
+      var collection = new Collection([]),
         eventSpy = sinon.spy(),
         vc = new VirtualCollection(collection, {});
       vc.on('request', eventSpy);
@@ -518,7 +522,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should proxy the error event', function () {
-      var collection = new Backbone.Collection([]),
+      var collection = new Collection([]),
         eventSpy = sinon.spy();
 
       var vc = new VirtualCollection(collection, {});
@@ -530,7 +534,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should proxy the load event', function () {
-      var collection = new Backbone.Collection([]),
+      var collection = new Collection([]),
         eventSpy = sinon.spy();
 
       var vc = new VirtualCollection(collection, {});
@@ -542,7 +546,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should proxy event arguments', function () {
-      var collection = new Backbone.Collection([]),
+      var collection = new Collection([]),
         eventSpy = sinon.spy();
 
       var vc = new VirtualCollection(collection, {});
@@ -557,7 +561,7 @@ describe('VirtualCollection', function () {
   describe('#filter', function () {
     it('should receive the model and index as arguments', function () {
       var i = 0,
-        collection = new Backbone.Collection([{ id: 1 }, { id: 2 }]);
+        collection = new Collection([{ id: 1 }, { id: 2 }]);
 
       var vc = new VirtualCollection(collection, {
         filter: function (model, index) {
@@ -571,57 +575,57 @@ describe('VirtualCollection', function () {
 
   describe('url', function () {
     it('should _.result to a string when parent collection url property is a string', function () {
-      var collection = new Backbone.Collection([]);
+      var collection = new Collection([]);
       collection.url = '/fake-endpoint';
 
       var vc = new VirtualCollection(collection, {});
-      assert.equal(true, _.isString(_.result(vc, 'url')));
+      assert.equal(true, isString(result(vc, 'url')));
     });
     it('should _.result to a string when parent collection url property is a function', function () {
-      var collection = new Backbone.Collection([]);
+      var collection = new Collection([]);
       collection.url = function () {
         return '/fake-endpoint';
       };
 
       var vc = new VirtualCollection(collection, {});
-      assert.equal(true, _.isString(_.result(vc, 'url')));
+      assert.equal(true, isString(result(vc, 'url')));
     });
   });
 
   describe('buildFilter', function () {
     it('should build a single-attribute filter that matches a model', function () {
       var filter = buildFilter({ foo: 'bar' });
-      assert.equal(true, filter(new Backbone.Model({ foo: 'bar' })));
+      assert.equal(true, filter(new Model({ foo: 'bar' })));
     });
     it('should build a single-attribute filter that rejects a model', function () {
       var filter = buildFilter({ foo: 'bar' });
-      assert.equal(false, filter(new Backbone.Model({ foo: 'car' })));
+      assert.equal(false, filter(new Model({ foo: 'car' })));
     });
     it('should build a multiple-attribute filter that matches a model', function () {
       var filter = buildFilter({ foo: 'bar', ginger: 'ale' });
-      assert.equal(true, filter(new Backbone.Model({ foo: 'bar', ginger: 'ale' })));
+      assert.equal(true, filter(new Model({ foo: 'bar', ginger: 'ale' })));
     });
     it('should build a multiple-attribute filter that rejects a model', function () {
       var filter = buildFilter({ foo: 'bar', ginger: 'ale' });
-      assert.equal(false, filter(new Backbone.Model({ foo: 'bar' })));
+      assert.equal(false, filter(new Model({ foo: 'bar' })));
     });
     it('should build a filter that matches model attributes with null values', function () {
       var filter = buildFilter({ foo: 'bar', ginger: null });
-      assert.equal(false, filter(new Backbone.Model({ foo: 'bar', ginger: 'not null' })));
-      assert.equal(true, filter(new Backbone.Model({ foo: 'bar', ginger: null })));
+      assert.equal(false, filter(new Model({ foo: 'bar', ginger: 'not null' })));
+      assert.equal(true, filter(new Model({ foo: 'bar', ginger: null })));
     });
     it('should build a filter that matches model attributes with undefined values', function () {
       var filter = buildFilter({
         foo: 'bar',
         ginger: undefined,
       });
-      assert.equal(false, filter(new Backbone.Model({ foo: 'bar', ginger: 'not null' })));
-      assert.equal(true, filter(new Backbone.Model({ foo: 'bar', ginger: undefined })));
+      assert.equal(false, filter(new Model({ foo: 'bar', ginger: 'not null' })));
+      assert.equal(true, filter(new Model({ foo: 'bar', ginger: undefined })));
     });
   });
   describe('events', function () {
     it('should trigger a `reset` event when the parent collection is reset', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -636,7 +640,7 @@ describe('VirtualCollection', function () {
       assert.equal(vc.length, 2);
     });
     it('should trigger an `add` event when a matching model is added to the parent', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -651,7 +655,7 @@ describe('VirtualCollection', function () {
       assert.equal(vc.length, 2);
     });
     it('should not trigger an `add` event when an unmatching model is added to the parent', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -666,7 +670,7 @@ describe('VirtualCollection', function () {
       assert.equal(vc.length, 1);
     });
     it('should not trigger an `add` event twice when two virtual collections share a parent and modify its models', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc1 = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -685,7 +689,7 @@ describe('VirtualCollection', function () {
       assert(called === 1);
     });
     it('should trigger a `remove` event when a matching model is removed from the parent', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -700,7 +704,7 @@ describe('VirtualCollection', function () {
       assert.equal(vc.length, 0);
     });
     it('should not trigger a `remove` event when an unmatching model is removed from the parent', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -716,7 +720,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should trigger a `remove` event when a model no longer passes the filter', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -731,7 +735,7 @@ describe('VirtualCollection', function () {
       assert(vc.length === 0);
     });
     it('should trigger an `add` event when a modified model now passes the filter', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -746,7 +750,7 @@ describe('VirtualCollection', function () {
       assert(vc.length === 2);
     });
     it('should trigger an `update` event when parent collection is updated passing its own changes object', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -761,7 +765,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should not trigger an `update` event when parent collection is updated and change is not accepted', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         });
@@ -774,7 +778,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should trigger a `change` event when a model in the virtual collection is changed', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -788,7 +792,7 @@ describe('VirtualCollection', function () {
       assert(vc.length === 1);
     });
     it('should trigger a `change:[attributeName]` event when a models attribute in the original collection is changed', function () {
-      var collection = new Backbone.Collection([{ type: 'a', testProperty: false }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a', testProperty: false }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -801,7 +805,7 @@ describe('VirtualCollection', function () {
       assert(vc.length === 1);
     });
     it('should trigger a `change:[attributeName]` event when a models attribute, in the original collection but added to the virtual one after, is changed', function () {
-      var collection = new Backbone.Collection([{ type: 'a', testProperty: false }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a', testProperty: false }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'c' },
         }),
@@ -816,7 +820,7 @@ describe('VirtualCollection', function () {
       assert(called);
     });
     it('should trigger a `filter` event when updateFilter() is called', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         filter = sinon.stub(),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
@@ -829,7 +833,7 @@ describe('VirtualCollection', function () {
       assert(vc.length === 1);
     });
     it('should trigger a `reset` event when updateFilter() is called', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         reset = sinon.stub(),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
@@ -842,7 +846,7 @@ describe('VirtualCollection', function () {
       assert(vc.length === 1);
     });
     it('should allow to call updateFilter() without a filter', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: function (m, i) {
             return i === 0;
@@ -854,7 +858,7 @@ describe('VirtualCollection', function () {
       assert.equal(oldAccepts, vc.accepts);
     });
     it('should ignore malformed change event arguments', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]);
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]);
 
       var vc = new VirtualCollection(collection, {
         filter: { type: 'a' },
@@ -864,7 +868,7 @@ describe('VirtualCollection', function () {
       });
     });
     it('should trigger a `sort` event when a comparator is set on the virtual collection and a model matching the filter is added to the base collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
         { type: 'a', sort: 'a' },
         { type: 'b', sort: 'b' },
       ]);
@@ -880,8 +884,8 @@ describe('VirtualCollection', function () {
       assert(sort.called);
     });
     it('should trigger a `sort` event when a comparator is set on the virtual collection and a model in the base collection is updated to match the filter', function () {
-      var modelToUpdate = new Backbone.Model({ type: 'b', sort: 'b' });
-      var collection = new Backbone.Collection([{ type: 'a', sort: 'a' }, modelToUpdate]);
+      var modelToUpdate = new Model({ type: 'b', sort: 'b' });
+      var collection = new Collection([{ type: 'a', sort: 'a' }, modelToUpdate]);
       var sort = sinon.stub();
       var vc = new VirtualCollection(collection, {
         filter: { type: 'a' },
@@ -894,7 +898,7 @@ describe('VirtualCollection', function () {
       assert(sort.called);
     });
     it('should not trigger a `sort` event when a comparator is set on the virtual collection and a model not matching the filter is added to the base collection', function () {
-      var collection = new Backbone.Collection([
+      var collection = new Collection([
         { type: 'a', sort: 'a' },
         { type: 'b', sort: 'b' },
       ]);
@@ -912,7 +916,7 @@ describe('VirtualCollection', function () {
   });
   describe('accepts & get', function () {
     it('should not call accepts() when iterating over the virtual collection', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         filterFn = function (model) {
           return model.get('type') === 'a';
         };
@@ -930,7 +934,7 @@ describe('VirtualCollection', function () {
       assert(!vc.accepts.called);
     });
     it('should not call get() when iterating over nested virtual collections', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]),
         filterFunction;
 
       var grandpaVc = new VirtualCollection(collection, {
@@ -962,7 +966,7 @@ describe('VirtualCollection', function () {
   });
   describe('sorting', function () {
     it('should ignore parent collection sort event if it has a comparator', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'b' }]);
+      var collection = new Collection([{ type: 'a' }, { type: 'b' }]);
 
       var vc = new VirtualCollection(collection, {
         comparator: function (m) {
@@ -977,7 +981,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should should inherit new model order if it does not have a comparator', function () {
-      var collection = new (class extends Backbone.Collection {
+      var collection = new (class extends Collection {
         comparator = 'type';
       })([{ type: 'a' }, { type: 'c' }, { type: 'b' }]);
 
@@ -990,7 +994,7 @@ describe('VirtualCollection', function () {
       assert.equal(vc.at(2).get('type'), 'c');
     });
     it('should add new models at the correct position if it has a comparator that accepts one model', function () {
-      var collection = new Backbone.Collection([{ type: 'a' }, { type: 'c' }]);
+      var collection = new Collection([{ type: 'a' }, { type: 'c' }]);
 
       var vc = new VirtualCollection(collection, {
         comparator: function (m) {
@@ -1004,12 +1008,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should add new models at the correct position if it has a comparator that accepts two models', function () {
-      var collection = new Backbone.Collection([
-        { type: 'a' },
-        { type: 'c' },
-        { type: 'd' },
-        { type: 'z' },
-      ]);
+      var collection = new Collection([{ type: 'a' }, { type: 'c' }, { type: 'd' }, { type: 'z' }]);
 
       var vc = new VirtualCollection(collection, {
         comparator: function (a, b) {
@@ -1022,7 +1021,7 @@ describe('VirtualCollection', function () {
     });
 
     it('should not have duplicate model event handlers after rebuilding the index', function () {
-      var collection = new Backbone.Collection([{ type: 'a', testProperty: false }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'a', testProperty: false }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'a' },
         }),
@@ -1035,28 +1034,26 @@ describe('VirtualCollection', function () {
       assert(called === 1);
       assert(vc.length === 1);
     });
-    it('should be able to get model by ID if id present', function (done) {
-      var collection = new Backbone.Collection([{ type: 'b' }]),
+    it('should be able to get model by ID if id present', async function () {
+      var collection = new Collection([{ type: 'b' }]),
         model,
-        stub,
         vc = new VirtualCollection(collection);
 
-      stub = sinon.stub(Backbone.ajax, 'handler').yieldsTo('success', { id: 1 });
+      sinon.stub(ajax, 'handler').yieldsTo('success', { id: 1 });
 
-      function onSuccess() {
-        assert(vc.get(1).id === 1);
-        stub.restore();
-        done();
-      }
-
-      model = new Backbone.Model({ type: 'a' });
+      model = new Model({ type: 'a' });
       vc.add(model);
       model.url = '/fake-endpoint';
-      model.save({ type: 'c' }, { success: onSuccess });
+
+      await new Promise(function (resolve, reject) {
+        model.save({ type: 'c' }, { success: resolve, error: reject });
+      });
+
+      assert(vc.get(1).id === 1);
     });
 
     it('should not trigger change events on models that are no longer in the virtual collection', function () {
-      var collection = new Backbone.Collection([{ type: 'z', testProperty: false }, { type: 'b' }]),
+      var collection = new Collection([{ type: 'z', testProperty: false }, { type: 'b' }]),
         vc = new VirtualCollection(collection, {
           filter: { type: 'z' },
         }),
@@ -1082,12 +1079,12 @@ describe('VirtualCollection', function () {
   });
 
   describe('isLoading', function () {
-    it('should be reflected with successful fetch', function (done) {
+    it('should be reflected with successful fetch', async function () {
       var resolve;
       var ajaxResponse = new Promise(function (res) {
         resolve = res;
       });
-      var collection = new Backbone.Collection();
+      var collection = new Collection();
       collection.url = '/test';
       collection.sync = function () {
         return ajaxResponse;
@@ -1099,22 +1096,23 @@ describe('VirtualCollection', function () {
         assert.equal(collection.isLoading, false);
         assert.equal(vc.isLoading, false);
       });
-      collection.fetch().then(function () {
-        assert.equal(collection.isLoading, false);
-        assert.equal(vc.isLoading, false);
-        done();
-      });
+      var fetchPromise = collection.fetch();
       assert.equal(collection.isLoading, true);
       assert.equal(vc.isLoading, true);
       resolve({ a: 1 });
+
+      await fetchPromise;
+
+      assert.equal(collection.isLoading, false);
+      assert.equal(vc.isLoading, false);
     });
 
-    it('should be reflected with failed fetch', function (done) {
+    it('should be reflected with failed fetch', async function () {
       var reject;
       var ajaxResponse = new Promise(function (res, rej) {
         reject = rej;
       });
-      var collection = new Backbone.Collection();
+      var collection = new Collection();
       collection.url = '/test';
       collection.sync = function () {
         return ajaxResponse;
@@ -1126,36 +1124,38 @@ describe('VirtualCollection', function () {
         assert.equal(collection.isLoading, false);
         assert.equal(vc.isLoading, false);
       });
-      collection.fetch()['catch'](function () {
-        assert.equal(collection.isLoading, false);
-        assert.equal(vc.isLoading, false);
-        done();
-      });
+      var fetchPromise = collection.fetch()['catch'](function () {});
       assert.equal(collection.isLoading, true);
       assert.equal(vc.isLoading, true);
       reject({ fail: true });
+
+      await fetchPromise;
+
+      assert.equal(collection.isLoading, false);
+      assert.equal(vc.isLoading, false);
     });
 
-    it('should be reflected when created while parent is loading', function (done) {
+    it('should be reflected when created while parent is loading', async function () {
       var resolve;
       var ajaxResponse = new Promise(function (res) {
         resolve = res;
       });
-      var collection = new Backbone.Collection();
+      var collection = new Collection();
       collection.url = '/test';
       collection.sync = function () {
         return ajaxResponse;
       };
       var vc;
-      collection.fetch().then(function () {
-        assert.equal(collection.isLoading, false);
-        assert.equal(vc.isLoading, false);
-        done();
-      });
+      var fetchPromise = collection.fetch();
       assert.equal(collection.isLoading, true);
       vc = new VirtualCollection(collection);
       assert.equal(vc.isLoading, true);
       resolve({ a: 1 });
+
+      await fetchPromise;
+
+      assert.equal(collection.isLoading, false);
+      assert.equal(vc.isLoading, false);
     });
   });
 });

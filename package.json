@@ -141,7 +141,7 @@
     "test:localstorage": "web-test-runner test/localstorage/*.js --node-resolve --puppeteer",
     "test:validation": "vitest run test/validation",
     "test:schema": "vitest run test/schema",
-    "test:virtualcollection": "web-test-runner test/virtualcollection/*.js --node-resolve --puppeteer",
+    "test:virtualcollection": "vitest run test/virtualcollection",
     "test:form": "web-test-runner test/form/*.js --node-resolve --puppeteer",
     "test:class-utils": "vitest run src",
     "test:all": "npm run test && npm run test:computed && npm run test:fetch && npm run test:localstorage && npm run test:validation && npm run test:schema && npm run test:virtualcollection && npm run test:form && npm run test:class-utils",
