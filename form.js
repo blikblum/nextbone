@@ -1,9 +1,9 @@
 import { isPlainObject, isEqual } from 'lodash-es';
-import { delegate } from './nextbone.js';
+import { delegate } from 'nextbone';
 import { deepCloneLite } from './utils.js';
 
 /**
- * @import { Model } from './nextbone.js'
+ * @import { Model } from 'nextbone'
  *
  * @typedef FormStateOptions
  * @property {string | Model} [model='model']

@@ -1,4 +1,4 @@
-import { sync, Collection } from './nextbone.js';
+import { sync, Collection } from 'nextbone';
 
 /** Generates 4 random hex digits
  * @returns {string} 4 Random hex digits

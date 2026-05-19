@@ -114,5 +114,5 @@ export var patterns: Record<string, RegExp>;
 export namespace options {
     let labelFormatter: string;
 }
-import type { Model } from './nextbone.js';
+import type { Model } from 'nextbone';
 //# sourceMappingURL=validation.d.ts.map

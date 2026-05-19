@@ -121,5 +121,5 @@ export type FormStateOptions = {
         selector: string;
     }[] | undefined;
 };
-import type { Model } from './nextbone.js';
+import type { Model } from 'nextbone';
 //# sourceMappingURL=form.d.ts.map

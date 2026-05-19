@@ -1,7 +1,7 @@
 import { isString, isArray, isObject, isPlainObject, each, keys } from 'lodash-es';
 
 /**
- * @import { Model } from './nextbone.js'
+ * @import { Model } from 'nextbone'
  * @import { z } from 'zod'
  */
 

@@ -31,6 +31,14 @@ export class VirtualCollection<TModel extends Model = Model<any, string, any>, P
      * @type {Collection}
      */
     get parent(): Collection;
+    /**
+     * Default filter hook for subclasses.
+     * @param {TModel} model
+     * @param {Params} params
+     * @param {number} index
+     * @returns {boolean}
+     */
+    acceptModel(model: TModel, params: Params, index: number): boolean;
     /** @param {Params} value */
     set params(params: Params);
     /** @returns {Params} */
@@ -59,11 +67,10 @@ export class VirtualCollection<TModel extends Model = Model<any, string, any>, P
     sortedIndex(model: any, value: any, context: any): any;
     _indexAdd(model: any): void;
     _indexRemove(model: any): number;
-    _onAllEvent(eventName: any, ...args: any[]): void;
     clone(): any;
 }
 export function buildFilter(options: any): any;
-import type { Model } from './nextbone.js';
-import { Collection } from './nextbone.js';
-import type { CollectionComparator } from './nextbone.js';
+import type { Model } from 'nextbone';
+import { Collection } from 'nextbone';
+import type { CollectionComparator } from 'nextbone';
 //# sourceMappingURL=virtualcollection.d.ts.map

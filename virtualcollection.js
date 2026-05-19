@@ -1,9 +1,9 @@
 import { createMicrotaskBatcher, createWatchedProxy } from './dist/class-utils.js';
-import { Collection } from './nextbone.js';
+import { Collection } from 'nextbone';
 import { isFunction, sortedIndexBy, extend } from 'lodash-es';
 
 /**
- * @import { Model, CollectionComparator } from './nextbone.js'
+ * @import { Model, CollectionComparator } from 'nextbone'
  *
  * @template {Record<string, any>} [Params=Record<string, any>]
  * @typedef VirtualCollectionOptions
@@ -78,6 +78,17 @@ class VirtualCollection extends Collection {
 
     this.accepts = buildFilter(filter || this.acceptModel);
     this.parent = parent;
+  }
+
+  /**
+   * Default filter hook for subclasses.
+   * @param {TModel} model
+   * @param {Params} params
+   * @param {number} index
+   * @returns {boolean}
+   */
+  acceptModel(model, params, index) {
+    return true;
   }
 
   /**

@@ -1,7 +1,7 @@
 import { isEmpty, reduce, omit } from 'lodash-es';
 
 /**
- * @import { Model } from './nextbone.js'
+ * @import { Model } from 'nextbone'
  */
 
 /**

@@ -66,5 +66,5 @@ export type SchemaMixinClass<BaseClass extends Ctor<Model<any, any, any>>> = (ne
  */
 export function withSchema<BaseClass extends Ctor<Model<any, any, any>>>(ctorOrDescriptor: BaseClass): SchemaMixinClass<BaseClass>;
 import type { z } from 'zod';
-import type { Model } from './nextbone.js';
+import type { Model } from 'nextbone';
 //# sourceMappingURL=schema.d.ts.map

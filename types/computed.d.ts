@@ -29,5 +29,5 @@ export type ComputedDefs = Record<string, ComputedField | ShortHandComputedField
  * @returns {BaseClass & ComputedStaticMixin}
  */
 export function withComputed<BaseClass extends Ctor<Model<any, any, any>>>(ctorOrDescriptor: BaseClass): BaseClass & ComputedStaticMixin;
-import type { Model } from './nextbone.js';
+import type { Model } from 'nextbone';
 //# sourceMappingURL=computed.d.ts.map
