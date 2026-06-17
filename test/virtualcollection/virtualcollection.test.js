@@ -272,7 +272,7 @@ describe('VirtualCollection', function () {
   describe('#acceptModel', function () {
     it('should be used as filter when filter option is not defined', function () {
       class CustomVirtualCollection extends VirtualCollection {
-        acceptModel(model, index) {
+        acceptModel(model) {
           return model.get('foo') === 'bar';
         }
       }
@@ -284,6 +284,72 @@ describe('VirtualCollection', function () {
       var vc = new CustomVirtualCollection(collection);
       assert.equal(vc.accepts, vc.acceptModel);
       assert.equal(vc.models.length, 2);
+    });
+
+    it('should receive the params as second argument and index as third argument', async function () {
+      class CustomVirtualCollection extends VirtualCollection {
+        acceptModel(model, params, index) {
+          return (
+            model.get('foo') === params.foo && model.get('type') === params.type && index === 0
+          );
+        }
+      }
+
+      var collection = new Collection([
+        { id: 1, foo: 'bar', type: 'a' },
+        { id: 2, foo: 'baz', type: 'a' },
+        { id: 3, foo: 'bar', type: 'b' },
+      ]);
+
+      var vc = new CustomVirtualCollection(collection);
+
+      vc.params = { foo: 'bar', type: 'a' };
+      await Promise.resolve();
+      assert.equal(vc.models.length, 1);
+    });
+
+    it('should be called when a model is added in the parent collection', async function () {
+      const acceptModelSpy = sinon.spy();
+      class CustomVirtualCollection extends VirtualCollection {
+        acceptModel(model, params, index) {
+          acceptModelSpy(model, params, index);
+          return true;
+        }
+      }
+
+      var collection = new Collection();
+
+      var vc = new CustomVirtualCollection(collection);
+
+      vc.params = { foo: 'bar' };
+      await Promise.resolve();
+
+      collection.add({ id: 1, foo: 'bar' });
+      assert.equal(acceptModelSpy.called, true);
+      assert.equal(acceptModelSpy.lastCall.args[0], collection.get(1));
+      assert.deepEqual(acceptModelSpy.lastCall.args[1], vc.params);
+      assert.equal(acceptModelSpy.lastCall.args[2], undefined);
+    });
+
+    it('should be called when a model is changed', async function () {
+      const acceptModelSpy = sinon.spy();
+      class CustomVirtualCollection extends VirtualCollection {
+        acceptModel(model, params, index) {
+          acceptModelSpy(model, params, index);
+          return true;
+        }
+      }
+
+      var collection = new Collection([{ id: 1, foo: 'baz' }]);
+      var vc = new CustomVirtualCollection(collection);
+      vc.params = { foo: 'bar' };
+      await Promise.resolve();
+      acceptModelSpy.resetHistory();
+      collection.at(0).set('foo', 'bar');
+      assert.equal(acceptModelSpy.called, true);
+      assert.equal(acceptModelSpy.lastCall.args[0], collection.get(1));
+      assert.deepEqual(acceptModelSpy.lastCall.args[1], vc.params);
+      assert.equal(acceptModelSpy.lastCall.args[2], undefined);
     });
   });
 

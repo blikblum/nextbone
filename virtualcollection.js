@@ -202,7 +202,7 @@ class VirtualCollection extends Collection {
   }
 
   _onAdd(model, collection, options) {
-    if (this.get(model) || !this.accepts(model, options.index)) return;
+    if (this.get(model) || !this.accepts(model, { ...this.params })) return;
     this._changeCache.added.push(model);
     this._indexAdd(model);
     this.listenTo(model, 'all', onModelAllEvent);
@@ -224,7 +224,7 @@ class VirtualCollection extends Collection {
     if (!model || !options) return; // ignore malformed arguments coming from custom events
     var alreadyHere = this.get(model);
 
-    if (this.accepts(model, options.index)) {
+    if (this.accepts(model, { ...this.params }, options.index)) {
       if (alreadyHere) {
         if (!this._byId[model.id] && model.id) {
           this._byId[model.id] = model;
