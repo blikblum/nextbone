@@ -569,7 +569,7 @@ export function eventHandler(
 
 export function view<TBase extends abstract new (...args: any[]) => HTMLElement>(
   klass: TBase,
-): TBase & (abstract new (...args: ConstructorParameters<TBase>) => InstanceType<TBase> & EventsMixin);
+): TBase & (abstract new (...args: any[]) => EventsMixin);
 
 export function on(
   event: string,
